@@ -61,6 +61,8 @@ static void flyweight_instance_unregist(struct flyweight_instance_s * instance);
 static inline int has_flyweight_instance(struct flyweight_instance_s * instance);
 /*! Getter. */
 static void * flyweight_instance_get_instance(struct flyweight_instance_s * instance);
+/*! allocate. */
+static inline void flyweight_instance_alloc_instance_without_lock(struct flyweight_instance_s * instance);
 /*! Setter. */
 static int flyweight_instance_set_instance(struct flyweight_instance_s * instance, void *data, int (*setter)(void *src, size_t srcsize, void *dist));
 /* @} */
@@ -170,12 +172,7 @@ static inline int has_flyweight_instance(struct flyweight_instance_s * instance)
 	return (instance->instance_size != 0);
 }
 
-static void * flyweight_instance_get_instance(struct flyweight_instance_s * instance) {
-	void *ret=NULL;
-
-	//lock if thread safe
-	FLYWEIGHT_INSTANCE_LOCK(instance);
-
+static inline void flyweight_instance_alloc_instance_without_lock(struct flyweight_instance_s * instance) {
 	//if already allocated, only return instance
 	if(!instance->instance) {
 		//allocate
@@ -185,8 +182,15 @@ static void * flyweight_instance_get_instance(struct flyweight_instance_s * inst
 			instance->methods.constructor(instance->instance);
 		}
 	}
-	ret=instance->instance;
+}
 
+static void * flyweight_instance_get_instance(struct flyweight_instance_s * instance) {
+	void *ret=NULL;
+
+	//lock if thread safe
+	FLYWEIGHT_INSTANCE_LOCK(instance);
+	flyweight_instance_alloc_instance_without_lock(instance);
+	ret = instance->instance;
 	//unlock
 	FLYWEIGHT_INSTANCE_UNLOCK(instance);
 
@@ -199,6 +203,8 @@ static int flyweight_instance_set_instance(struct flyweight_instance_s * instanc
 
 	//lock if thread safe
 	FLYWEIGHT_INSTANCE_LOCK(instance);
+	//get instance
+	flyweight_instance_alloc_instance_without_lock(instance);
 
 	if(!instance->instance) {
 		//not allocate yet
