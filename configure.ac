@@ -50,6 +50,8 @@ AC_CONFIG_FILES([Makefile
 		 flyweight/lib/Makefile
 		 flyweight/include/Makefile
 		 flyweight/test/Makefile
+		 flyweight/sample/Makefile
+		 flyweight/sample2/Makefile
 		 ])
 
 AC_OUTPUT

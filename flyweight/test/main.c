@@ -218,6 +218,22 @@ int main() {
 		PRINTLOG("failed to lock call setter test1\n");
 		return 1;
 	}
+
+	flyweight_exit();
+	get1 = (struct test1 *)flyweight_get(id);
+	if(get1) {
+		PRINTLOG("failed to exit\n");
+		return 1;
+	}
+
+	id = flyweight_register_class(sizeof(struct test1), 0, &test1_methods);
+	get1 = (struct test1 *)flyweight_get(id);
+	if(get1==NULL) {
+		PRINTLOG("failed to re registor \n");
+		return 1;
+	}
+
+	flyweight_exit();
 	PRINTLOG("All is success!!\n");
 	return 0;
 }

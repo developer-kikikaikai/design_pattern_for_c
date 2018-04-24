@@ -102,8 +102,12 @@ struct flyweight_mng_s {
 
 /*! @name private API for flyweight_mng_s
 */
+/*! Get next index of next registoration */
 static int flyweight_mng_get_next_index(struct flyweight_mng_s *mng);
+/*! Check if index has instance registoration */
 static int flyweight_mng_is_valid_index(int id);
+/*! Unregistor (without lock all) */
+static inline void flyweight_unregister(int id);
 #ifdef STRICT_ENSUCE_THREADSAGE
 #define FLYWEIGHT_MNG_LOCK \
 	flyweight_mutex_lock(&flyweight_mng_g.lock_all);\
@@ -277,11 +281,31 @@ static int flyweight_mng_is_valid_index(int id) {
 	if(flyweight_mng_g.max_num <= id) {
 		return FLYWEIGHT_FAILED;
 	}
+
+	//allocate check
+	if(flyweight_mng_g.instances == NULL) {
+		return FLYWEIGHT_FAILED;
+	}
+
 	//registered check
 	if(!has_flyweight_instance(&flyweight_mng_g.instances[id])) {
 		return FLYWEIGHT_FAILED;
 	}
 	return FLYWEIGHT_SUCCESS;
+}
+
+static inline void flyweight_unregister(int id) {
+	//validate id check
+	if(flyweight_mng_is_valid_index(id) != FLYWEIGHT_FAILED) {
+		struct flyweight_instance_s *instance_p = &flyweight_mng_g.instances[id];
+
+		//to pop data, copy first
+		flyweight_mng_g.current_num--;
+
+		//slide current index, to care max
+		flyweight_instance_unregist(instance_p);
+		memset(instance_p, 0, sizeof(struct flyweight_instance_s));
+	}
 }
 
 /*************
@@ -339,17 +363,7 @@ FLYWEIGHT_MNG_UNLOCK
 void flyweight_unregister_class(int id) {
 
 FLYWEIGHT_MNG_LOCK
-	//validate id check
-	if(flyweight_mng_is_valid_index(id) != FLYWEIGHT_FAILED) {
-		struct flyweight_instance_s *instance_p = &flyweight_mng_g.instances[id];
-
-		//to pop data, copy first
-		flyweight_mng_g.current_num--;
-
-		//slide current index, to care max
-		flyweight_instance_unregist(instance_p);
-		memset(instance_p, 0, sizeof(struct flyweight_instance_s));
-	}
+	flyweight_unregister(id);
 FLYWEIGHT_MNG_UNLOCK
 
 }
@@ -388,6 +402,24 @@ end:
 FLYWEIGHT_MNG_UNLOCK
 
 	return ret;
+}
+
+void flyweight_exit(void) {
+
+FLYWEIGHT_MNG_LOCK
+	int size = flyweight_mng_g.max_num;
+	int i=0;
+	for(i = 0; i < flyweight_mng_g.max_num; i ++) {
+		flyweight_unregister(i);
+	}
+	//free own
+	free(flyweight_mng_g.instances);
+
+	//initialize
+	flyweight_mng_g.instances=NULL;
+	flyweight_mng_g.current_num=0;
+	//only keep max size
+FLYWEIGHT_MNG_UNLOCK
 }
 
 void flyweight_lock(int id) {

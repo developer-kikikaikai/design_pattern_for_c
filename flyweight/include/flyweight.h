@@ -67,6 +67,14 @@ void * flyweight_get(int id);
 int flyweight_set(int id, void * data, int (*setter)(void *src, size_t srcsize, void *set_data));
 
 /**
+ * @brief exit, free all alocated data
+ *
+ * @param none
+ * @retval none
+ */
+void flyweight_exit(void);
+
+/**
  * @brief lock method, if you want to lock data between using flyweight_get instance, please call it and flyweight_unlock after using.
  *
  * @param[in] id class id
