@@ -13052,7 +13052,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile flyweight/sample/Makefile flyweight/sample2/Makefile"
+ac_config_files="$ac_config_files Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile flyweight/sample/Makefile flyweight/sample2/Makefile flyweight/interface_sample/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -14077,6 +14077,7 @@ do
     "flyweight/test/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/test/Makefile" ;;
     "flyweight/sample/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/sample/Makefile" ;;
     "flyweight/sample2/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/sample2/Makefile" ;;
+    "flyweight/interface_sample/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/interface_sample/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

@@ -52,6 +52,7 @@ AC_CONFIG_FILES([Makefile
 		 flyweight/test/Makefile
 		 flyweight/sample/Makefile
 		 flyweight/sample2/Makefile
+		 flyweight/interface_sample/Makefile
 		 ])
 
 AC_OUTPUT

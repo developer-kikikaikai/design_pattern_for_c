@@ -106,9 +106,10 @@ ENTER
 //show all
 void city_show_all_resident(int city) {
 ENTER
-	printf("[city] city name[%s]:\n",city_getter_name(city));
-	int *residents;
-	int length = city_getter_residents(city, &residents);
+	struct city_class * city_class = (struct city_class *) flyweight_get(city);
+	printf("[city] city name[%s]:\n",city_class->name);
+	int *residents=city_class->residents;
+	int length = city_class->resident_num;;
 	int i=0;
 	for( i < 0 ; i < length ; i++ ) {
 		printf("[city]\tname[%s]:age(%u)\n",human_get_name(residents[i]),  human_get_age(residents[i]));

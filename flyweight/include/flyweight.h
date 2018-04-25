@@ -3,6 +3,7 @@
 /**
  * @brief This is API as Flyweight design petten
 **/
+#include <stddef.h>
 
 /*! @struct flyweight_init_s
  * @brief flyweight initialize structure
