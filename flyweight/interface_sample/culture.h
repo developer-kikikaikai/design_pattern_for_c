@@ -8,10 +8,6 @@ struct culture_if {
 	char *(*answer)(int id);
 };
 
-#define IF_DEFINITION \
-	char *(*get_name)();\
-	char *(*reaction)(int id);
-
 //we can ask about those question about culture
 enum question_id_definition{
 	FOOD,
