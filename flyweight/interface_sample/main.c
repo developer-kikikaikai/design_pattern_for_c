@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "culture.h"
-#include "members.h"
 #include "flyweight.h"
 
 int main() {
