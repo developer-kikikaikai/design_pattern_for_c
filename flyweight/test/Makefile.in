@@ -101,7 +101,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_test_OBJECTS = test-main.$(OBJEXT)
+am_test_OBJECTS = test-test_normalclass.$(OBJEXT) \
+	test-test_methodsclass.$(OBJEXT) test-main.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
 test_LDADD = $(LDADD)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -296,7 +297,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/flyweight/include
 INCLUDES_PATH = $(top_srcdir)/flyweight/include
 test_CXXFLAGS = -g -O0
 test_CFLAGS = -g -O0
-test_SOURCES = main.c
+test_SOURCES = test_normalclass.c test_methodsclass.c main.c
 test_LDFLAGS = $(top_srcdir)/flyweight/lib/.libs/libflyweight.a -lpthread
 all: all-am
 
@@ -393,6 +394,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-test_methodsclass.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-test_normalclass.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -414,6 +417,34 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+test-test_normalclass.o: test_normalclass.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-test_normalclass.o -MD -MP -MF $(DEPDIR)/test-test_normalclass.Tpo -c -o test-test_normalclass.o `test -f 'test_normalclass.c' || echo '$(srcdir)/'`test_normalclass.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test_normalclass.Tpo $(DEPDIR)/test-test_normalclass.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_normalclass.c' object='test-test_normalclass.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-test_normalclass.o `test -f 'test_normalclass.c' || echo '$(srcdir)/'`test_normalclass.c
+
+test-test_normalclass.obj: test_normalclass.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-test_normalclass.obj -MD -MP -MF $(DEPDIR)/test-test_normalclass.Tpo -c -o test-test_normalclass.obj `if test -f 'test_normalclass.c'; then $(CYGPATH_W) 'test_normalclass.c'; else $(CYGPATH_W) '$(srcdir)/test_normalclass.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test_normalclass.Tpo $(DEPDIR)/test-test_normalclass.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_normalclass.c' object='test-test_normalclass.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-test_normalclass.obj `if test -f 'test_normalclass.c'; then $(CYGPATH_W) 'test_normalclass.c'; else $(CYGPATH_W) '$(srcdir)/test_normalclass.c'; fi`
+
+test-test_methodsclass.o: test_methodsclass.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-test_methodsclass.o -MD -MP -MF $(DEPDIR)/test-test_methodsclass.Tpo -c -o test-test_methodsclass.o `test -f 'test_methodsclass.c' || echo '$(srcdir)/'`test_methodsclass.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test_methodsclass.Tpo $(DEPDIR)/test-test_methodsclass.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_methodsclass.c' object='test-test_methodsclass.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-test_methodsclass.o `test -f 'test_methodsclass.c' || echo '$(srcdir)/'`test_methodsclass.c
+
+test-test_methodsclass.obj: test_methodsclass.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-test_methodsclass.obj -MD -MP -MF $(DEPDIR)/test-test_methodsclass.Tpo -c -o test-test_methodsclass.obj `if test -f 'test_methodsclass.c'; then $(CYGPATH_W) 'test_methodsclass.c'; else $(CYGPATH_W) '$(srcdir)/test_methodsclass.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test_methodsclass.Tpo $(DEPDIR)/test-test_methodsclass.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_methodsclass.c' object='test-test_methodsclass.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-test_methodsclass.obj `if test -f 'test_methodsclass.c'; then $(CYGPATH_W) 'test_methodsclass.c'; else $(CYGPATH_W) '$(srcdir)/test_methodsclass.c'; fi`
 
 test-main.o: main.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-main.o -MD -MP -MF $(DEPDIR)/test-main.Tpo -c -o test-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c

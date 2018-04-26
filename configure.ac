@@ -24,24 +24,6 @@ AC_CHECK_HEADERS([stdlib.h string.h])
 AC_C_INLINE
 AC_TYPE_SIZE_T
 
-#AC_ARG_ENABLE( option, help message, script code for this option, default value)
-AC_ARG_ENABLE(flyweight_forcesafe,
-[  --enable-flyweight_forcesafe      enable to lock/unlock register data [[default=no]]],
-[\
-#
-case "${enableval}" in
- yes) flyweight_forcesafe=yes ;;
- *)   AC_MSG_ERROR(bad value for --enable-) ;;
-esac],
-flyweight_forcesafe=no)
-
-#check flag and set defile
-if test x"${flyweight_forcesafe}" = x"yes"; then
-  AC_DEFINE(STRICT_ENSUCE_THREADSAGE, 1, [Define to 1 if you want to ensure thread safe])
-else
-echo "libnotify is disabled"
-fi
-
 # Checks for library functions.
 AC_CHECK_FUNCS([clock_gettime memset strerror])
 
@@ -50,9 +32,6 @@ AC_CONFIG_FILES([Makefile
 		 flyweight/lib/Makefile
 		 flyweight/include/Makefile
 		 flyweight/test/Makefile
-		 flyweight/sample/Makefile
-		 flyweight/sample2/Makefile
-		 flyweight/interface_sample/Makefile
 		 ])
 
 AC_OUTPUT

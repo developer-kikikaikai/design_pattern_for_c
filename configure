@@ -760,7 +760,6 @@ with_aix_soname
 with_gnu_ld
 with_sysroot
 enable_libtool_lock
-enable_flyweight_forcesafe
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1412,7 +1411,6 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --enable-flyweight_forcesafe      enable to lock/unlock register data [default=no]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -13015,29 +13013,6 @@ _ACEOF
 fi
 
 
-#AC_ARG_ENABLE( option, help message, script code for this option, default value)
-# Check whether --enable-flyweight_forcesafe was given.
-if test "${enable_flyweight_forcesafe+set}" = set; then :
-  enableval=$enable_flyweight_forcesafe; \
-#
-case "${enableval}" in
- yes) flyweight_forcesafe=yes ;;
- *)   as_fn_error $? "bad value for --enable-" "$LINENO" 5 ;;
-esac
-else
-  flyweight_forcesafe=no
-fi
-
-
-#check flag and set defile
-if test x"${flyweight_forcesafe}" = x"yes"; then
-
-$as_echo "#define STRICT_ENSUCE_THREADSAGE 1" >>confdefs.h
-
-else
-echo "libnotify is disabled"
-fi
-
 # Checks for library functions.
 for ac_func in clock_gettime memset strerror
 do :
@@ -13052,7 +13027,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile flyweight/sample/Makefile flyweight/sample2/Makefile flyweight/interface_sample/Makefile"
+ac_config_files="$ac_config_files Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -14075,9 +14050,6 @@ do
     "flyweight/lib/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/lib/Makefile" ;;
     "flyweight/include/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/include/Makefile" ;;
     "flyweight/test/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/test/Makefile" ;;
-    "flyweight/sample/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/sample/Makefile" ;;
-    "flyweight/sample2/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/sample2/Makefile" ;;
-    "flyweight/interface_sample/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/interface_sample/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

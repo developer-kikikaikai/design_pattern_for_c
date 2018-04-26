@@ -21,6 +21,14 @@
 #define DEBUG_ERRPRINT(...) 
 #endif
 
+//#define DBGENER
+#ifdef DBGENER
+#define ENTERLOG printf("<%s>enter\n", __FUNCTION__);
+#define EXITLOG  printf("<%s>exit\n", __FUNCTION__);
+#else
+#define ENTERLOG
+#define EXITLOG
+#endif
 /*************
  * public define
 *************/
@@ -30,20 +38,28 @@
 #define FLYWEIGHT_SUCCESS (0) /*! success */
 /* @} */
 
-/*! @brief default max register size */
-#define FLYWEIGHT_MAXREGISTER_SIZE (1024)
-
 /*! @struct flyweight_instance_s
- * @brief instance data definition.
+ * @brief instance data definition, instance storaged by list
 */
 struct flyweight_instance_s {
-	//private member
-	struct flyweight_init_s methods;/*! methods */
-	size_t instance_size;/*! size of instance */
-	void * instance;/*! allocated instance size */
-	pthread_mutex_t *lock;/*! lock pointer, if != null, lock at getter and setter */
+	struct flyweight_instance_s * next;
+	void * instance;
+};
 
-	pthread_mutex_t lock_instance;/*! real lock instance */
+/* ! new  flyweight_instance_s */
+static struct flyweight_instance_s * flyweight_instance_new(size_t size);	
+/* ! free flyweight_instance_s */
+static void flyweight_instance_free(struct flyweight_instance_s * instance);
+
+/*! @struct class_factory
+ * @brief instance data definition.
+*/
+struct flyweight_class_factory_s {
+	//private member
+	struct flyweight_class_methods_s methods;/*! methods */
+	size_t class_size;/*! size of class */
+	struct flyweight_instance_s *class_instances; /*! list of instance */
+	pthread_mutex_t *lock;/*! lock pointer, if != null, lock at getter and setter */
 };
 
 /*! lock mutex */
@@ -53,70 +69,33 @@ static inline void flyweight_mutex_unlock(void *handle);
 
 /*! @name public API for flyweight_instance_s */
 /* @{ */
-/*! Create. instance is allocated data, this API allocate buffer in flyweight_instance_s */
-static int flyweight_instance_regist(size_t class_size, int is_threadsafe, struct flyweight_init_s *methods, struct flyweight_instance_s * instance);
-/*! Delete. instance is allocated data, this API only free buffer in in flyweight_instance_s. Please pop data from mng list before calling this API. */
-static void flyweight_instance_unregist(struct flyweight_instance_s * instance);
 /*! Check has instance. */
-static inline int has_flyweight_instance(struct flyweight_instance_s * instance);
-/*! Getter. */
-static void * flyweight_instance_get_instance(struct flyweight_instance_s * instance);
+static struct flyweight_instance_s * flyweight_factory_get_storaged_instance(struct flyweight_class_factory_s * class_factory, void * constructor_parameter);
 /*! allocate. */
-static inline void flyweight_instance_alloc_instance_without_lock(struct flyweight_instance_s * instance);
-/*! Setter. */
-static int flyweight_instance_set_instance(struct flyweight_instance_s * instance, void *data, int (*setter)(void *src, size_t srcsize, void *dist));
+static struct flyweight_instance_s * flyweight_factory_instance_new(struct flyweight_class_factory_s * class_factory, void *constructor_parameter);
+/*! push instance into list. */
+static void flyweight_factory_push_instance(struct flyweight_instance_s * instance, struct flyweight_class_factory_s * class_factory);
+/*! pop instance from list. */
+static struct flyweight_instance_s * flyweight_factory_pop_instance(struct flyweight_class_factory_s * class_factory);
+/*! Getter. */
+static struct flyweight_instance_s * flyweight_factory_get(struct flyweight_class_factory_s * class_factory, void * constructor_parameter);
 /* @} */
 
-/*! @name private API for flyweight_instance_s */
+/*! @name private API for flyweight_class_factory_s */
 /* @{ */
+/*! Default constructor. */
+static inline void flyweight_class_default_constructor(void *this, size_t size, void *input_parameter);
+/*! Default equall operand. */
+static inline int flyweight_class_default_equall_operand(void *this, size_t size, void *input_parameter);
 /*! Default setter. */
-static inline int flyweight_instance_default_setter(void *src, size_t srcsize, void *dist);
+static inline int flyweight_class_default_setter(void *this, size_t size, void *input_parameter);
 /*! Set methods. */
-static inline void flyweight_instance_methods(struct flyweight_init_s *methods, struct flyweight_instance_s *instance);
-#define FLYWEIGHT_INSTANCE_LOCK(instance) \
+static void flyweight_class_set_methods(struct flyweight_class_methods_s *methods, struct flyweight_class_factory_s *instance);
+#define FLYWEIGHT_CLASS_LOCK(instance) \
 	flyweight_mutex_lock(instance->lock);\
 	pthread_cleanup_push(flyweight_mutex_unlock, instance->lock);
 
-
-#define FLYWEIGHT_INSTANCE_UNLOCK(instance) pthread_cleanup_pop(1);
-/* @} */
-
-/*! @struct flyweight_mng_s
- * @brief instance list manager definition.
-*/
-struct flyweight_mng_s {
-#ifdef STRICT_ENSUCE_THREADSAGE
-	pthread_mutex_t lock_all;/*! if ensure thread safe strictly, always lock data to access flyweight_mng_s */
-#endif
-	int max_num;/*! max_registor num */
-	int current_num;/*! current registored num */
-	struct flyweight_instance_s *instances;/*! instance list */
-} flyweight_mng_g = {
-#ifdef STRICT_ENSUCE_THREADSAGE
-	.lock_all = PTHREAD_MUTEX_INITIALIZER,
-#endif
-	.max_num=FLYWEIGHT_MAXREGISTER_SIZE,
-	.current_num=0,
-	.instances=NULL,
-};
-
-/*! @name private API for flyweight_mng_s
-*/
-/*! Get next index of next registoration */
-static int flyweight_mng_get_next_index(struct flyweight_mng_s *mng);
-/*! Check if index has instance registoration */
-static int flyweight_mng_is_valid_index(int id);
-/*! Unregistor (without lock all) */
-static inline void flyweight_unregister(int id);
-#ifdef STRICT_ENSUCE_THREADSAGE
-#define FLYWEIGHT_MNG_LOCK \
-	flyweight_mutex_lock(&flyweight_mng_g.lock_all);\
-	pthread_cleanup_push(flyweight_mutex_unlock, &flyweight_mng_g.lock_all);
-#define FLYWEIGHT_MNG_UNLOCK pthread_cleanup_pop(1);
-#else
-#define FLYWEIGHT_MNG_LOCK
-#define FLYWEIGHT_MNG_UNLOCK 
-#endif
+#define FLYWEIGHT_CLASS_UNLOCK pthread_cleanup_pop(1);
 /* @} */
 
 /*************
@@ -124,318 +103,302 @@ static inline void flyweight_unregister(int id);
 *************/
 /*! lock handle */
 static inline void flyweight_mutex_lock(void *handle) {
+ENTERLOG
 	if(!handle) {
 		return;
 	}
 
 	pthread_mutex_t * lock=(pthread_mutex_t *)handle;
 	pthread_mutex_lock(lock);
+EXITLOG
 }
 
 /*! unlock handle */
 static inline void flyweight_mutex_unlock(void *handle) {
+ENTERLOG
 	if(!handle) {
 		return;
 	}
 
 	pthread_mutex_t * lock=(pthread_mutex_t *)handle;
 	pthread_mutex_unlock(lock);
+EXITLOG
 }
 
 /*************
  * for flyweight_instance_s API
 *************/
-static int flyweight_instance_regist(size_t class_size, int is_threadsafe, struct flyweight_init_s *methods, struct flyweight_instance_s * instance) {
-	//clear memory
-	memset(instance, 0, sizeof(struct flyweight_instance_s));
+static struct flyweight_instance_s * flyweight_instance_new(size_t size) {
+ENTERLOG
 
-	//set data
-	instance->instance_size = class_size;
-	if(is_threadsafe) {
-		//if is_threadsafe=> lock is not NULL, so lock/unlock by flyweight_mutex_lock/unlock
-		instance->lock = &instance->lock_instance;
+	struct flyweight_instance_s * instance = (struct flyweight_instance_s *)calloc(1, sizeof(struct flyweight_instance_s) );
+	if( !instance ) {
+		return NULL;	
 	}
 
-	//always initialize lock_instance because it is used on flyweight_mutex_lock
-	pthread_mutex_init(&instance->lock_instance, NULL);
-
-	//set methods
-	flyweight_instance_methods(methods, instance);
-}
-
-static void flyweight_instance_unregist(struct flyweight_instance_s * instance) {
-	//already pop data from flyweight_mng_s, so it's OK not to lock
-	if(instance->methods.destructor) {
-		instance->methods.destructor(instance->instance);
+	//allocate
+	instance->instance = calloc(1, size);
+	if( !instance->instance ) {
+		free(instance);
+		return NULL;
 	}
-	pthread_mutex_destroy(&instance->lock_instance);
-	free(instance->instance);
+
+EXITLOG
+	return instance;
 }
 
-static inline int has_flyweight_instance(struct flyweight_instance_s * instance) {
-	return (instance->instance_size != 0);
+static void flyweight_instance_free(struct flyweight_instance_s * instance) {
+ENTERLOG
+	if( instance && instance->instance ) {
+		free(instance->instance);
+	}
+	free(instance);
+EXITLOG
 }
 
-static inline void flyweight_instance_alloc_instance_without_lock(struct flyweight_instance_s * instance) {
-	//if already allocated, only return instance
-	if(!instance->instance) {
-		//allocate
-		instance->instance = calloc(1, instance->instance_size);
-		//success to allocated, and there is a constructor
-		if(instance->instance && instance->methods.constructor) {
-			instance->methods.constructor(instance->instance);
+/*************
+ * for flyweight_class_factory_s API
+*************/
+static struct flyweight_instance_s * flyweight_factory_get_storaged_instance(struct flyweight_class_factory_s * class_factory, void * constructor_parameter) {
+ENTERLOG
+	//fail safe, if equall_operand == NULL, there is no case to store same instance
+	if( !class_factory->methods.equall_operand ) {
+		DEBUG_ERRPRINT("operand is NULL\n");
+		return NULL;
+	}
+
+	struct flyweight_instance_s * instance=class_factory->class_instances;
+	while(instance) {
+		if( class_factory->methods.equall_operand(instance->instance, class_factory->class_size, constructor_parameter) ) {
+			DEBUG_ERRPRINT("address %p instance is same\n", instance);
+			break;
 		}
+		instance=instance->next;
 	}
+EXITLOG
+
+	return instance;
 }
 
-static void * flyweight_instance_get_instance(struct flyweight_instance_s * instance) {
-	void *ret=NULL;
+static struct flyweight_instance_s * flyweight_factory_instance_new(struct flyweight_class_factory_s * class_factory, void *constructor_parameter) {
+ENTERLOG
+	struct flyweight_instance_s * instance = flyweight_instance_new(class_factory->class_size);
+	if( !instance ) {
+		return NULL;
+	}
 
-	//lock if thread safe
-	FLYWEIGHT_INSTANCE_LOCK(instance);
-	flyweight_instance_alloc_instance_without_lock(instance);
-	ret = instance->instance;
-	//unlock
-	FLYWEIGHT_INSTANCE_UNLOCK(instance);
-
-	return ret;
+	if(class_factory->methods.constructor) {
+		class_factory->methods.constructor(instance->instance, class_factory->class_size, constructor_parameter);
+	}
+EXITLOG
+	return instance;
 }
 
-static int flyweight_instance_set_instance(struct flyweight_instance_s * instance, void *data, int (*setter)(void *src, size_t srcsize, void *dist)) {
+static void flyweight_factory_push_instance(struct flyweight_instance_s * instance, struct flyweight_class_factory_s * class_factory) {
+ENTERLOG
+	instance->next = class_factory->class_instances;
+	class_factory->class_instances = instance;
+EXITLOG
+}
 
-	int ret=FLYWEIGHT_FAILED;
+static struct flyweight_instance_s * flyweight_factory_pop_instance(struct flyweight_class_factory_s * class_factory) {
+ENTERLOG
+	struct flyweight_instance_s * instance = class_factory->class_instances;
+	if( instance ) {
+		class_factory->class_instances = class_factory->class_instances->next;
+	}
+EXITLOG
 
-	//lock if thread safe
-	FLYWEIGHT_INSTANCE_LOCK(instance);
-	//get instance
-	flyweight_instance_alloc_instance_without_lock(instance);
+	return instance;
+}
 
-	if(!instance->instance) {
-		//not allocate yet
-		goto end;
+static struct flyweight_instance_s * flyweight_factory_get(struct flyweight_class_factory_s * class_factory, void * constructor_parameter) {
+ENTERLOG
+	struct flyweight_instance_s * instance = flyweight_factory_get_storaged_instance(class_factory, constructor_parameter);
+	if( instance ) {
+		//if already keep method, return it;
+		return instance;
 	}
 
-	if(setter) {
-		ret = setter(instance->instance, instance->instance_size, data);
-	} else if (instance->methods.setter) {
-		ret = instance->methods.setter(instance->instance, instance->instance_size, data);
-	} else {
-		ret = FLYWEIGHT_SUCCESS;
+	//allocate
+	instance = flyweight_factory_instance_new(class_factory, constructor_parameter);
+	if(instance) {
+		flyweight_factory_push_instance(instance, class_factory);
 	}
-end:
-	FLYWEIGHT_INSTANCE_UNLOCK(instance);
-	return ret;
+EXITLOG
+
+	return instance;
 }
 
 /*private API*/
+/*! Default constructor. */
+static inline void flyweight_class_default_constructor(void *this, size_t size, void *input_parameter) {
+ENTERLOG
+	if(input_parameter==NULL) {
+		return;
+	}
+
+	memcpy(this, input_parameter, size);
+}
+
+/*! Default equall operand. */
+static inline int flyweight_class_default_equall_operand(void *this, size_t size, void *input_parameter) {
+ENTERLOG
+	if(input_parameter==NULL) {
+		return 0;
+	}
+
+	return (memcmp(this, input_parameter, size) == 0);
+}
 
 /*! Default setter. */
-static inline int flyweight_instance_default_setter(void *src, size_t srcssrcsize, void *dist) {
-	//case: instance data already allocated
-	memcpy(src, dist, srcssrcsize);
-	return 0;
-}
-
-/*! Set methods. */
-static inline void flyweight_instance_methods(struct flyweight_init_s *methods, struct flyweight_instance_s *instance) {
-	if(!methods) {
-		instance->methods.setter = flyweight_instance_default_setter;
-	} else {
-		memcpy(&instance->methods, methods, sizeof(instance->methods));
-	}
-}
-
-/* @} */
-
-/*************
- * for flyweight_mng_s API
-*************/
-//call after FLYWEIGHT_MNG_LOCK, and always keep max
-static int flyweight_mng_get_next_index(struct flyweight_mng_s *mng) {
-	int index=mng->current_num;
-	int cnt=0;//check size
-	while(has_flyweight_instance(&mng->instances[index])) {
-		cnt++;
-		/*fale safe.
-		 * If you keep instance max_num when you call flyweight_mng_get_next_index,
-		 * There is no case of this.
-		 */
-		if( mng->max_num <= cnt ) {
-			//full
-			index=cnt;
-			break;
-		}
-
-		index++;
-		if(index==mng->max_num) {
-			//loop
-			index = 0;
-		}
-	}
-
-	return index;
-}
-
-static int flyweight_mng_is_valid_index(int id) {
-	//area check
-	if(flyweight_mng_g.max_num <= id) {
+static inline int flyweight_class_default_setter(void *this, size_t size, void *input_parameter) {
+ENTERLOG
+	if(input_parameter==NULL) {
 		return FLYWEIGHT_FAILED;
 	}
 
-	//allocate check
-	if(flyweight_mng_g.instances == NULL) {
-		return FLYWEIGHT_FAILED;
-	}
-
-	//registered check
-	if(!has_flyweight_instance(&flyweight_mng_g.instances[id])) {
-		return FLYWEIGHT_FAILED;
-	}
+	memcpy(this, input_parameter, size);
 	return FLYWEIGHT_SUCCESS;
 }
 
-static inline void flyweight_unregister(int id) {
-	//validate id check
-	if(flyweight_mng_is_valid_index(id) != FLYWEIGHT_FAILED) {
-		struct flyweight_instance_s *instance_p = &flyweight_mng_g.instances[id];
-
-		//to pop data, copy first
-		flyweight_mng_g.current_num--;
-
-		//slide current index, to care max
-		flyweight_instance_unregist(instance_p);
-		memset(instance_p, 0, sizeof(struct flyweight_instance_s));
+/*! Set methods. */
+static void flyweight_class_set_methods(struct flyweight_class_methods_s *methods, struct flyweight_class_factory_s *class_factory) {
+ENTERLOG
+	if(!methods) {
+		//set default. destrctor is NULL
+		class_factory->methods.constructor = flyweight_class_default_constructor;
+		class_factory->methods.equall_operand = flyweight_class_default_equall_operand;
+		class_factory->methods.setter = flyweight_class_default_setter;
+	} else {
+		memcpy((void *)&class_factory->methods, (void *)methods, sizeof(class_factory->methods));
 	}
+EXITLOG
 }
 
 /*************
  * public interface API implement
 *************/
-void flyweight_set_storagemax(int max_reg_num) {
-FLYWEIGHT_MNG_LOCK
-	if (!flyweight_mng_g.instances) {
-		flyweight_mng_g.max_num = max_reg_num;
-	}
-FLYWEIGHT_MNG_UNLOCK
-}
+void * flyweight_define_class(size_t class_size, int is_threadsafe, struct flyweight_class_methods_s *methods) {
+ENTERLOG
 
-int flyweight_register_class(size_t class_size, int is_threadsafe, struct flyweight_init_s *methods) {
-	int ret=FLYWEIGHT_FAILED;
-	int index =0;
-FLYWEIGHT_MNG_LOCK
-
-	//check size
-	if(flyweight_mng_g.max_num <= flyweight_mng_g.current_num) {
-		goto err;
+	if(class_size<=0) {
+		return NULL;
 	}
 
-	//new instance if flyweight_register_class call first.
-	if(!flyweight_mng_g.instances) {
-		flyweight_mng_g.instances = (struct flyweight_instance_s *) calloc(flyweight_mng_g.max_num, sizeof(struct flyweight_instance_s));
-		if(!flyweight_mng_g.instances) {
-			DEBUG_ERRPRINT("calloc instance list error, registror size=%u:%s\n",flyweight_mng_g.max_num, strerror(errno));
-			goto err;
+	//allocate class_factory
+	struct flyweight_class_factory_s * class_factory = (struct flyweight_class_factory_s *) calloc(1, sizeof(struct flyweight_class_factory_s));
+	if( !class_factory ) {
+		DEBUG_ERRPRINT("calloc instance list error:%s\n", strerror(errno));
+		return NULL;
+	}
+
+	//when use threadsafe, allocate mutex lock
+	if( is_threadsafe ) {
+		class_factory->lock = (pthread_mutex_t *) calloc(1, sizeof(pthread_mutex_t));
+		if( !class_factory->lock ) {
+			DEBUG_ERRPRINT("class instance lock error:%s\n",  strerror(errno));
+			free(class_factory);
+			return NULL;
 		}
+
+		pthread_mutex_init(class_factory->lock, NULL);
 	}
 
-	index = flyweight_mng_get_next_index(&flyweight_mng_g);
+	class_factory->class_size = class_size;
+	//set methods
+	flyweight_class_set_methods(methods, class_factory);
+EXITLOG
+	return class_factory;
+}
 
-	//index is always under maxnum
-	struct flyweight_instance_s * instance = &flyweight_mng_g.instances[index];
-
-	DEBUG_ERRPRINT("register[%d]: size=%d\n", index, class_size);
-	ret = flyweight_instance_regist(class_size, is_threadsafe, methods, instance);
-	if(ret == FLYWEIGHT_FAILED) {
-		DEBUG_ERRPRINT("class instance create error:%s\n",  strerror(errno));
-		goto err;
+void * flyweight_get(void * classHandle, void * constructor_parameter) {
+ENTERLOG
+	//fail safe
+	if(!classHandle) {
+		return NULL;
 	}
 
-	//keep return value
-	ret = index;
+	struct flyweight_class_factory_s * class_factory = (struct flyweight_class_factory_s *)classHandle;
 
-	//count up num and index
-	flyweight_mng_g.current_num++;
-err:
-FLYWEIGHT_MNG_UNLOCK
-	return ret;
-}
-
-void flyweight_unregister_class(int id) {
-
-FLYWEIGHT_MNG_LOCK
-	flyweight_unregister(id);
-FLYWEIGHT_MNG_UNLOCK
-
-}
-
-void * flyweight_get(int id) {
 	void *ret=NULL;
-
-FLYWEIGHT_MNG_LOCK
-	//validate id check
-	if(flyweight_mng_is_valid_index(id) == FLYWEIGHT_FAILED) {
-		goto end;
-	}
+	FLYWEIGHT_CLASS_LOCK(class_factory);
 
 	//get instance
-	DEBUG_ERRPRINT("get[%d]:\n", id);
-	ret = flyweight_instance_get_instance(&flyweight_mng_g.instances[id]);
-FLYWEIGHT_MNG_UNLOCK
+	struct flyweight_instance_s * instance = flyweight_factory_get(class_factory, constructor_parameter);
+	if( instance ) {
+		ret = instance->instance;
+	}
 
-end:
+	FLYWEIGHT_CLASS_UNLOCK
+
+EXITLOG
 	return ret;
 }
 
-int flyweight_set(int id, void * data, int (*setter)(void *src, size_t srcsize, void *set_data)) {
+int flyweight_set(void * classHandle, void * constructor_parameter, void * data, int (*setter)(void *this, size_t size, void *input_parameter)) {
+ENTERLOG
+
+	//fail safe
+	if(!classHandle) {
+		return FLYWEIGHT_FAILED;
+	}
 
 	int ret=FLYWEIGHT_FAILED;
-FLYWEIGHT_MNG_LOCK
-	//validate id check
-	if(flyweight_mng_is_valid_index(id) == FLYWEIGHT_FAILED) {
+	struct flyweight_class_factory_s * class_factory = (struct flyweight_class_factory_s *)classHandle;
+
+	FLYWEIGHT_CLASS_LOCK(class_factory);
+
+	//get and set instance
+	struct flyweight_instance_s * instance = flyweight_factory_get(class_factory, constructor_parameter);
+
+	if(!instance) {
+		DEBUG_ERRPRINT("Failed to get instance! handle[%p]\n", classHandle );
 		goto end;
 	}
 
-	//set instance
-	DEBUG_ERRPRINT("set[%d]:\n", id);
-	ret = flyweight_instance_set_instance(&flyweight_mng_g.instances[id], data, setter);
-end:
-FLYWEIGHT_MNG_UNLOCK
+	if( setter ) {
+		ret = setter(instance->instance, class_factory->class_size, data);
+	} else if ( class_factory->methods.setter ) {
+		ret = class_factory->methods.setter(instance->instance, class_factory->class_size, data);
+	}
 
+end:
+
+	FLYWEIGHT_CLASS_UNLOCK
+
+EXITLOG
 	return ret;
 }
 
-void flyweight_exit(void) {
-
-FLYWEIGHT_MNG_LOCK
-	int size = flyweight_mng_g.max_num;
-	int i=0;
-	for(i = 0; i < flyweight_mng_g.max_num; i ++) {
-		flyweight_unregister(i);
+void flyweight_clear(void * classHandle) {
+ENTERLOG
+	//fail safe
+	if(!classHandle) {
+		return;
 	}
-	//free own
-	free(flyweight_mng_g.instances);
+
+	struct flyweight_class_factory_s * class_factory = (struct flyweight_class_factory_s *)classHandle;
+	pthread_mutex_t *keep_mutex_for_free=class_factory->lock;
+
+	FLYWEIGHT_CLASS_LOCK(class_factory);
+
+	//pop and free
+	struct flyweight_instance_s *instance=NULL;
+	while( (instance = flyweight_factory_pop_instance(class_factory)) != NULL ) {
+		//call destcuctor
+		if(class_factory->methods.destructor) {
+			class_factory->methods.destructor(instance->instance);
+		}
+		flyweight_instance_free(instance);
+	}
+	free(class_factory);
 
 	//initialize
-	flyweight_mng_g.instances=NULL;
-	flyweight_mng_g.current_num=0;
-	//only keep max size
-FLYWEIGHT_MNG_UNLOCK
+	FLYWEIGHT_CLASS_UNLOCK
+
+	//free API care NULL
+	free(keep_mutex_for_free);
+EXITLOG
 }
 
-void flyweight_lock(int id) {
-FLYWEIGHT_MNG_LOCK
-	//validate id check
-	if(flyweight_mng_is_valid_index(id) != FLYWEIGHT_FAILED) {
-		flyweight_mutex_lock(&flyweight_mng_g.instances[id].lock_instance);
-	}
-FLYWEIGHT_MNG_UNLOCK
-}
-
-void flyweight_unlock(int id) {
-FLYWEIGHT_MNG_LOCK
-	//validate id check
-	if(flyweight_mng_is_valid_index(id) != FLYWEIGHT_FAILED) {
-		flyweight_mutex_unlock(&flyweight_mng_g.instances[id].lock_instance);
-	}
-FLYWEIGHT_MNG_UNLOCK
-}
