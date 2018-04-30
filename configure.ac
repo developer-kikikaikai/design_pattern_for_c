@@ -16,6 +16,7 @@ AC_PROG_CC
 # Checks for libraries.
 # FIXME: Replace `main' with a function in `-lpthread':
 AC_CHECK_LIB([pthread], [main])
+AC_CHECK_LIB([dl], [main])
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h])
@@ -32,6 +33,11 @@ AC_CONFIG_FILES([Makefile
 		 flyweight/lib/Makefile
 		 flyweight/include/Makefile
 		 flyweight/test/Makefile
+		 builder/Makefile
+		 builder/lib/Makefile
+		 builder/include/Makefile
+		 builder/sample_plugin/Makefile
+		 builder/test/Makefile
 		 ])
 
 AC_OUTPUT

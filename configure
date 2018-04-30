@@ -12942,6 +12942,45 @@ _ACEOF
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -ldl" >&5
+$as_echo_n "checking for main in -ldl... " >&6; }
+if ${ac_cv_lib_dl_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ldl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_dl_main=yes
+else
+  ac_cv_lib_dl_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dl_main" >&5
+$as_echo "$ac_cv_lib_dl_main" >&6; }
+if test "x$ac_cv_lib_dl_main" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBDL 1
+_ACEOF
+
+  LIBS="-ldl $LIBS"
+
+fi
+
 
 # Checks for header files.
 for ac_header in stdlib.h string.h
@@ -13027,7 +13066,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile"
+ac_config_files="$ac_config_files Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -14050,6 +14089,11 @@ do
     "flyweight/lib/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/lib/Makefile" ;;
     "flyweight/include/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/include/Makefile" ;;
     "flyweight/test/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/test/Makefile" ;;
+    "builder/Makefile") CONFIG_FILES="$CONFIG_FILES builder/Makefile" ;;
+    "builder/lib/Makefile") CONFIG_FILES="$CONFIG_FILES builder/lib/Makefile" ;;
+    "builder/include/Makefile") CONFIG_FILES="$CONFIG_FILES builder/include/Makefile" ;;
+    "builder/sample_plugin/Makefile") CONFIG_FILES="$CONFIG_FILES builder/sample_plugin/Makefile" ;;
+    "builder/test/Makefile") CONFIG_FILES="$CONFIG_FILES builder/test/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
