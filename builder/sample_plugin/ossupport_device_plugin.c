@@ -41,7 +41,6 @@ static void ossupport_device_disconnect(void * handle) {
 //initialize device, as set IP, ...
 int llbuilder_initial_device(void * arg) {
 	ossupport_device_s *device = (ossupport_device_s *)arg;
-	DEBUG_PRINT("initialize device!!\n");
 	sprintf(device->device_name, "eth0");
 	DEBUG_PRINT("ifup %s!!\n", device->device_name);
 	sprintf(device->ipaddress, "192.168.56.100");
