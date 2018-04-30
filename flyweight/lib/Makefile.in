@@ -289,6 +289,7 @@ top_srcdir = @top_srcdir@
 #common header deifinition
 AM_CPPFLAGS = -I$(top_srcdir)/flyweight/include
 INCLUDES_PATH = $(top_srcdir)/flyweight/include
+AM_LDFLAGS = $(top_srcdir)/flyweight/lib/.libs/libflyweight.a
 
 #load common setting
 noinst_LTLIBRARIES = libflyweight.la

@@ -111,7 +111,7 @@ am__v_lt_0 = --silent
 am__v_lt_1 = 
 test_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_CFLAGS) $(CFLAGS) \
-	$(test_LDFLAGS) $(LDFLAGS) -o $@
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -295,10 +295,10 @@ top_srcdir = @top_srcdir@
 #common header deifinition
 AM_CPPFLAGS = -I$(top_srcdir)/flyweight/include
 INCLUDES_PATH = $(top_srcdir)/flyweight/include
+AM_LDFLAGS = $(top_srcdir)/flyweight/lib/.libs/libflyweight.a
 test_CXXFLAGS = -g -O0
 test_CFLAGS = -g -O0
 test_SOURCES = test_normalclass.c test_methodsclass.c main.c
-test_LDFLAGS = $(top_srcdir)/flyweight/lib/.libs/libflyweight.a -lpthread
 all: all-am
 
 .SUFFIXES:
