@@ -5,7 +5,7 @@
 #include "ossupport_device_plugin.h"
 #include "usb_device_plugin.h"
 
-#define CONFNAME "../conf/device_plugin.con"
+#define CONFNAME "../conf/device_plugin.conf"
 #define USBPLUGIN_NAME "../sample_plugin/.libs/libusb_device_plugin.so"
 #define OSSSUPPORT_PLUGIN_NAME "../sample_plugin/.libs/libossupport_device_plugin.so"
 
