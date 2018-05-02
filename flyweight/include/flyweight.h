@@ -40,6 +40,8 @@ struct flyweight_class_methods_s {
 	void (*destructor)(void *this);
 };
 
+typedef void * ClassHandle;
+
 /**
  * @brief define class for flyweight
  *
@@ -51,7 +53,7 @@ struct flyweight_class_methods_s {
  * @retval !=NULL  this class handle
  * @retval NULL error
  */
-void * flyweight_define_class(size_t class_size, int is_threadsafe, struct flyweight_class_methods_s *methods);
+ClassHandle flyweight_define_class(size_t class_size, int is_threadsafe, struct flyweight_class_methods_s *methods);
 
 /**
  * @brief getter
@@ -60,7 +62,7 @@ void * flyweight_define_class(size_t class_size, int is_threadsafe, struct flywe
  * @retval !NULL class instance
  * @retval NULL id is invalid
  */
-void * flyweight_get(void * classHandle, void * constructor_parameter);
+void * flyweight_get(ClassHandle classHandle, void * constructor_parameter);
 
 /**
  * @brief setter
@@ -69,7 +71,7 @@ void * flyweight_get(void * classHandle, void * constructor_parameter);
  * @param[in] data set data pointer
  * @param[in] setter setter if you want to change setter ( if NULL, use setter related to flyweight_register_class input)
  */
-int flyweight_set(void * classHandle, void * constructor_parameter, void * data, int (*setter)(void *this, size_t size, void *input_parameter));
+int flyweight_set(ClassHandle classHandle, void * constructor_parameter, void * data, int (*setter)(void *this, size_t size, void *input_parameter));
 
 /**
  * @brief clear class handle
@@ -78,5 +80,5 @@ int flyweight_set(void * classHandle, void * constructor_parameter, void * data,
  * @param none
  * @retval none
  */
-void flyweight_clear(void * classHandle);
+void flyweight_clear(ClassHandle classHandle);
 #endif/*FLYWEIGHT_*/

@@ -279,7 +279,7 @@ EXITLOG
 /*************
  * public interface API implement
 *************/
-void * flyweight_define_class(size_t class_size, int is_threadsafe, struct flyweight_class_methods_s *methods) {
+ClassHandle flyweight_define_class(size_t class_size, int is_threadsafe, struct flyweight_class_methods_s *methods) {
 ENTERLOG
 
 	if(class_size<=0) {
@@ -312,7 +312,7 @@ EXITLOG
 	return class_factory;
 }
 
-void * flyweight_get(void * classHandle, void * constructor_parameter) {
+void * flyweight_get(ClassHandle classHandle, void * constructor_parameter) {
 ENTERLOG
 	//fail safe
 	if(!classHandle) {
@@ -336,7 +336,7 @@ EXITLOG
 	return ret;
 }
 
-int flyweight_set(void * classHandle, void * constructor_parameter, void * data, int (*setter)(void *this, size_t size, void *input_parameter)) {
+int flyweight_set(ClassHandle classHandle, void * constructor_parameter, void * data, int (*setter)(void *this, size_t size, void *input_parameter)) {
 ENTERLOG
 
 	//fail safe
@@ -371,7 +371,7 @@ EXITLOG
 	return ret;
 }
 
-void flyweight_clear(void * classHandle) {
+void flyweight_clear(ClassHandle classHandle) {
 ENTERLOG
 	//fail safe
 	if(!classHandle) {

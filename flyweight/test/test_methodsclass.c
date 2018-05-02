@@ -105,7 +105,7 @@ int test_methodsclass(int is_threadsafe) {
 
 	//test1, check operator is check member
 	{
-	void *handle = flyweight_define_class(sizeof(struct testclass1), is_threadsafe, &member_method);
+	ClassHandle handle = flyweight_define_class(sizeof(struct testclass1), is_threadsafe, &member_method);
 	if(!handle) {
 		ERRLOG("failed to create handle");
 	}
@@ -134,7 +134,7 @@ int test_methodsclass(int is_threadsafe) {
 
 	//test2, check operator is check only ID
 	{
-	void *handle = flyweight_define_class(sizeof(struct testclass1), is_threadsafe, &onlyid_method);
+	ClassHandle handle = flyweight_define_class(sizeof(struct testclass1), is_threadsafe, &onlyid_method);
 	if(!handle) {
 		ERRLOG("failed to create handle");
 	}

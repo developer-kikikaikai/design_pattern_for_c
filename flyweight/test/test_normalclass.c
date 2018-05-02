@@ -13,7 +13,7 @@ int test_normalclass(int is_threadsafe) {
 	struct testclass1 data2_different1={.data=1};
 
 	//test1, create handle
-	void *handle = flyweight_define_class(sizeof(struct testclass1), is_threadsafe, NULL);
+	ClassHandle handle = flyweight_define_class(sizeof(struct testclass1), is_threadsafe, NULL);
 	if(!handle) {
 		ERRLOG("failed to create handle");
 	}
