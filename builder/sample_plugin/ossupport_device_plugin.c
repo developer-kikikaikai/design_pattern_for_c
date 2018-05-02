@@ -13,7 +13,7 @@ DEVICE_PLUGIN_INTERFACE
 	int outsize;
 } osssupport_device_plugin_interface_t, *OSSSupportDPInterface;
 
-static void ossupport_device_connect(void * handle) {
+static void ossupport_device_connect(DevicePluginInterface handle) {
 	OSSSupportDPInterface this = (OSSSupportDPInterface) handle;
 
 	DEBUG_PRINT("set gateway %s!!\n", this->gateway);
@@ -33,7 +33,7 @@ static void ossupport_device_connect(void * handle) {
 	return;
 }
 
-static void ossupport_device_disconnect(void * handle) {
+static void ossupport_device_disconnect(DevicePluginInterface handle) {
 	OSSSupportDPInterface this = (OSSSupportDPInterface) handle;
 	DEBUG_PRINT("remove gateway %s!!\n", this->gateway);
 }
@@ -50,7 +50,7 @@ int llbuilder_initial_device(void * arg) {
 
 //don't need load device, not implement!
 
-void * lower_layer_builder_instance_new(void) {
+LowerLayerInterface lower_layer_builder_instance_new(void) {
 	OSSSupportDPInterface instance = calloc(1, sizeof(*instance));
 	if(!instance) {
 		return NULL;
@@ -62,9 +62,9 @@ void * lower_layer_builder_instance_new(void) {
 
 	instance->retry_time = 3;
 	instance->outsize = time(NULL)%2;
-	return instance;
+	return (LowerLayerInterface)instance;
 }
 
-void lower_layer_builder_instance_free(void *interfaceClass) {
+void lower_layer_builder_instance_free(LowerLayerInterface interfaceClass) {
 	free(interfaceClass);
 }

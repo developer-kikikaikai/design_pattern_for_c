@@ -14,14 +14,14 @@ DEVICE_PLUGIN_INTERFACE
 
 USBDPInterface usb_dp_interface_g=NULL;
 
-static void usd_device_connect(void * handle) {
+static void usd_device_connect(DevicePluginInterface handle) {
 	USBDPInterface this = (USBDPInterface) handle;
 
 	DEBUG_PRINT("check connection to gateway!!");
 	DEBUG_PRINT("Success to connect!, gateway IP:[%s]\n", this->gateway);
 }
 
-static void usd_device_disconnect(void * handle) {
+static void usd_device_disconnect(DevicePluginInterface handle) {
 	DEBUG_PRINT("disconnect!!");
 }
 
@@ -56,13 +56,13 @@ int llbuilder_initial_device(void * arg) {
 	return 0;
 }
 
-void * lower_layer_builder_instance_new(void) {
+LowerLayerInterface lower_layer_builder_instance_new(void) {
 	usb_dp_interface_g = calloc(1, sizeof(*usb_dp_interface_g));
 	usb_dp_interface_g->connect=usd_device_connect;
 	usb_dp_interface_g->disconnect=usd_device_disconnect;
-	return usb_dp_interface_g;
+	return (LowerLayerInterface)usb_dp_interface_g;
 }
 
-void lower_layer_builder_instance_free(void *interfaceClass) {
+void lower_layer_builder_instance_free(LowerLayerInterface interfaceClass) {
 	free(interfaceClass);
 }

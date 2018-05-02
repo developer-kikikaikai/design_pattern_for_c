@@ -63,8 +63,8 @@ static void ll_director_class_load_interface_method(DirectorClass this);
 /*! @name DirectorClass public method */
 /* @{ */
 static void * ll_director_class_new(char * builder_lib_name, char * builder_interface_conf);
-static void * ll_director_interface_class_new(DirectorClass this);
-static void ll_director_interface_class_free(DirectorClass this, void *instance);
+static LowerLayerInterface ll_director_interface_class_new(DirectorClass this);
+static void ll_director_interface_class_free(DirectorClass this, LowerLayerInterface instance);
 static void ll_director_class_free(DirectorClass this);
 /* }@ */
 
@@ -259,7 +259,7 @@ EXITLOG
 	return NULL;
 }
 
-static void * ll_director_interface_class_new(DirectorClass this) {
+static LowerLayerInterface ll_director_interface_class_new(DirectorClass this) {
 ENTERLOG
 	if(!this || !this->_builder_instance_new) {
 		DEBUG_ERRPRINT("No interface\n");
@@ -270,7 +270,7 @@ EXITLOG
 	return this->_builder_instance_new();
 }
 
-static void ll_director_interface_class_free(DirectorClass this, void *instance) {
+static void ll_director_interface_class_free(DirectorClass this, LowerLayerInterface instance) {
 ENTERLOG
 	if(!instance || !this->_builder_instance_free) {
 		DEBUG_ERRPRINT("No interface\n");

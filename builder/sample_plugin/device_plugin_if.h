@@ -4,12 +4,17 @@
 /*! @Class
  * @brief device plugin interface, all plugin use it
 */
-typedef struct device_plugin_interface {
-	void (*connect)(void * this);
-	void (*disconnect)(void * this);
-} device_plugin_interface_t, *DevicePluginInterface;
+struct device_plugin_interface;
+typedef struct device_plugin_interface device_plugin_interface_t, *DevicePluginInterface;
+
+struct device_plugin_interface {
+	void (*connect)(DevicePluginInterface this);
+	void (*disconnect)(DevicePluginInterface this);
+};
+
+//define LowerLayerInterface by DevicePluginInterface
 
 #define DEVICE_PLUGIN_INTERFACE \
-	void (*connect)(void * this);\
-	void (*disconnect)(void * this);
+	void (*connect)(DevicePluginInterface this);\
+	void (*disconnect)(DevicePluginInterface this);
 #endif

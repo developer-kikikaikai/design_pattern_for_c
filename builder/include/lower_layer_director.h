@@ -6,11 +6,13 @@
  *        Please see conf/sample.conf
 **/
 
+#include "lower_layer_builder.h"
+
 /*! @struct 
  * @brief flyweight class method definition
 */
 typedef struct _lower_layer_director_s {
-	void * lower_layer_interface;/*interface which has lower layer(builder). If no interface, it is NULL*/
+	LowerLayerInterface lower_layer_interface;/*interface which has lower layer(builder). If no interface, it is NULL*/
 	void * director;/* director class pointer */
 } lower_layer_director_t, *LowerLayerDirector;
 
