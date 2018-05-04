@@ -61,6 +61,7 @@ static int test_failsate() {
 #define PULISH_CONTENT_FOR_UNSUBSCRIBE (3)
 #define CHECK_TYPE_MAX (0xF)
 static int testdata_init() {
+printf("%s enter\n", __FUNCTION__);
 	if(publisher_new(MAX_PUBLISHERTE) != PUBLISHER_SUCCESS) {
 		printf("####1st create failed\n");
 		return -1;
@@ -80,6 +81,7 @@ static int testdata_init() {
 }
 
 static int test_normally_subscribe() {
+printf("%s enter\n", __FUNCTION__);
 	if(publisher_subscribe(PULISH_CONTENT_FOR_NORMAL, NTYPE(1), test_notify1) == NULL) {
 		printf("####failed to add test_notify1 subscribe\n");
 		return -1;
@@ -153,22 +155,23 @@ static int test_unsubscribe_check(int content_id, int *ntype1_p, int *ntype2_p, 
 }
 
 static int test_multi_type_subscribe() {
+printf("%s enter\n", __FUNCTION__);
 	int ntype1=0, ntype2=0, ntype3=CHECK_TYPE_MAX;
 	int i=0;
 	for(i=0;i<CHECK_TYPE_MAX;i+=2) {
-		//even bit
+		//even slide bit
 		ntype1+=NTYPE(i);
-		//odd bit
+		//odd slide bit
 		ntype2+=NTYPE(i+1);
 	}
 
-	//even bit
+	//even slide bit
 	if(publisher_subscribe(PULISH_CONTENT_FOR_MULTI_TYPE, ntype1, test_notify1) == NULL) {
 		printf("####failed to add test_notify1 subscribe\n");
 		return -1;
 	}
 
-	//odd bit
+	//odd slide bit
 	if(publisher_subscribe(PULISH_CONTENT_FOR_MULTI_TYPE, ntype2, test_notify2) == NULL) {
 		printf("####failed to add test_notify2 subscribe\n");
 		return -1;
@@ -187,6 +190,7 @@ static int test_multi_type_subscribe() {
 }
 
 static int test_unsubscribe() {
+printf("%s enter\n", __FUNCTION__);
 	int ntype1=0, ntype2=0, ntype3=CHECK_TYPE_MAX;
 	int i=0;
 	SubscriberAccount account1, account2, account3;
