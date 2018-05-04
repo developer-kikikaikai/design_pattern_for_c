@@ -42,6 +42,7 @@ AC_CONFIG_FILES([Makefile
 		 publisher/lib/Makefile
 		 publisher/include/Makefile
 		 publisher/test/Makefile
+		 publisher/sample/Makefile
 		 ])
 
 AC_OUTPUT

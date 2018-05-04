@@ -13066,7 +13066,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile publisher/Makefile publisher/lib/Makefile publisher/include/Makefile publisher/test/Makefile"
+ac_config_files="$ac_config_files Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile publisher/Makefile publisher/lib/Makefile publisher/include/Makefile publisher/test/Makefile publisher/sample/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -14098,6 +14098,7 @@ do
     "publisher/lib/Makefile") CONFIG_FILES="$CONFIG_FILES publisher/lib/Makefile" ;;
     "publisher/include/Makefile") CONFIG_FILES="$CONFIG_FILES publisher/include/Makefile" ;;
     "publisher/test/Makefile") CONFIG_FILES="$CONFIG_FILES publisher/test/Makefile" ;;
+    "publisher/sample/Makefile") CONFIG_FILES="$CONFIG_FILES publisher/sample/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
