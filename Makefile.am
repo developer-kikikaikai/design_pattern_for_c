@@ -1,1 +1,1 @@
-SUBDIRS = flyweight builder
+SUBDIRS = flyweight builder publisher

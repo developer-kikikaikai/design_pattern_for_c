@@ -1,0 +1,9 @@
+{
+  global:
+    publisher_new;
+    publisher_free;
+    publisher_subscribe;
+    publisher_unsubscribe;
+    publisher_publish;
+  local: *;
+};

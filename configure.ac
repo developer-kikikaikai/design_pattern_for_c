@@ -38,6 +38,10 @@ AC_CONFIG_FILES([Makefile
 		 builder/include/Makefile
 		 builder/sample_plugin/Makefile
 		 builder/test/Makefile
+		 publisher/Makefile
+		 publisher/lib/Makefile
+		 publisher/include/Makefile
+		 publisher/test/Makefile
 		 ])
 
 AC_OUTPUT
