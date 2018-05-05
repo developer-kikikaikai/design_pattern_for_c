@@ -40,7 +40,8 @@ struct flyweight_class_methods_s {
 	void (*destructor)(void *this);
 };
 
-typedef void * ClassHandle;
+struct flyweight_class_factory_s;
+typedef struct flyweight_class_factory_s * ClassHandle;
 
 /**
  * @brief define class for flyweight
