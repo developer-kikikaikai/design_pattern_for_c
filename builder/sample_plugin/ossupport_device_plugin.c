@@ -50,7 +50,7 @@ int llbuilder_initial_device(void * arg) {
 
 //don't need load device, not implement!
 
-LowerLayerInterface lower_layer_builder_instance_new(void) {
+void * lower_layer_builder_instance_new(void) {
 	OSSSupportDPInterface instance = calloc(1, sizeof(*instance));
 	if(!instance) {
 		return NULL;
@@ -62,9 +62,9 @@ LowerLayerInterface lower_layer_builder_instance_new(void) {
 
 	instance->retry_time = 3;
 	instance->outsize = time(NULL)%2;
-	return (LowerLayerInterface)instance;
+	return instance;
 }
 
-void lower_layer_builder_instance_free(LowerLayerInterface interfaceClass) {
+void lower_layer_builder_instance_free(void * interfaceClass) {
 	free(interfaceClass);
 }

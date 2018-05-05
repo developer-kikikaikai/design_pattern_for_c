@@ -39,7 +39,7 @@
 /*! @class director class
  * @brief director class
 */
-typedef struct ll_director_class {
+struct lower_layer_director_class {
 	//public
 	pthread_t tid;
 	int builder_method_cnt;
@@ -48,8 +48,8 @@ typedef struct ll_director_class {
 	void * _dlhandle;
 	void * (*_builder_instance_new)(void);
 	void (*_builder_instance_free)(void *interface);
-} ll_director_class_t, *DirectorClass;
-#define DirectorClassSize sizeof(ll_director_class_t)
+};
+#define DirectorClassSize sizeof(struct ll_director_class)
 
 /*! @name DirectorClass private method */
 /* @{ */
@@ -63,8 +63,8 @@ static void ll_director_class_load_interface_method(DirectorClass this);
 /*! @name DirectorClass public method */
 /* @{ */
 static void * ll_director_class_new(char * builder_lib_name, char * builder_interface_conf);
-static LowerLayerInterface ll_director_interface_class_new(DirectorClass this);
-static void ll_director_interface_class_free(DirectorClass this, LowerLayerInterface instance);
+static void * ll_director_interface_class_new(DirectorClass this);
+static void ll_director_interface_class_free(DirectorClass this, void * instance);
 static void ll_director_class_free(DirectorClass this);
 /* }@ */
 
@@ -259,7 +259,7 @@ EXITLOG
 	return NULL;
 }
 
-static LowerLayerInterface ll_director_interface_class_new(DirectorClass this) {
+static void * ll_director_interface_class_new(DirectorClass this) {
 ENTERLOG
 	if(!this || !this->_builder_instance_new) {
 		DEBUG_ERRPRINT("No interface\n");
@@ -270,7 +270,7 @@ EXITLOG
 	return this->_builder_instance_new();
 }
 
-static void ll_director_interface_class_free(DirectorClass this, LowerLayerInterface instance) {
+static void ll_director_interface_class_free(DirectorClass this, void * instance) {
 ENTERLOG
 	if(!instance || !this->_builder_instance_free) {
 		DEBUG_ERRPRINT("No interface\n");
@@ -388,7 +388,7 @@ ENTERLOG
 		return;
 	}
 
-	DirectorClass director_instance = (DirectorClass) director->director;
+	DirectorClass director_instance = director->director;
 	
 	pthread_create(&director_instance->tid, NULL, ll_builder_action_run, instance);
 	//free instance in ll_builder_action_run
@@ -401,7 +401,7 @@ ENTERLOG
 		return;
 	}
 
-	DirectorClass instance = (DirectorClass) director->director;
+	DirectorClass instance = director->director;
 
 	ll_builder_action_destruct(instance->tid);
 EXITLOG
@@ -413,7 +413,7 @@ ENTERLOG
 		return;
 	}
 
-	DirectorClass instance = (DirectorClass) director->director;
+	DirectorClass instance =  director->director;
 
 	//to care constructing now
 	ll_builder_action_destruct(instance->tid);

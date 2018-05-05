@@ -8,12 +8,15 @@
 
 #include "lower_layer_builder.h"
 
+struct lower_layer_director_class;
+typedef struct lower_layer_director_class *DirectorClass;
+
 /*! @struct 
  * @brief flyweight class method definition
 */
 typedef struct _lower_layer_director_s {
-	LowerLayerInterface lower_layer_interface;/*interface which has lower layer(builder). If no interface, it is NULL*/
-	void * director;/* director class pointer */
+	void * lower_layer_interface;/*interface which has lower layer(builder). If no interface, it is NULL*/
+	DirectorClass director;/* director class pointer */
 } lower_layer_director_t, *LowerLayerDirector;
 
 /**
