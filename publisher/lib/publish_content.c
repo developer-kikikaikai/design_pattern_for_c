@@ -9,7 +9,7 @@ typedef struct subscriber_account {
 	SubscriberAccount next;
 	SubscriberAccount prev;
 	int publish_type;
-	void (*notify)(int publish_type, PublishDetail detail);
+	void (*notify)(int publish_type, void * detail);
 } subscriber_account_t;
 
 struct publish_content {
@@ -116,7 +116,7 @@ ENTERLOG
 EXITLOG
 }
 
-SubscriberAccount publish_content_subscribe(PublishContent this, int publish_type, void (*notify)(int publish_type, PublishDetail detail)) {
+SubscriberAccount publish_content_subscribe(PublishContent this, int publish_type, void (*notify)(int publish_type, void * detail)) {
 ENTERLOG
 	SubscriberAccount account=NULL;
 
@@ -143,7 +143,7 @@ EXITLOG
 	
 }
 
-void publish_content_publish(PublishContent this, int publish_type, PublishDetail detail) {
+void publish_content_publish(PublishContent this, int publish_type, void * detail) {
 ENTERLOG
 PUBLISH_CONTENT_LOCK(this)
 	SubscriberAccount account;

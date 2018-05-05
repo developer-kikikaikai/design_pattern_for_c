@@ -91,7 +91,7 @@ EXITLOG
 	return;
 }
 
-SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*notify)(int publish_type, PublishDetail detail) ) {
+SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*notify)(int publish_type, void * detail) ) {
 ENTERLOG
 	if(!notify || publish_type == 0) {
 		DEBUG_ERRPRINT("There is no notification information, please set it!\n");
@@ -121,7 +121,7 @@ ENTERLOG
 EXITLOG
 }
 
-void publisher_publish(int content_id, int publish_type, PublishDetail detail) {
+void publisher_publish(int content_id, int publish_type, void * detail) {
 ENTERLOG
 	PublishContent content = publisher_get_content(content_id);
 	if(!content) {

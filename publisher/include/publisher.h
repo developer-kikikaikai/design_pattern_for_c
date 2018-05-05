@@ -13,9 +13,6 @@
 struct subscriber_account;
 typedef struct subscriber_account *SubscriberAccount;
 
-/* @brief Please re-define it for using Publisher-Subscriber communication */
-typedef void * PublishDetail;
-
 /**
  * @brief new Publisher content, user can get notify to subscribe.
  * @param[in] contents_num max size of publish content
@@ -40,7 +37,7 @@ void publisher_free(void);
  * @retval !=NULL : SubscriberAccount account of this subscribe, if you want to manage unscribe/subscribe many time, please keep this accout information
  * @retval NULL : failed to subscribe
  */
-SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*notify)(int publish_type, PublishDetail detail) );
+SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*notify)(int publish_type, void * detail) );
 
 /*
  * @brief unsubscribe. If you want to stop subscribe, please call it
@@ -57,5 +54,5 @@ void publisher_unsubscribe(int content_id, SubscriberAccount account);
  * @param[in] detail detail data of publish
  * @return none
  */
-void publisher_publish(int content_id, int publish_type, PublishDetail detail);
+void publisher_publish(int content_id, int publish_type, void * detail);
 #endif

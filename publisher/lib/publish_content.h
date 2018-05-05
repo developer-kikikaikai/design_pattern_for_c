@@ -27,7 +27,7 @@ PublishContent publish_content_new(void);
  * @retval !=NULL : SubscriberAccount account of this subscribe, if you want to manage unscribe/subscribe many time, please keep this accout information
  * @retval NULL : failed to subscribe
  */
-SubscriberAccount publish_content_subscribe(PublishContent this, int publish_type, void (*notify)(int publish_type, PublishDetail detail));
+SubscriberAccount publish_content_subscribe(PublishContent this, int publish_type, void (*notify)(int publish_type, void * detail));
 
 /*
  * @brief unsubscribe. If you want to stop subscribe, please call it
@@ -44,7 +44,7 @@ void publish_content_unsubscribe(PublishContent this, SubscriberAccount account)
  * @param[in] detail detail data of publish
  * @return none
  */
-void publish_content_publish(PublishContent content, int publish_type, PublishDetail detail);
+void publish_content_publish(PublishContent content, int publish_type, void * detail);
 
 /*
  * @brief free

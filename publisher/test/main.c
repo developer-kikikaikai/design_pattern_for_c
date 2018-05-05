@@ -10,22 +10,22 @@ typedef struct testdata {
 
 #define NTYPE(slide) (0x01)<<(slide)
 
-static void test_notify1(int publish_type, PublishDetail detail);
-static void test_notify2(int publish_type, PublishDetail detail);
-static void test_notify3(int publish_type, PublishDetail detail);
+static void test_notify1(int publish_type, void * detail);
+static void test_notify2(int publish_type, void * detail);
+static void test_notify3(int publish_type, void * detail);
 
-static void test_notify1(int publish_type, PublishDetail detail) {
+static void test_notify1(int publish_type, void * detail) {
 	printf("%s, %d\n", __FUNCTION__, publish_type);
 	TestData testdata = (TestData) detail;
 	testdata->notify1_cnt++;
 }
-static void test_notify2(int publish_type, PublishDetail detail) {
+static void test_notify2(int publish_type, void * detail) {
 	printf("%s, %d\n", __FUNCTION__, publish_type);
 	TestData testdata = (TestData) detail;
 	testdata->notify2_cnt++;
 }
 
-static void test_notify3(int publish_type, PublishDetail detail) {
+static void test_notify3(int publish_type, void * detail) {
 	printf("%s, %d\n", __FUNCTION__, publish_type);
 	TestData testdata = (TestData) detail;
 	testdata->notify3_cnt++;

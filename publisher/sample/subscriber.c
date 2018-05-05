@@ -106,7 +106,7 @@ static void create_socket() {
 	}
 
 }
-void notification(int publish_type, PublishDetail defail) {
+void notification(int publish_type, void * defail) {
 	publish_msg_detail_t *msgdetail = (publish_msg_detail_t *) defail;
 	subscriber_msg_t msg;
 	memset(&msg, 0, sizeof(msg));
