@@ -31,7 +31,7 @@ void dputil_list_push(DPUtilList this, DPUtilListData data) {
         }
 }
 
-void dputil_list_pop(DPUtilList this, DPUtilListData data) {
+void dputil_list_pull(DPUtilList this, DPUtilListData data) {
         if(!data) {
                 return;
         }
@@ -50,5 +50,11 @@ void dputil_list_pop(DPUtilList this, DPUtilListData data) {
                 /* else case, account is not tail. So there is a next. */
                 data->next->prev = data->prev;
         }
+}
+
+DPUtilListData dputil_list_pop(DPUtilList this) {
+        DPUtilListData data = this->head;
+	dputil_list_pull(this, data);
+	return data;
 }
 

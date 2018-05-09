@@ -20,8 +20,9 @@ struct dputil_list_t {
 	DPUtilListData tail;
 };
 
-extern void dputil_list_push(DPUtilList this, DPUtilListData data);
-extern void dputil_list_pop(DPUtilList this, DPUtilListData data);
+void dputil_list_push(DPUtilList this, DPUtilListData data);
+void dputil_list_pull(DPUtilList this, DPUtilListData data);
+DPUtilListData dputil_list_pop(DPUtilList this);
 /* }@ */
 
 #endif

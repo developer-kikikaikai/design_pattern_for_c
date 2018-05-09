@@ -25,27 +25,20 @@ struct publish_content {
 static inline void publish_content_push_subscriber(PublishContent this, SubscriberAccount account) {
 	dputil_list_push((DPUtilList)this, (DPUtilListData)account);
 }
-/* ! pop subscriber */
-static inline void publish_content_pop_subscriber(PublishContent this, SubscriberAccount account) {
-	dputil_list_pop((DPUtilList)this, (DPUtilListData)account);
+/* ! pull subscriber */
+static inline void publish_content_pull_subscriber(PublishContent this, SubscriberAccount account) {
+	dputil_list_pull((DPUtilList)this, (DPUtilListData)account);
+	free(account);
 }
-/* ! unsubscribe without lock */
-static void publish_content_unsubscribe_no_lock(PublishContent this, SubscriberAccount account);
+/* ! pop subscriber */
+static inline SubscriberAccount publish_content_pop_subscriber(PublishContent this) {
+	SubscriberAccount account = (SubscriberAccount)dputil_list_pop((DPUtilList)this);
+	free(account);
+	return account;
+}
 #define PUBLISH_CONTENT_LOCK(content) DPUTIL_LOCK(&(content->lock))
 #define PUBLISH_CONTENT_UNLOCK DPUTIL_UNLOCK
 /* @} */
-/* @} */
-
-/*************
- * private interface API implement
-*************/
-static void publish_content_unsubscribe_no_lock(PublishContent this, SubscriberAccount account) {
-ENTERLOG
-	publish_content_pop_subscriber(this, account);
-	free(account);
-EXITLOG
-	
-}
 
 /*************
  * public interface API implement
@@ -79,7 +72,7 @@ EXITLOG
 void publish_content_unsubscribe(PublishContent this, SubscriberAccount account) {
 ENTERLOG
 PUBLISH_CONTENT_LOCK(this)
-	publish_content_unsubscribe_no_lock(this, account);
+	publish_content_pull_subscriber(this, account);
 PUBLISH_CONTENT_UNLOCK
 EXITLOG
 	
@@ -106,9 +99,10 @@ PUBLISH_CONTENT_LOCK(this)
 	SubscriberAccount account;
 
 	/* free all account */
-	while(this->head) {
+	account=this->head;
+	while(account) {
 		/* unsubscribe head */
-		publish_content_unsubscribe_no_lock(this, this->head);
+		account = publish_content_pop_subscriber(this);
 	}
 
 PUBLISH_CONTENT_UNLOCK
