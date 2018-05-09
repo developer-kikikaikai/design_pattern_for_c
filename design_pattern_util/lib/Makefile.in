@@ -88,7 +88,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-subdir = publisher/lib
+subdir = design_pattern_util/lib
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -99,17 +99,13 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-libpublisher_la_LIBADD =
-am_libpublisher_la_OBJECTS = publisher.lo publish_content.lo
-libpublisher_la_OBJECTS = $(am_libpublisher_la_OBJECTS)
+libdputil_la_LIBADD =
+am_libdputil_la_OBJECTS = dp_util.lo
+libdputil_la_OBJECTS = $(am_libdputil_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-libpublisher_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(libpublisher_la_LDFLAGS) $(LDFLAGS) \
-	-o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -144,8 +140,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libpublisher_la_SOURCES)
-DIST_SOURCES = $(libpublisher_la_SOURCES)
+SOURCES = $(libdputil_la_SOURCES)
+DIST_SOURCES = $(libdputil_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -170,9 +166,7 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/am.conf \
-	$(top_srcdir)/depcomp \
-	$(top_srcdir)/publisher/publisher_am.conf
+am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -291,27 +285,17 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
-#common header deifinition
-AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
-	-I$(top_srcdir)/design_pattern_util/include/ \
-	-I$(top_srcdir)/publisher/include
-INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
-	$(top_srcdir)/design_pattern_util/include/ \
-	$(top_srcdir)/publisher/include
-AM_LDFLAGS = $(top_srcdir)/design_pattern_util/lib/libdputil.la
-LDPATH = $(top_srcdir)/publisher/lib/
-
 #load common setting
-noinst_LTLIBRARIES = libpublisher.la
-libpublisher_la_SOURCES = publisher.c  publish_content.c
-#for statik library
-libpublisher_la_LDFLAGS = -module -shared -export-dynamic -static \
-	-rpath $(libdir) -Wl,--version-script,libpublisher.map
+AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ -I$(top_srcdir)/design_pattern_util/include/
+INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ $(top_srcdir)/design_pattern_util/include/
+noinst_LTLIBRARIES = libdputil.la
+#
+libdputil_la_SOURCES = dp_util.c
 all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/publisher/publisher_am.conf $(top_srcdir)/am.conf $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -320,9 +304,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/publisher/publisher_
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign publisher/lib/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign design_pattern_util/lib/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign publisher/lib/Makefile
+	  $(AUTOMAKE) --foreign design_pattern_util/lib/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -331,7 +315,6 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
-$(top_srcdir)/publisher/publisher_am.conf $(top_srcdir)/am.conf $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -353,8 +336,8 @@ clean-noinstLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libpublisher.la: $(libpublisher_la_OBJECTS) $(libpublisher_la_DEPENDENCIES) $(EXTRA_libpublisher_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libpublisher_la_LINK)  $(libpublisher_la_OBJECTS) $(libpublisher_la_LIBADD) $(LIBS)
+libdputil.la: $(libdputil_la_OBJECTS) $(libdputil_la_DEPENDENCIES) $(EXTRA_libdputil_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(LINK)  $(libdputil_la_OBJECTS) $(libdputil_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -362,8 +345,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/publish_content.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/publisher.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dp_util.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

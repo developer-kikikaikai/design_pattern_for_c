@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "publish_content.h"
-#include "debug.h"
+#include "dp_util.h"
 
 /*! @struct publisher_mng_t
  * @brief publisher class instance

@@ -4,6 +4,7 @@
  * @brief This is API as Flyweight design petten
 **/
 #include <stddef.h>
+#include "dp_util.h"
 
 /*! @struct flyweight_class_method_s
  * @brief flyweight class method definition

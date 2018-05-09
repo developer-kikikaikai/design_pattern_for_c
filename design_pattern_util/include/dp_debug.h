@@ -1,5 +1,5 @@
-#ifndef DEBUG_
-#define DEBUG_
+#ifndef DP_UTIL_DEBUG_
+#define DP_UTIL_DEBUG_
 
 #include <stddef.h>
 #include <stdarg.h>

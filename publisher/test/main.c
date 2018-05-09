@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "publisher.h"
+#include "dp_util.h"
 
 typedef struct testdata {
 	int notify1_cnt;

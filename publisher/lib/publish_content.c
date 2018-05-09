@@ -4,7 +4,7 @@
 #include "publish_content.h"
 #include <stdlib.h>
 #include <pthread.h>
-#include "debug.h"
+#include "dp_util.h"
 typedef struct subscriber_account {
 	SubscriberAccount next;
 	SubscriberAccount prev;
@@ -22,68 +22,23 @@ struct publish_content {
 /*! @name PublishContent private method */
 /* @{ */
 /* ! push subscriber */
-static void publish_content_push_subscriber(PublishContent this, SubscriberAccount account);
+static inline void publish_content_push_subscriber(PublishContent this, SubscriberAccount account) {
+	dputil_list_push((DPUtilList)this, (DPUtilListData)account);
+}
 /* ! pop subscriber */
-static void publish_content_pop_subscriber(PublishContent this, SubscriberAccount account);
+static inline void publish_content_pop_subscriber(PublishContent this, SubscriberAccount account) {
+	dputil_list_pop((DPUtilList)this, (DPUtilListData)account);
+}
 /* ! unsubscribe without lock */
 static void publish_content_unsubscribe_no_lock(PublishContent this, SubscriberAccount account);
-/*! lock */
-static inline void publish_content_lock(void *handle);
-/*! unlock */
-static inline void publish_content_unlock(void *handle);
-/*! lock macro*/
-#define PUBLISH_CONTENT_LOCK(content) \
-	publish_content_lock(&content->lock);\
-	pthread_cleanup_push(publish_content_unlock, &content->lock);
-
-#define PUBLISH_CONTENT_UNLOCK pthread_cleanup_pop(1);
+#define PUBLISH_CONTENT_LOCK(content) DPUTIL_LOCK(&(content->lock))
+#define PUBLISH_CONTENT_UNLOCK DPUTIL_UNLOCK
 /* @} */
 /* @} */
 
 /*************
  * private interface API implement
 *************/
-static void publish_content_push_subscriber(PublishContent this, SubscriberAccount account) {
-ENTERLOG
-	/* add to tail */
-	account->prev = this->tail;
-	//slide tail
-	if(this->tail) {
-		this->tail->next = account;
-	}
-	this->tail = account;
-
-	/* if head is null, set to head */
-	if(!this->head) {
-		this->head = account;
-	}
-EXITLOG
-}
-
-static void publish_content_pop_subscriber(PublishContent this, SubscriberAccount account) {
-ENTERLOG
-
-	if(!account) {
-		return;
-	}
-
-	/* update content */
-	if(this->head == account) {
-		this->head = account->next;
-	} else {
-		/* else case, account is not head. So there is a prev. */
-		account->prev->next = account->next;
-	}
-
-	if(this->tail == account) {
-		this->tail = account->prev;
-	} else {
-		/* else case, account is not tail. So there is a next. */
-		account->next->prev = account->prev;
-	}
-EXITLOG
-}
-
 static void publish_content_unsubscribe_no_lock(PublishContent this, SubscriberAccount account) {
 ENTERLOG
 	publish_content_pop_subscriber(this, account);
@@ -92,19 +47,6 @@ EXITLOG
 	
 }
 
-static inline void publish_content_lock(void *handle) {
-ENTERLOG
-	pthread_mutex_t * lock=(pthread_mutex_t *)handle;
-	pthread_mutex_lock(lock);
-EXITLOG
-}
-
-static inline void publish_content_unlock(void *handle) {
-ENTERLOG
-	pthread_mutex_t * lock=(pthread_mutex_t *)handle;
-	pthread_mutex_unlock(lock);
-EXITLOG
-}
 /*************
  * public interface API implement
 *************/

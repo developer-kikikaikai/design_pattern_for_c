@@ -1,1 +1,1 @@
-SUBDIRS = flyweight builder publisher
+SUBDIRS = design_pattern_util flyweight builder publisher

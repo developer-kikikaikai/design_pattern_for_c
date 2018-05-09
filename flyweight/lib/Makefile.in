@@ -166,7 +166,8 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/depcomp \
+am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/am.conf \
+	$(top_srcdir)/depcomp \
 	$(top_srcdir)/flyweight/flyweight_am.conf
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
@@ -287,9 +288,14 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 #common header deifinition
-AM_CPPFLAGS = -I$(top_srcdir)/flyweight/include
-INCLUDES_PATH = $(top_srcdir)/flyweight/include
-AM_LDFLAGS = $(top_srcdir)/flyweight/lib/.libs/libflyweight.a
+AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
+	-I$(top_srcdir)/design_pattern_util/include/ \
+	-I$(top_srcdir)/flyweight/include
+INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
+	$(top_srcdir)/design_pattern_util/include/ \
+	$(top_srcdir)/flyweight/include
+AM_LDFLAGS = $(top_srcdir)/design_pattern_util/lib/libdputil.la \
+	$(top_srcdir)/flyweight/lib/.libs/libflyweight.a
 
 #load common setting
 noinst_LTLIBRARIES = libflyweight.la
@@ -300,7 +306,7 @@ all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/flyweight/flyweight_am.conf $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/flyweight/flyweight_am.conf $(top_srcdir)/am.conf $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -320,7 +326,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
-$(top_srcdir)/flyweight/flyweight_am.conf $(am__empty):
+$(top_srcdir)/flyweight/flyweight_am.conf $(top_srcdir)/am.conf $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh

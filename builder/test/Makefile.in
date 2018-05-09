@@ -171,7 +171,7 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-am__DIST_COMMON = $(srcdir)/Makefile.in \
+am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/am.conf \
 	$(top_srcdir)/builder/builder_am.conf $(top_srcdir)/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
@@ -292,16 +292,23 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 #common header deifinition
-AM_CPPFLAGS = -I$(top_srcdir)/builder/include -I$(top_srcdir)/builder/sample_plugin
-INCLUDES_PATH = $(top_srcdir)/builder/include $(top_srcdir)/builder/sample_plugin
-AM_LDFLAGS = $(top_srcdir)/builder/lib/.libs/liblower_layer_director.a
+AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
+	-I$(top_srcdir)/design_pattern_util/include/ \
+	-I$(top_srcdir)/builder/include \
+	-I$(top_srcdir)/builder/sample_plugin
+INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
+	$(top_srcdir)/design_pattern_util/include/ \
+	$(top_srcdir)/builder/include \
+	$(top_srcdir)/builder/sample_plugin
+AM_LDFLAGS = $(top_srcdir)/design_pattern_util/lib/libdputil.la \
+	$(top_srcdir)/builder/lib/.libs/liblower_layer_director.a
 test_CFLAGS = -g -O0 
 test_SOURCES = main.c
 all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/builder/builder_am.conf $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/builder/builder_am.conf $(top_srcdir)/am.conf $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -321,7 +328,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
-$(top_srcdir)/builder/builder_am.conf $(am__empty):
+$(top_srcdir)/builder/builder_am.conf $(top_srcdir)/am.conf $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh

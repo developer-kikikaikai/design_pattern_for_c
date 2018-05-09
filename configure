@@ -13066,7 +13066,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile publisher/Makefile publisher/lib/Makefile publisher/include/Makefile publisher/test/Makefile publisher/sample/Makefile"
+ac_config_files="$ac_config_files Makefile design_pattern_util/Makefile design_pattern_util/lib/Makefile design_pattern_util/include/Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile publisher/Makefile publisher/lib/Makefile publisher/include/Makefile publisher/test/Makefile publisher/sample/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -14085,6 +14085,9 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "design_pattern_util/Makefile") CONFIG_FILES="$CONFIG_FILES design_pattern_util/Makefile" ;;
+    "design_pattern_util/lib/Makefile") CONFIG_FILES="$CONFIG_FILES design_pattern_util/lib/Makefile" ;;
+    "design_pattern_util/include/Makefile") CONFIG_FILES="$CONFIG_FILES design_pattern_util/include/Makefile" ;;
     "flyweight/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/Makefile" ;;
     "flyweight/lib/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/lib/Makefile" ;;
     "flyweight/include/Makefile") CONFIG_FILES="$CONFIG_FILES flyweight/include/Makefile" ;;

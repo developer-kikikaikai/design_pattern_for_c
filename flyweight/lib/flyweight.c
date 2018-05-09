@@ -7,28 +7,7 @@
 #include <string.h>
 #include <pthread.h>
 #include "flyweight.h"
-
-/*************
- * define debug
-*************/
-//#define DBGFLAG
-#ifdef DBGFLAG
-#include <errno.h>
-#define DEBUG_ERRPRINT(...)  DEBUG_ERRPRINT_(__VA_ARGS__, "")
-#define DEBUG_ERRPRINT_(fmt, ...)  \
-        fprintf(stderr, "%s(%d): "fmt"%s", __FUNCTION__,__LINE__, __VA_ARGS__)
-#else
-#define DEBUG_ERRPRINT(...) 
-#endif
-
-//#define DBGENER
-#ifdef DBGENER
-#define ENTERLOG printf("<%s>enter\n", __FUNCTION__);
-#define EXITLOG  printf("<%s>exit\n", __FUNCTION__);
-#else
-#define ENTERLOG
-#define EXITLOG
-#endif
+#include "dp_util.h"
 
 /*************
  * public define
@@ -63,11 +42,6 @@ struct flyweight_class_factory_s {
 	pthread_mutex_t *lock;/*! lock pointer, if != null, lock at getter and setter */
 };
 
-/*! lock mutex */
-static inline void flyweight_mutex_lock(void *handle);
-/*! unlock mutex */
-static inline void flyweight_mutex_unlock(void *handle);
-
 /*! @name public API for flyweight_instance_s */
 /* @{ */
 /*! Check has instance. */
@@ -92,39 +66,9 @@ static inline int flyweight_class_default_equall_operand(void *this, size_t size
 static inline int flyweight_class_default_setter(void *this, size_t size, void *input_parameter);
 /*! Set methods. */
 static void flyweight_class_set_methods(struct flyweight_class_methods_s *methods, ClassHandle instance);
-#define FLYWEIGHT_CLASS_LOCK(instance) \
-	flyweight_mutex_lock(instance->lock);\
-	pthread_cleanup_push(flyweight_mutex_unlock, instance->lock);
-
-#define FLYWEIGHT_CLASS_UNLOCK pthread_cleanup_pop(1);
+#define FLYWEIGHT_CLASS_LOCK(instance) DPUTIL_LOCK(instance->lock)
+#define FLYWEIGHT_CLASS_UNLOCK DPUTIL_UNLOCK
 /* @} */
-
-/*************
- * implement
-*************/
-/*! lock handle */
-static inline void flyweight_mutex_lock(void *handle) {
-ENTERLOG
-	if(!handle) {
-		return;
-	}
-
-	pthread_mutex_t * lock=(pthread_mutex_t *)handle;
-	pthread_mutex_lock(lock);
-EXITLOG
-}
-
-/*! unlock handle */
-static inline void flyweight_mutex_unlock(void *handle) {
-ENTERLOG
-	if(!handle) {
-		return;
-	}
-
-	pthread_mutex_t * lock=(pthread_mutex_t *)handle;
-	pthread_mutex_unlock(lock);
-EXITLOG
-}
 
 /*************
  * for flyweight_instance_s API
