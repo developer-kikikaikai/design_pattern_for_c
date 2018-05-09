@@ -46,6 +46,10 @@ AC_CONFIG_FILES([Makefile
 		 publisher/include/Makefile
 		 publisher/test/Makefile
 		 publisher/sample/Makefile
+		 ChainOfResponsibility/Makefile
+		 ChainOfResponsibility/lib/Makefile
+		 ChainOfResponsibility/include/Makefile
+		 ChainOfResponsibility/test/Makefile
 		 ])
 
 AC_OUTPUT
