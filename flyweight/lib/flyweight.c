@@ -296,16 +296,13 @@ ENTERLOG
 
 	if(!instance) {
 		DEBUG_ERRPRINT("Failed to get instance! handle[%p]\n", classHandle );
-		goto end;
+	} else {
+		if( setter ) {
+			ret = setter(instance->instance, classHandle->class_size, data);
+		} else if ( classHandle->methods.setter ) {
+			ret = classHandle->methods.setter(instance->instance, classHandle->class_size, data);
+		}
 	}
-
-	if( setter ) {
-		ret = setter(instance->instance, classHandle->class_size, data);
-	} else if ( classHandle->methods.setter ) {
-		ret = classHandle->methods.setter(instance->instance, classHandle->class_size, data);
-	}
-
-end:
 
 	FLYWEIGHT_CLASS_UNLOCK
 

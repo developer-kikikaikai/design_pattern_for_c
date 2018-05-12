@@ -57,13 +57,11 @@ ENTERLOG
 
 PUBLISH_CONTENT_LOCK(this)
 	account = (SubscriberAccount)calloc(1, sizeof(publish_content_t));
-	if(!account) {
-		goto end;
+	if(account) {
+		account->publish_type = publish_type;
+		account->notify = notify;
+		publish_content_push_subscriber(this, account);
 	}
-	account->publish_type = publish_type;
-	account->notify = notify;
-	publish_content_push_subscriber(this, account);
-end:
 PUBLISH_CONTENT_UNLOCK
 EXITLOG
 	return account;
