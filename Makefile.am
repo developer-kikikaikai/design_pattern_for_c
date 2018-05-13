@@ -1,1 +1,1 @@
-SUBDIRS = design_pattern_util flyweight builder publisher ChainOfResponsibility
+SUBDIRS = design_pattern_util flyweight builder publisher ChainOfResponsibility mediator
