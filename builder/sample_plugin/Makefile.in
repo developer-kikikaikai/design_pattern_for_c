@@ -310,8 +310,7 @@ INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/builder/include \
 	$(top_srcdir)/builder/sample_plugin
-AM_LDFLAGS = $(top_srcdir)/design_pattern_util/lib/libdputil.la \
-	$(top_srcdir)/builder/lib/.libs/liblower_layer_director.a
+AM_LDFLAGS = $(top_srcdir)/builder/lib/liblower_layer_director.la
 
 #load common setting
 noinst_LTLIBRARIES = libossupport_device_plugin.la libusb_device_plugin.la

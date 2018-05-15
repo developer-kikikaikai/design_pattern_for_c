@@ -7,4 +7,4 @@ noinst_LTLIBRARIES = liblower_layer_director.la
 
 liblower_layer_director_la_SOURCES = lower_layer_director.c
 #for statik library
-#liblower_layer_director_la_LDFLAGS=-module -shared -export-dynamic -static -shared -rpath $(libdir)
+liblower_layer_director_la_LDFLAGS=-rpath $(libdir)

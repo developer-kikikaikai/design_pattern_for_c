@@ -5,5 +5,5 @@ noinst_LTLIBRARIES = libpublisher.la
 
 libpublisher_la_SOURCES = publisher.c  publish_content.c
 #for statik library
-libpublisher_la_LDFLAGS=-module -shared -export-dynamic -static -rpath $(libdir)
+libpublisher_la_LDFLAGS=-rpath $(libdir) $(top_srcdir)/design_pattern_util/lib/libdputil.la
 libpublisher_la_LDFLAGS+=-Wl,--version-script,libpublisher.map

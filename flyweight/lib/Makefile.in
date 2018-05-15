@@ -106,6 +106,10 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+libflyweight_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(libflyweight_la_LDFLAGS) $(LDFLAGS) \
+	-o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -294,14 +298,15 @@ AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
 INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/flyweight/include
-AM_LDFLAGS = $(top_srcdir)/design_pattern_util/lib/libdputil.la \
-	$(top_srcdir)/flyweight/lib/.libs/libflyweight.a
+AM_LDFLAGS = $(top_srcdir)/flyweight/lib/libflyweight.la
 
 #load common setting
 noinst_LTLIBRARIES = libflyweight.la
 #
 #lib_LTLIBRARIES = libflyweight.la
 libflyweight_la_SOURCES = flyweight.c
+#for statik library
+libflyweight_la_LDFLAGS = -rpath $(libdir) $(top_srcdir)/design_pattern_util/lib/libdputil.la
 all: all-am
 
 .SUFFIXES:
@@ -349,7 +354,7 @@ clean-noinstLTLIBRARIES:
 	}
 
 libflyweight.la: $(libflyweight_la_OBJECTS) $(libflyweight_la_DEPENDENCIES) $(EXTRA_libflyweight_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK)  $(libflyweight_la_OBJECTS) $(libflyweight_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libflyweight_la_LINK)  $(libflyweight_la_OBJECTS) $(libflyweight_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -591,8 +596,6 @@ uninstall-am:
 
 .PRECIOUS: Makefile
 
-#for statik library
-#libtimetestlog_la_LDFLAGS=-module -shared -export-dynamic -static -shared -rpath $(libdir)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

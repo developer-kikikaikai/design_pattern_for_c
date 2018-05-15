@@ -6,4 +6,4 @@ noinst_LTLIBRARIES = libchainofresp.la
 
 libchainofresp_la_SOURCES = chain_element.c chain_of_responsibility.c
 #for statik library
-#libtimetestlog_la_LDFLAGS=-module -shared -export-dynamic -static -shared -rpath $(libdir)
+libchainofresp_la_LDFLAGS=$(top_srcdir)/flyweight/lib/libflyweight.la -rpath $(libdir)

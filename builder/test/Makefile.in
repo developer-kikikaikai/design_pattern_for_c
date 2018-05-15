@@ -300,8 +300,7 @@ INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/builder/include \
 	$(top_srcdir)/builder/sample_plugin
-AM_LDFLAGS = $(top_srcdir)/design_pattern_util/lib/libdputil.la \
-	$(top_srcdir)/builder/lib/.libs/liblower_layer_director.a
+AM_LDFLAGS = $(top_srcdir)/builder/lib/liblower_layer_director.la
 test_CFLAGS = -g -O0 
 test_SOURCES = main.c
 all: all-am

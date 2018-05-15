@@ -298,15 +298,16 @@ AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
 INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/publisher/include
-AM_LDFLAGS = $(top_srcdir)/design_pattern_util/lib/libdputil.la
+AM_LDFLAGS = $(LDPATH)/libpublisher.la
 LDPATH = $(top_srcdir)/publisher/lib/
 
 #load common setting
 noinst_LTLIBRARIES = libpublisher.la
 libpublisher_la_SOURCES = publisher.c  publish_content.c
 #for statik library
-libpublisher_la_LDFLAGS = -module -shared -export-dynamic -static \
-	-rpath $(libdir) -Wl,--version-script,libpublisher.map
+libpublisher_la_LDFLAGS = -rpath $(libdir) \
+	$(top_srcdir)/design_pattern_util/lib/libdputil.la \
+	-Wl,--version-script,libpublisher.map
 all: all-am
 
 .SUFFIXES:

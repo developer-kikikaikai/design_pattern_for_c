@@ -300,8 +300,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
 INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/flyweight/include
-AM_LDFLAGS = $(top_srcdir)/design_pattern_util/lib/libdputil.la \
-	$(top_srcdir)/flyweight/lib/.libs/libflyweight.a
+AM_LDFLAGS = $(top_srcdir)/flyweight/lib/libflyweight.la
 test_CXXFLAGS = -g -O0
 test_CFLAGS = -g -O0
 test_SOURCES = test_normalclass.c test_methodsclass.c main.c

@@ -107,6 +107,10 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+libchainofresp_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(libchainofresp_la_LDFLAGS) $(LDFLAGS) \
+	-o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -297,14 +301,15 @@ INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/flyweight/include \
 	-I$(top_srcdir)/ChainOfResponsibility/include
-AM_LDFLAGS = $(top_srcdir)/design_pattern_util/lib/libdputil.la \
-	$(top_srcdir)/ChainOfResponsibility/lib/.libs/libchainofresp.a \
-	$(top_srcdir)/flyweight/lib/.libs/libflyweight.a
+AM_LDFLAGS =  \
+	$(top_srcdir)/ChainOfResponsibility/lib/libchainofresp.la
 
 #load common setting
 noinst_LTLIBRARIES = libchainofresp.la
 #
 libchainofresp_la_SOURCES = chain_element.c chain_of_responsibility.c
+#for statik library
+libchainofresp_la_LDFLAGS = $(top_srcdir)/flyweight/lib/libflyweight.la -rpath $(libdir)
 all: all-am
 
 .SUFFIXES:
@@ -352,7 +357,7 @@ clean-noinstLTLIBRARIES:
 	}
 
 libchainofresp.la: $(libchainofresp_la_OBJECTS) $(libchainofresp_la_DEPENDENCIES) $(EXTRA_libchainofresp_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK)  $(libchainofresp_la_OBJECTS) $(libchainofresp_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libchainofresp_la_LINK)  $(libchainofresp_la_OBJECTS) $(libchainofresp_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -595,8 +600,6 @@ uninstall-am:
 
 .PRECIOUS: Makefile
 
-#for statik library
-#libtimetestlog_la_LDFLAGS=-module -shared -export-dynamic -static -shared -rpath $(libdir)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

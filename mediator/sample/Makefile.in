@@ -105,7 +105,8 @@ am_test_OBJECTS = test-main.$(OBJEXT) test-colleague_warrior.$(OBJEXT) \
 	test-colleague_priest.$(OBJEXT) test-colleague_witch.$(OBJEXT) \
 	test-mediator.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
-test_LDADD = $(LDADD)
+test_DEPENDENCIES =  \
+	$(top_srcdir)/design_pattern_util/lib/libdputil.la
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -294,10 +295,11 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ -I$(top_srcdir)/design_pattern_util/include/
 INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ $(top_srcdir)/design_pattern_util/include/
-AM_LDFLAGS = $(top_srcdir)/design_pattern_util/lib/libdputil.la
+AM_LDFLAGS = 
 test_CXXFLAGS = -g -O0
 test_CFLAGS = -g -O0
 test_SOURCES = main.c colleague_warrior.c  colleague_priest.c colleague_witch.c mediator.c 
+test_LDADD = $(top_srcdir)/design_pattern_util/lib/libdputil.la
 all: all-am
 
 .SUFFIXES:

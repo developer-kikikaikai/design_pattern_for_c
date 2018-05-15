@@ -7,4 +7,4 @@ noinst_LTLIBRARIES = libflyweight.la
 
 libflyweight_la_SOURCES = flyweight.c
 #for statik library
-#libtimetestlog_la_LDFLAGS=-module -shared -export-dynamic -static -shared -rpath $(libdir)
+libflyweight_la_LDFLAGS=-rpath $(libdir) $(top_srcdir)/design_pattern_util/lib/libdputil.la

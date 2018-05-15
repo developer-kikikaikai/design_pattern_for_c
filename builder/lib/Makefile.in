@@ -107,6 +107,10 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+liblower_layer_director_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(liblower_layer_director_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -296,14 +300,15 @@ INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/builder/include \
 	$(top_srcdir)/builder/sample_plugin
-AM_LDFLAGS = $(top_srcdir)/design_pattern_util/lib/libdputil.la \
-	$(top_srcdir)/builder/lib/.libs/liblower_layer_director.a
+AM_LDFLAGS = $(top_srcdir)/builder/lib/liblower_layer_director.la
 
 #load common setting
 noinst_LTLIBRARIES = liblower_layer_director.la
 #
 #lib_LTLIBRARIES = libbuilder.la
 liblower_layer_director_la_SOURCES = lower_layer_director.c
+#for statik library
+liblower_layer_director_la_LDFLAGS = -rpath $(libdir)
 all: all-am
 
 .SUFFIXES:
@@ -351,7 +356,7 @@ clean-noinstLTLIBRARIES:
 	}
 
 liblower_layer_director.la: $(liblower_layer_director_la_OBJECTS) $(liblower_layer_director_la_DEPENDENCIES) $(EXTRA_liblower_layer_director_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK)  $(liblower_layer_director_la_OBJECTS) $(liblower_layer_director_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(liblower_layer_director_la_LINK)  $(liblower_layer_director_la_OBJECTS) $(liblower_layer_director_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -593,8 +598,6 @@ uninstall-am:
 
 .PRECIOUS: Makefile
 
-#for statik library
-#liblower_layer_director_la_LDFLAGS=-module -shared -export-dynamic -static -shared -rpath $(libdir)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
