@@ -295,14 +295,16 @@ top_srcdir = @top_srcdir@
 #common header deifinition
 AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
 	-I$(top_srcdir)/design_pattern_util/include/ \
-	-I$(top_srcdir)/flyweight/include \
-	-I$(top_srcdir)/ChainOfResponsibility/include
+	-I$(FLYWEIGHT_DIR)/include -I$(CoR_DIR)/include
 INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/design_pattern_util/include/ \
-	$(top_srcdir)/flyweight/include \
-	-I$(top_srcdir)/ChainOfResponsibility/include
-AM_LDFLAGS =  \
-	$(top_srcdir)/ChainOfResponsibility/lib/libchainofresp.la
+	$(FLYWEIGHT_DIR)/include -I$(CoR_DIR)/include
+AM_LDFLAGS = $(CoR_DIR)/lib/libchainofresp.la
+FLYWEIGHT_DIR = $(top_srcdir)/flyweight
+BUILDER_DIR = $(top_srcdir)/builder
+PUBLISHER_DIR = $(top_srcdir)/publisher
+CoR_DIR = $(top_srcdir)/ChainOfResponsibility
+STATE_DIR = $(top_srcdir)/state
 test_CXXFLAGS = -g -O0
 test_CFLAGS = -g -O0
 test_SOURCES = main.c

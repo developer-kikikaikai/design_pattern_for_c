@@ -52,6 +52,10 @@ AC_CONFIG_FILES([Makefile
 		 ChainOfResponsibility/test/Makefile
 		 mediator/Makefile
 		 mediator/sample/Makefile
+		 state/Makefile
+		 state/lib/Makefile
+		 state/include/Makefile
+		 state/test/Makefile
 		 ])
 
 AC_OUTPUT
