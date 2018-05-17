@@ -1,15 +1,18 @@
 #include <stdio.h>
-#include "state_manager.h"
-
-static int test(void *arg) {
-	return -1;
-}
+#include "test_state_manager.h"
+#include "test_state_machine.h"
 
 int main() {
-	state_info_t state1=STATE_MNG_SET_INFO_INIT(1, test);
-	printf("state1: [state:%d] [name:%s]\n", state1.state, state1.name);
-	state_info_t state2;
-	STATE_MNG_SET_INFO(state2, 1, test);
-	printf("state1: [state:%d] [name:%s]\n", state2.state, state2.name);
+	if(test_state_manager()) {
+		printf("Failed to test state_manager\n");
+		return -1;
+	}
+	printf("Success state_manager test!!\n");
+
+	if(test_state_machine()) {
+		printf("Failed to test state_machine\n");
+		return -1;
+	}
+	printf("Success state_machine test!!\n");
 	return 0;
 }

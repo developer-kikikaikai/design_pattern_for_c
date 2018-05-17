@@ -101,7 +101,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_test_OBJECTS = test-main.$(OBJEXT)
+am_test_OBJECTS = test-test_state_manager.$(OBJEXT) \
+	test-test_state_machine.$(OBJEXT) test-main.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
 test_LDADD = $(LDADD)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -298,14 +299,15 @@ AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
 INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/design_pattern_util/include/ \
 	-I$(STATE_DIR)/include
-AM_LDFLAGS = $(STATE_DIR)/lib/libstate_machine.la
+AM_LDFLAGS = $(STATE_DIR)/lib/libstate_machine.la \
+	$(STATE_DIR)/lib/libstate_manager.la
 FLYWEIGHT_DIR = $(top_srcdir)/flyweight
 BUILDER_DIR = $(top_srcdir)/builder
 PUBLISHER_DIR = $(top_srcdir)/publisher
 CoR_DIR = $(top_srcdir)/ChainOfResponsibility
 STATE_DIR = $(top_srcdir)/state
 test_CFLAGS = -g -O0 
-test_SOURCES = main.c
+test_SOURCES = test_state_manager.c test_state_machine.c main.c
 all: all-am
 
 .SUFFIXES:
@@ -401,6 +403,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-test_state_machine.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-test_state_manager.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -422,6 +426,34 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+test-test_state_manager.o: test_state_manager.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-test_state_manager.o -MD -MP -MF $(DEPDIR)/test-test_state_manager.Tpo -c -o test-test_state_manager.o `test -f 'test_state_manager.c' || echo '$(srcdir)/'`test_state_manager.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test_state_manager.Tpo $(DEPDIR)/test-test_state_manager.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_state_manager.c' object='test-test_state_manager.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-test_state_manager.o `test -f 'test_state_manager.c' || echo '$(srcdir)/'`test_state_manager.c
+
+test-test_state_manager.obj: test_state_manager.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-test_state_manager.obj -MD -MP -MF $(DEPDIR)/test-test_state_manager.Tpo -c -o test-test_state_manager.obj `if test -f 'test_state_manager.c'; then $(CYGPATH_W) 'test_state_manager.c'; else $(CYGPATH_W) '$(srcdir)/test_state_manager.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test_state_manager.Tpo $(DEPDIR)/test-test_state_manager.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_state_manager.c' object='test-test_state_manager.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-test_state_manager.obj `if test -f 'test_state_manager.c'; then $(CYGPATH_W) 'test_state_manager.c'; else $(CYGPATH_W) '$(srcdir)/test_state_manager.c'; fi`
+
+test-test_state_machine.o: test_state_machine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-test_state_machine.o -MD -MP -MF $(DEPDIR)/test-test_state_machine.Tpo -c -o test-test_state_machine.o `test -f 'test_state_machine.c' || echo '$(srcdir)/'`test_state_machine.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test_state_machine.Tpo $(DEPDIR)/test-test_state_machine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_state_machine.c' object='test-test_state_machine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-test_state_machine.o `test -f 'test_state_machine.c' || echo '$(srcdir)/'`test_state_machine.c
+
+test-test_state_machine.obj: test_state_machine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-test_state_machine.obj -MD -MP -MF $(DEPDIR)/test-test_state_machine.Tpo -c -o test-test_state_machine.obj `if test -f 'test_state_machine.c'; then $(CYGPATH_W) 'test_state_machine.c'; else $(CYGPATH_W) '$(srcdir)/test_state_machine.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test_state_machine.Tpo $(DEPDIR)/test-test_state_machine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_state_machine.c' object='test-test_state_machine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-test_state_machine.obj `if test -f 'test_state_machine.c'; then $(CYGPATH_W) 'test_state_machine.c'; else $(CYGPATH_W) '$(srcdir)/test_state_machine.c'; fi`
 
 test-main.o: main.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-main.o -MD -MP -MF $(DEPDIR)/test-main.Tpo -c -o test-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c

@@ -306,7 +306,8 @@ AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
 INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/design_pattern_util/include/ \
 	-I$(STATE_DIR)/include
-AM_LDFLAGS = $(STATE_DIR)/lib/libstate_machine.la
+AM_LDFLAGS = $(STATE_DIR)/lib/libstate_machine.la \
+	$(STATE_DIR)/lib/libstate_manager.la
 FLYWEIGHT_DIR = $(top_srcdir)/flyweight
 BUILDER_DIR = $(top_srcdir)/builder
 PUBLISHER_DIR = $(top_srcdir)/publisher
@@ -318,9 +319,9 @@ noinst_LTLIBRARIES = libstate_manager.la libstate_machine.la
 #
 #lib_LTLIBRARIES = libbuilder.la
 libstate_manager_la_SOURCES = state_manager.c
-libstate_manager_la_LDFLAGS = -module -rpath $(libdir)
+libstate_manager_la_LDFLAGS = -module -rpath $(libdir) $(top_srcdir)/design_pattern_util/lib/libdputil.la
 libstate_machine_la_SOURCES = state_machine.c
-libstate_machine_la_LDFLAGS = -module -rpath $(libdir) libstate_managerla
+libstate_machine_la_LDFLAGS = -module -rpath $(libdir) libstate_managerla $(top_srcdir)/design_pattern_util/lib/libdputil.la
 all: all-am
 
 .SUFFIXES:
