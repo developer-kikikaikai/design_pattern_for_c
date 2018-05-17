@@ -29,6 +29,24 @@ static int test_state_end(void *arg) {
 	*data+=val;
 	return val;
 }
+
+static int test_state_begin_2_testing(void *arg) {
+	StateManagerClass manager = (StateManagerClass)arg;
+	state_manager_set_state(manager, STATE_TESTING);
+	return STATE_BEGIN;
+}
+
+static int test_state_testing_2_end(void *arg) {
+	StateManagerClass manager = (StateManagerClass)arg;
+	state_manager_set_state(manager, STATE_END);
+	return STATE_TESTING;
+}
+
+static int test_state_end_2_begin(void *arg) {
+	StateManagerClass manager = (StateManagerClass)arg;
+	state_manager_set_state(manager, STATE_BEGIN);
+	return STATE_END;
+}
 /* }@*/
 
 static int test_state_manager_failsafe() {
@@ -154,6 +172,49 @@ static int test_state_manager_update_usage() {
 	return 0;
 }
 
+static int test_state_manager_change_state_in_func() {
+	state_info_t state_info[] = {
+		//set state and function by using Macro
+		STATE_MNG_SET_INFO_INIT(STATE_BEGIN, test_state_begin_2_testing),
+		STATE_MNG_SET_INFO_INIT(STATE_TESTING, test_state_testing_2_end),
+		STATE_MNG_SET_INFO_INIT(STATE_END, test_state_end_2_begin),
+	};
+	StateManagerClass manager = state_manager_new(sizeof(state_info)/sizeof(state_info[0]), state_info);
+	if(!manager) {
+		printf("####Failed to call state_manager_new\n");
+		return -1;
+	}
+	state_manager_set_state(manager, STATE_BEGIN);
+	if(state_manager_call(manager, manager) != STATE_BEGIN) {
+		printf("####Failed to call begin state func\n");
+		return -1;
+	}
+	if(state_manager_get_current_state(manager) != STATE_TESTING) {
+		printf("####Failed to change state\n");
+		return -1;
+	}
+
+	if(state_manager_call(manager, manager) != STATE_TESTING) {
+		printf("####Failed to call testing state func\n");
+		return -1;
+	}
+	if(state_manager_get_current_state(manager) != STATE_END) {
+		printf("####Failed to change state\n");
+		return -1;
+	}
+
+	if(state_manager_call(manager, manager) != STATE_END) {
+		printf("####Failed to call testing state func\n");
+		return -1;
+	}
+	if(state_manager_get_current_state(manager) != STATE_BEGIN) {
+		printf("####Failed to change state\n");
+		return -1;
+	}
+	state_manager_free(manager);
+	return 0;
+}
+
 int test_state_manager() {
 
 	if(test_state_manager_failsafe()) {
@@ -168,6 +229,11 @@ int test_state_manager() {
 
 	if(test_state_manager_update_usage()) {
 		printf("Failed to check update usage\n");
+		return -1;
+	}
+
+	if(test_state_manager_change_state_in_func()) {
+		printf("Failed to check change_state_in_func\n");
 		return -1;
 	}
 

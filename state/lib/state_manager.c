@@ -187,5 +187,6 @@ ENTERLOG
 		free(state_info);
 		state_info=(StateManagerStateInfo)dputil_list_pop((DPUtilList)this);
 	}
+	free(this);
 EXITLOG
 }

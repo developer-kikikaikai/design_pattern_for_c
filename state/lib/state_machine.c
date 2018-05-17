@@ -144,6 +144,7 @@ EXITLOG
 
 /*! free normally */
 static void state_machine_free_states_normally(StateMachineClass this) {
+ENTERLOG
 	StateManagerListData state_manager=(StateManagerListData)dputil_list_pop((DPUtilList)this);
 	while(state_manager) {
 		state_machine_manager_list_free(state_manager);
@@ -320,7 +321,7 @@ ENTERLOG
 		/* set information for multi thread */
 		instance->call_event = state_machine_call_event_multithread;
 		instance->free = state_machine_free_states_multithread;
-		if( state_machine_initial_thread(instance) ) {
+		if( state_machine_initial_thread(instance) != STATE_MNG_SUCCESS ) {
 			/* change free function because starting thread is failed */
 			instance->free = state_machine_free_states_normally;
 			goto err;
@@ -414,5 +415,6 @@ ENTERLOG
 	}
 
 	this->free(this);
+	free(this);
 EXITLOG
 }
