@@ -1,0 +1,59 @@
+# design_pattern_for_c
+  Libraries for Linux C language to show some design patterns.
+
+# abstract
+  Some C system uses class design as them, but sometimes this code is different of an image of object-oriented programming.
+  I think "C system shows design patterns with Goodness of C language". 
+  This package is libraries to use some design patterns with Goodness of C language.
+
+# License
+  This software is released under the MIT License, see LICENSE.txt.
+
+# How to use
+  Build:
+  1. configure
+  2. make
+  libraries are in dir/lib/.libs
+
+  #Now updating usage
+
+# Version 
+ no-release now
+
+# Support design pattern libraries (Not yet means planning now)
+  Please see https://qiita.com/developer-kikikaikai/items/8e7858c130c8ae8df488 (Japanese website) 
+
+Related to Create:
+  |name            |support| exist sample  |  other             |
+  |:---------------|:-----:|:-------------:|:------------------:|
+  |Builder         |  Yes  | see builder   |                    |
+  |Singleton       |  Yes  | see flyweight | wrapp in Flyweight |
+  |Prototype       |Not yet| create future |                    |
+  |Abstract Factory|  No   | create future |                    |
+  |Factory Method  |  No   | create future |                    |
+
+Related to Construct:
+  |name            |support| exist sample  |  other                                     |
+  |:---------------|:-----:|:-------------:|:------------------------------------------:|
+  |Flyweight       |  Yes  | see flyweight |                                            |
+  |Adapter         |  No   | create future |                                            |
+  |Bridge          |  No   | create future |                                            |
+  |Composite       |  No   | create future |                                            |
+  |Decorator       |  No   | create future |                                            |
+  |Facade          |  No   | create future |                                            |
+  |Proxy           |  No   |   No          | Please switch by library/dlopen/LD_PRELOAD |
+
+Related to Construct:
+  |name                        |support| exist sample              |  other                        |
+  |:---------------------------|:-----:|:-------------------------:|:-----------------------------:|
+  |Chain of Responsibility     |  Yes  | see ChainOfResponsibility |                               |
+  |Observer(Publish-Subscribe) |  Yes  | see publisher             |                               |
+  |State                       |  Yes  | see state                 | State and StateMachine lib    |
+  |Command                     |Not yet| create future             |                               |
+  |Mediator                    |  No   | see mediator              |                               |
+  |Interpreter                 |  No   | No                        | There is no skill             |
+  |Iterator                    |  No   | No                        | Please use list as dp_list.h  |
+  |Memento                     |  No   | create future             |                               |
+  |Strategy                    |  No   | create future             |                               |
+  |Template Method             |  No   | Not yet                   |                               |
+  |Visitor                     |  No   | create future             |                               |
