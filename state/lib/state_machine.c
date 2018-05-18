@@ -1,5 +1,6 @@
 /**
- *    @brief      Implement of StateMachine library API, defined in state_machine.h.
+ * @file state_machine.c
+ * @brief      Implement of StateMachine library API, defined in state_machine.h.
  **/
 #include <stdlib.h>
 #include <stdarg.h>
@@ -52,7 +53,7 @@ struct state_machine_t {
  * @brief message definition for multi thread
 */
 typedef struct state_machine_msg_t {
-	int is_stop;/*! when stop thread, send msg with is_stop=1*/
+	int is_stop;/*! is_stop when stop thread, send msg with is_stop=1*/
 	int event;
 	void * args;
 	void (*response)(int result);
@@ -297,6 +298,7 @@ static inline int state_machine_write(StateMachineClass this, state_machine_msg_
 	return write(this->sockpair[SOCK_WRITEID], msg, sizeof(state_machine_msg_t));
 }
 /* }@ */
+
 /*************
  * public API
 *************/

@@ -1,5 +1,10 @@
+/**
+ * @file state_manager.h
+ * @brief This is API for Sate design pattern
+**/
 #ifndef STATE_MANAGER_
 #define STATE_MANAGER_
+
 
 #define STATE_MNG_SUCCESS (0)
 #define STATE_MNG_FAILED (-1)
@@ -9,14 +14,16 @@
 */
 typedef struct state_info_t {
 	int state;/*! state value related function*/
-	char *name;/*! function name, defined by macro. So please use macro*/
+	char *name;/*! name, function name defined by macro. So please use macro*/
 	int (*state_method)(void *arg);/*! state method called at state_manager_call */
 } state_info_t;
 
-/*! @brief Macro to initialize state_info_t. Please use this macro, It set function name of method, so it support to know definition relationsip of state and function.
+/*! @def STATE_MNG_SET_INFO_INIT
+    @brief Macro to initialize state_info_t. Please use this macro, It set function name of method, so it support to know definition relationsip of state and function.
 */
 #define STATE_MNG_SET_INFO_INIT(instate, fname) {.state=(instate), .name=#fname, .state_method = (fname)}
-/*! @brief Macro to initialize state_info_t after define state_info_t. Please use this macro, It set function name of method, so it support to know definition relationsip of state and function.
+/*! @def STATE_MNG_SET_INFO
+    @brief Macro to initialize state_info_t after define state_info_t. Please use this macro, It set function name of method, so it support to know definition relationsip of state and function.
 */
 #define STATE_MNG_SET_INFO(info, instate, fname) {(info).state=(instate); (info).name=#fname; (info).state_method = (fname) ; }
 
@@ -40,7 +47,7 @@ StateManagerClass state_manager_new(size_t state_info_num, const state_info_t * 
  * @brief update method related to state
  *
  * @param[in] this class handle returned at state_manager_new
- * @param[in] update info of state. If there is no state, it is add to state list
+ * @param[in] state info of state. If there is no state, it is add to state list
  * @retval STATE_MNG_SUCCESS success
  * @retval other failed to add
  */
@@ -49,7 +56,7 @@ int state_manager_update_method(StateManagerClass this, const state_info_t * sta
  * @brief set state
  *
  * @param[in] this class handle returned at state_manager_new
- * @param[in] update state, if there is no state in set list, state is changed to latest order.
+ * @param[in] state state, if there is no state in set list, state is changed to latest order.
  * @return none
 */
 void state_manager_set_state(StateManagerClass this, int state);

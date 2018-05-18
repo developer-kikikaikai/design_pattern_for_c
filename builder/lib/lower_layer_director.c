@@ -1,6 +1,6 @@
 /**
+ * @file lower_layer_director.c
  *    @brief      Implement of lower_layer_director (related to builder design petten) library API, defined in flyweight.h
-
 **/
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +16,7 @@
 *************/
 #define LLD_METHODSIZE_MAX (64)
 
-/*! @class director class
+/*! @struct lower_layer_director_class
  * @brief director class
 */
 struct lower_layer_director_class {
@@ -48,7 +48,7 @@ static void ll_director_interface_class_free(DirectorClass this, void * instance
 static void ll_director_class_free(DirectorClass this);
 /* }@ */
 
-/*! @class builder action class
+/*! @struct BuilderActionClass
  * @brief action builder, to call builder by other thread, create class for it
 */
 typedef struct ll_builder_action_class {

@@ -1,3 +1,7 @@
+/**
+ * @file chain_element.h
+ * @brief This is API for element of chain
+**/
 #ifndef CHAIN_ELEMENT_
 #define CHAIN_ELEMENT_
 #include "chain_of_responsibility.h"

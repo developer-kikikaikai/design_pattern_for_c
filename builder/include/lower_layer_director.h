@@ -1,22 +1,24 @@
-#ifndef LOWER_LAYER_DIRECTOR_
-#define LOWER_LAYER_DIRECTOR_
 /**
+ * @file lower_layer_director.h
  * @brief This is API for director class action as  design petten
  *        In this case, Builder interface is included by conf file, and interface implement class is dynamic library.
  *        Please see conf/sample.conf
 **/
 
+
+#ifndef LOWER_LAYER_DIRECTOR_
+#define LOWER_LAYER_DIRECTOR_
 #include "lower_layer_builder.h"
 
 struct lower_layer_director_class;
 typedef struct lower_layer_director_class *DirectorClass;
 
-/*! @struct 
+/*! @struct LowerLayerDirector
  * @brief flyweight class method definition
 */
 typedef struct _lower_layer_director_s {
-	void * lower_layer_interface;/*interface which has lower layer(builder). If no interface, it is NULL*/
-	DirectorClass director;/* director class pointer */
+	void * lower_layer_interface;/*! interface which has lower layer(builder). If no interface, it is NULL*/
+	DirectorClass director;/*! director class pointer */
 } lower_layer_director_t, *LowerLayerDirector;
 
 /**
@@ -32,9 +34,9 @@ LowerLayerDirector lower_layer_director_new(char * builder_lib_name, char * buil
 /**
  * @brief director cconstruct
  *
- * @param[in] handle  handle returned at lower_layer_director_construct
+ * @param[in] director  handle returned at lower_layer_director_construct
  * @param[in] initial_parameter initialize parameter if you have
- * @param[in] initial_resultr initialize callback, result is in here
+ * @param[in] initial_result initialize callback, result is in here
  * @return none
  * @note please keep initial_parameter on static field (define static or allocate memory)
  */
@@ -43,7 +45,7 @@ void lower_layer_director_construct(LowerLayerDirector director, void * initial_
 /**
  * @brief director denstruct
  *
- * @param[in] handle  handle returned at lower_layer_director_construct
+ * @param[in] director  handle returned at lower_layer_director_construct
  */
 void lower_layer_director_free(LowerLayerDirector director);
 #endif

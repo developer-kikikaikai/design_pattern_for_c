@@ -1,4 +1,5 @@
 /**
+ * @file publisher.c
  *    @brief      Implement of Flyweight design petten library API, related to Publisher class
 **/
 #include <stdlib.h>

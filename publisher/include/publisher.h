@@ -1,16 +1,18 @@
-#ifndef PUBLISHER_
-#define PUBLISHER_
 /**
+ * @file publisher.h
  * @brief This is API as Observer(Publish-Subscribe) design petten
 **/
+#ifndef PUBLISHER_
+#define PUBLISHER_
 
 #include <stddef.h>
 
 #define PUBLISHER_SUCCESS (0)
 #define PUBLISHER_FAILED (-1)
 
-/* @brief Publisher class */
+/* @brief Subscribe Account class */
 struct subscriber_account;
+/* @brief Subscribe Account class */
 typedef struct subscriber_account *SubscriberAccount;
 
 /**
@@ -23,32 +25,30 @@ int publisher_new(size_t contents_num);
 
 /**
  * @brief free All publisher content
- * @param none
  * @return none
  */
 void publisher_free(void);
 
-/*
- * @brief subscribe.
+/**
+ * @brief subscribe
  * @param[in] content_id id of publish content you want to receive
- * @param[in] publish_type type of pushlish related to publish. this ID use bitwise operation "OR". So if you want to receive notification from some publish type, please use "OR".
- *            So, if you set 0, send notify to all
+ * @param[in] publish_type type of pushlish related to publish. this ID use bitwise operation "OR". So if you want to receive notification from some publish type, please use "OR". So, if you set 0, send notify to all
  * @param[in] notify notification interface. If subscriber set this IF and type, publisher notify when publish.
- * @retval !=NULL : SubscriberAccount account of this subscribe, if you want to manage unscribe/subscribe many time, please keep this accout information
- * @retval NULL : failed to subscribe
+ * @retval !=NULL SubscriberAccount account of this subscribe, if you want to manage unscribe/subscribe many time, please keep this accout information
+ * @retval NULL failed to subscribe
  */
 SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*notify)(int publish_type, void * detail) );
 
-/*
- * @brief unsubscribe. If you want to stop subscribe, please call it
+/**
+ * @brief unsubscribe, if you want to stop subscribe, please call it
  * @param[in] content_id id of publish content
  * @param[in] account account returned at publisher_subscribe
  * @return none
  */
 void publisher_unsubscribe(int content_id, SubscriberAccount account);
 
-/*
- * @brief publish. Publisher call subscriber's notify if type is same
+/**
+ * @brief publish, Publisher call subscriber's notify if type is same
  * @param[in] content_id id
  * @param[in] publish_type publish type
  * @param[in] detail detail data of publish

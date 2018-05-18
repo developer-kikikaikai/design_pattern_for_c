@@ -1,13 +1,16 @@
+/**
+ * @file state_machine.h
+ * @brief This is API for Sate machine
+**/
 #ifndef STATE_MACHINE_
 #define STATE_MACHINE_
-
 #include "state_manager.h"
 
 /*! @struct state_event_info_t
  * @brief event ID and related state functions
 */
  typedef struct state_event_info_t {
-	int event;/*! event id*/
+	int event;/*! event event id */
 	size_t state_num;/*! state num*/
 	state_info_t *state_infos;/*! state list, please see state_manager.h defition*/
 } state_event_info_t;
@@ -15,14 +18,12 @@
 struct state_machine_t;
 typedef struct state_machine_t *StateMachineClass;
 
+
 /**
  * @brief define class for state machine
- *
  * @param[in] event_num event size
- * @param[in] event_state list of event state data
- * @param[in] methods prime method for this class.
- *            If NULL, use defautlt. If not NULL, override methods. override NULL, this method is no effect.
- *            destructor is called at flyweight_unregister_class or exit
+ * @param[in] event_infos list of event state data
+ * @param[in] is_multithread if you want to run function on otherthread, please set 1.
  * @retval !=NULL  this class handle
  * @retval NULL error
  */
@@ -31,7 +32,7 @@ StateMachineClass state_machine_new(size_t event_num, const state_event_info_t *
  * @brief update sate
  *
  * @param[in] this class handle returned at state_machine_new
- * @param[in] update state.
+ * @param[in] event_info update list of event state data.
  * @retval STATE_MNG_SUCCESS success
  * @retval other failed
 */
@@ -40,7 +41,7 @@ int state_machine_update_machine(StateMachineClass this, const state_event_info_
  * @brief set state
  *
  * @param[in] this class handle returned at state_manager_new
- * @param[in] update state, if there is no state in set list, state is changed to latest order.
+ * @param[in] state update state, if there is no state in set list, state is changed to latest order.
  * @return none
  */
 void state_machine_set_state(StateMachineClass this, int state);
@@ -59,7 +60,6 @@ int state_machine_call_event(StateMachineClass this, int event, void *arg, void 
  * @brief set state
  *
  * @param[in] this class handle returned at state_manager_new
- * @param[in] update state, if there is no state in set list, state is changed to latest order.
  * @return none
  */
 void state_machine_show(StateMachineClass this);
@@ -67,7 +67,6 @@ void state_machine_show(StateMachineClass this);
  * @brief set state
  *
  * @param[in] this class handle returned at state_manager_new
- * @param[in] update state, if there is no state in set list, state is changed to latest order.
  * @return none
  */
 void state_machine_free(StateMachineClass this);

@@ -1,8 +1,9 @@
-#ifndef CHAIN_OF_RESPONSIBILITY_
-#define CHAIN_OF_RESPONSIBILITY_
 /**
+ * @file chain_of_responsibility.h
  * @brief This is API for Chain of Responsibility design pettern class
 **/
+#ifndef CHAIN_OF_RESPONSIBILITY_
+#define CHAIN_OF_RESPONSIBILITY_
 
 /*! @name CoR result */
 /* @{ */
@@ -58,7 +59,6 @@ void cor_remove_function(const char *name, chain_func func);
 /**
  * @brief clear all list
  *
- * @param none
  * @return none
  */
 void cor_clear(void);

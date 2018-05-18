@@ -1,3 +1,7 @@
+/**
+ * @file dp_debug.h
+ * @brief For using debug log
+**/
 #ifndef DP_UTIL_DEBUG_
 #define DP_UTIL_DEBUG_
 

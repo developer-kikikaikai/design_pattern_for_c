@@ -1,8 +1,9 @@
-#ifndef DPUTIL_MUTEX_
-#define DPUTIL_MUTEX_
 /**
+ * @file dp_mutex.h
  *    @brief  Utility mutex API for design pattern
 **/
+#ifndef DPUTIL_MUTEX_
+#define DPUTIL_MUTEX_
 /*! @name Lock/Unlock API */
 #include <pthread.h>
 /* @{ */
@@ -14,6 +15,7 @@ void dputil_unlock(void *handle);
 #define DPUTIL_LOCK(lock) \
         dputil_lock(lock);\
         pthread_cleanup_push(dputil_unlock, lock);
+/*! unlock macro*/
 #define DPUTIL_UNLOCK pthread_cleanup_pop(1);
 /* @} */
 #endif

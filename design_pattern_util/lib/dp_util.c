@@ -1,3 +1,7 @@
+/**
+ * @file dp_util.c
+ *    @brief      design pattern libraries utility API
+**/
 #include "dp_util.h"
 /*! lock */
 void dputil_lock(void *handle) {

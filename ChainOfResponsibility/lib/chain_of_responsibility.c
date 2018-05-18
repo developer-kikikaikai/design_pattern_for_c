@@ -1,4 +1,5 @@
 /**
+ * @file chain_of_responsibility.c
  *    @brief      Implement of Chain of Responsibility design petten library API
  **/
 #include "chain_of_responsibility.h"
@@ -8,7 +9,7 @@
 
 /*! @name ChainOfResponsibility class */
 /* @{ */
-/*! @struct ChainOfResponsibility class
+/*! @struct ChainOfResponsibility
  * @brief ChainOfResponsibility class instance definition
 */
 typedef struct chain_of_resp * ChainOfResponsibility;

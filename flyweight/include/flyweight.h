@@ -1,12 +1,14 @@
-#ifndef FLYWEIGHT_
-#define FLYWEIGHT_
 /**
+ * @file flyweight.h
  * @brief This is API as Flyweight design petten
 **/
+#ifndef FLYWEIGHT_
+#define FLYWEIGHT_
+
 #include <stddef.h>
 #include "dp_util.h"
 
-/*! @struct flyweight_class_method_s
+/*! @struct flyweight_class_methods_s
  * @brief flyweight class method definition
 */
 struct flyweight_class_methods_s {
@@ -22,6 +24,7 @@ struct flyweight_class_methods_s {
 	 * @param[in] this this allocated memory
 	 * @param[in] size size of this instance
 	 * @param[in] input_parameter input parameter related to flyweight_get
+	 * @return defined value
 	 * @note if you set function which return always 1, this class is same as Singleton.
 	 * @note if you set function which return always 0, this class always allocate new instance
 	 */
@@ -41,13 +44,15 @@ struct flyweight_class_methods_s {
 	void (*destructor)(void *this);
 };
 
+/*! @struct ClassHandle
+ * @brief flyweight class handle
+*/
 struct flyweight_class_factory_s;
 typedef struct flyweight_class_factory_s * ClassHandle;
 
 /**
  * @brief define class for flyweight
- *
- * @param[in] class_length size of class, C have to know size to allocate memory, 
+ * @param[in] class_size size of class, C have to know size to allocate memory, 
  * @param[in] is_threadsafe  if !=0, ensure threadsafe to create new class instace, please set !=0 if you want to use this API on multi thread
  * @param[in] methods prime method for this class.
  *            If NULL, use defautlt. If not NULL, override methods. override NULL, this method is no effect.
@@ -59,8 +64,8 @@ ClassHandle flyweight_define_class(size_t class_size, int is_threadsafe, struct 
 
 /**
  * @brief getter
- *
  * @param[in] classHandle class handle returned at flyweight_register_class, first time to call get, allocate class, memset 0 and call constructor
+ * @param[in] constructor_parameter constructor parameter
  * @retval !NULL class instance
  * @retval NULL id is invalid
  */
@@ -68,8 +73,8 @@ void * flyweight_get(ClassHandle classHandle, void * constructor_parameter);
 
 /**
  * @brief setter
- *
  * @param[in] classHandle class handle returned at flyweight_register_class
+ * @param[in] constructor_parameter constructor parameter
  * @param[in] data set data pointer
  * @param[in] setter setter if you want to change setter ( if NULL, use setter related to flyweight_register_class input)
  */
@@ -77,10 +82,8 @@ int flyweight_set(ClassHandle classHandle, void * constructor_parameter, void * 
 
 /**
  * @brief clear class handle
- * @brief exit
- *
- * @param none
- * @retval none
+ * @param [in] classHandle class handle returned at flyweight_register_class
+ * @turn none
  */
 void flyweight_clear(ClassHandle classHandle);
 #endif/*FLYWEIGHT_*/

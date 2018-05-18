@@ -1,8 +1,9 @@
-#ifndef PUBLISH_CONTENT_
-#define PUBLISH_CONTENT_
 /**
+ * @file publish_content.h
  * @brief This is API for PublishContent class which managed in Publisher
 **/
+#ifndef PUBLISH_CONTENT_
+#define PUBLISH_CONTENT_
 
 #include "publisher.h"
 

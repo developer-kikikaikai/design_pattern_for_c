@@ -1,4 +1,5 @@
 /**
+ * @file chain_element.c
  *    @brief      Implement of ChainElement class
  **/
 
@@ -8,7 +9,7 @@
 /*! @name ChainElementPart class */
 /* @{ */
 
-/*! @struct ChainElementPart class
+/*! @struct ChainElementPart
  * @brief chain function element part class instance definition
 */
 typedef struct chain_element_part * ChainElementPart;

@@ -1,4 +1,5 @@
 /**
+ * @file publish_content.c
  *    @brief      Implement of Flyweight design petten library API, related to PublishContent class
 **/
 #include "publish_content.h"
