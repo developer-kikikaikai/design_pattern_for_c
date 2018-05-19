@@ -18,7 +18,7 @@
 *************/
 
 /*! @struct state_manager_list_data_t
- * @brief information of StateMachineClass, to use as list
+ * @brief information of StateMachine, to use as list
 */
 struct state_manager_list_data_t;
 typedef struct state_manager_list_data_t * StateManagerListData;
@@ -26,7 +26,7 @@ struct state_manager_list_data_t {
 	StateManagerListData next;
 	StateManagerListData prev;
 	int event;
-	StateManagerClass states;
+	StateManager states;
 };
 
 /*! @name private API for state_manager_t */
@@ -37,13 +37,13 @@ static void state_machine_manager_list_free(StateManagerListData this);
 /* }@ */
 
 /*! @struct state_manager_list_data_t
- * @brief information of StateMachineClass, to use as list
+ * @brief information of StateMachine, to use as list
 */
 struct state_machine_t {
 	StateManagerListData head;
 	StateManagerListData tail;
-	int (*call_event)(StateMachineClass this, int event, void *arg, void (*response)(int result));/* call event API, to switch single/multi thread*/
-	void (*free)(StateMachineClass this);/* call free API, to switch single/multi thread*/
+	int (*call_event)(StateMachine this, int event, void *arg, void (*response)(int result));/* call event API, to switch single/multi thread*/
+	void (*free)(StateMachine this);/* call free API, to switch single/multi thread*/
 	/*data for multi thread mode*/
 	pthread_t tid;
 	int sockpair[2];
@@ -59,32 +59,32 @@ typedef struct state_machine_msg_t {
 	void (*response)(int result);
 } state_machine_msg_t;
 
-/*! @name private API for StateMachineClass */
+/*! @name private API for StateMachine */
 /* @{ */
 /*! Add new state. */
-static int state_machine_add_new_states(StateMachineClass this, const state_event_info_t * event_info);
+static int state_machine_add_new_states(StateMachine this, const state_event_info_t * event_info);
 /*! free normally */
-static void state_machine_free_states_normally(StateMachineClass this);
+static void state_machine_free_states_normally(StateMachine this);
 /*! call state method normally */
-static int state_machine_call_event_normally(StateMachineClass this, int event, void *arg, void (*response)(int result));
+static int state_machine_call_event_normally(StateMachine this, int event, void *arg, void (*response)(int result));
 /*! Find state. */
-StateManagerListData state_machine_find_states(StateMachineClass this, int event);
+StateManagerListData state_machine_find_states(StateMachine this, int event);
 /*! for multi thread, initialize */
-static int state_machine_initial_thread(StateMachineClass this);
+static int state_machine_initial_thread(StateMachine this);
 /*! for multi thread, free */
-static void state_machine_free_states_multithread(StateMachineClass this);
+static void state_machine_free_states_multithread(StateMachine this);
 /*! for multi thread, call event */
-static int state_machine_call_event_multithread(StateMachineClass this, int event, void *arg, void (*response)(int result));
+static int state_machine_call_event_multithread(StateMachine this, int event, void *arg, void (*response)(int result));
 /*! for multi thread, thread main */
 static void * state_machine_thread_main(void *arg);
 /*! for multi thread, open socket */
-static int state_machine_open_socket(StateMachineClass this);
+static int state_machine_open_socket(StateMachine this);
 /*! for multi thread, close socket */
-static void state_machine_close_socket(StateMachineClass this);
+static void state_machine_close_socket(StateMachine this);
 /*! for multi thread, read */
-static inline int state_machine_read(StateMachineClass this, state_machine_msg_t *msg);
+static inline int state_machine_read(StateMachine this, state_machine_msg_t *msg);
 /*! for multi thread, write */
-static inline int state_machine_write(StateMachineClass this, state_machine_msg_t *msg);
+static inline int state_machine_write(StateMachine this, state_machine_msg_t *msg);
 /* }@ */
 /*************
  * private API for StateManagerListData
@@ -92,7 +92,6 @@ static inline int state_machine_write(StateMachineClass this, state_machine_msg_
 /*! @name private API for StateManagerListData */
 /* @{ */
 static StateManagerListData state_machine_manager_list_new(const state_event_info_t * event_info) {
-ENTERLOG
 	StateManagerListData state_manager = calloc(1, sizeof(*state_manager));
 	if(!state_manager) {
 		DEBUG_ERRPRINT("allocate StateManagerListData error\n");
@@ -101,36 +100,32 @@ ENTERLOG
 
 	state_manager->states = state_manager_new(event_info->state_num, event_info->state_infos);
 	if(!state_manager->states) {
-		DEBUG_ERRPRINT("allocate StateManagerClass error\n");
+		DEBUG_ERRPRINT("allocate StateManager error\n");
 		free(state_manager);
 		return NULL;
 	}
 
 	state_manager->event = event_info->event;
-EXITLOG
 	return state_manager;
 }
 
 static void state_machine_manager_list_free(StateManagerListData this) {
-ENTERLOG
 	if(!this) {
 		return;
 	}
 
 	state_manager_free(this->states);
 	free(this);
-EXITLOG
 }
 /* }@*/
 
 /*************
- * private API for StateMachineClass
+ * private API for StateMachine
 *************/
-/*! @name private API for StateMachineClass */
+/*! @name private API for StateMachine */
 /* @{ */
 /*! Add new state. */
-static int state_machine_add_new_states(StateMachineClass this, const state_event_info_t * event_info) {
-ENTERLOG
+static int state_machine_add_new_states(StateMachine this, const state_event_info_t * event_info) {
 	StateManagerListData state_manager = state_machine_manager_list_new(event_info);
 	if(!state_manager) {
 		DEBUG_ERRPRINT("allocate StateManagerListData error\n");
@@ -139,24 +134,20 @@ ENTERLOG
 
 	/*push to list*/
 	dputil_list_push((DPUtilList)this, (DPUtilListData)state_manager);
-EXITLOG
 	return STATE_MNG_SUCCESS;
 }
 
 /*! free normally */
-static void state_machine_free_states_normally(StateMachineClass this) {
-ENTERLOG
+static void state_machine_free_states_normally(StateMachine this) {
 	StateManagerListData state_manager=(StateManagerListData)dputil_list_pop((DPUtilList)this);
 	while(state_manager) {
 		state_machine_manager_list_free(state_manager);
 		state_manager=(StateManagerListData)dputil_list_pop((DPUtilList)this);
 	}
-EXITLOG
 }
 
 /*! call state method normally */
-static int state_machine_call_event_normally(StateMachineClass this, int event, void *arg, void (*response)(int result)) {
-ENTERLOG
+static int state_machine_call_event_normally(StateMachine this, int event, void *arg, void (*response)(int result)) {
 	/* not use response , only for use same format of multi thread*/
 	(void)response;
 
@@ -165,13 +156,11 @@ ENTERLOG
 		return STATE_MNG_FAILED;
 	}
 
-EXITLOG
 	return state_manager_call(state_manager->states, arg);
 }
 
 /*! Find state. */
-StateManagerListData state_machine_find_states(StateMachineClass this, int event) {
-ENTERLOG
+StateManagerListData state_machine_find_states(StateMachine this, int event) {
 	StateManagerListData state_manager = this->head;
 	while(state_manager) {
 		if(state_manager->event == event) {
@@ -179,13 +168,11 @@ ENTERLOG
 		}
 		state_manager=state_manager->next;
 	}
-EXITLOG
 	return state_manager;
 }
 
 /*! for multi thread, initialize */
-static int state_machine_initial_thread(StateMachineClass this) {
-ENTERLOG
+static int state_machine_initial_thread(StateMachine this) {
 	/* create socket */
 	if(state_machine_open_socket(this)) {
 		DEBUG_ERRPRINT("Failed to create socket pair!\n");
@@ -198,13 +185,11 @@ ENTERLOG
 		return STATE_MNG_FAILED;
 	}
 
-EXITLOG
 	return STATE_MNG_SUCCESS;
 }
 
 /*! for multi thread, free */
-static void state_machine_free_states_multithread(StateMachineClass this) {
-ENTERLOG
+static void state_machine_free_states_multithread(StateMachine this) {
 	/* send exit message*/
 	state_machine_msg_t msg;
 	memset(&msg, 0, sizeof(msg));
@@ -223,12 +208,10 @@ ENTERLOG
 
 	/* free normally */
 	state_machine_free_states_normally(this);
-EXITLOG
 }
 
 /*! for multi thread, call event */
-static int state_machine_call_event_multithread(StateMachineClass this, int event, void *args, void (*response)(int result)) {
-ENTERLOG
+static int state_machine_call_event_multithread(StateMachine this, int event, void *args, void (*response)(int result)) {
 	state_machine_msg_t msg;
 	memset(&msg, 0, sizeof(msg));
 	msg.event = event;
@@ -240,14 +223,12 @@ ENTERLOG
 		DEBUG_ERRPRINT("...failed to send, errno=%s\n", strerror(errno));
 		ret = STATE_MNG_FAILED;
 	}
-EXITLOG
 	return ret;
 }
 
 /*! for multi thread, thread main */
 static void * state_machine_thread_main(void *arg) {
-ENTERLOG
-	StateMachineClass this = (StateMachineClass)arg;
+	StateMachine this = (StateMachine)arg;
 	int ret = 0;
 	state_machine_msg_t msg;
 	while(1) {
@@ -270,17 +251,16 @@ ENTERLOG
 	}
 
 	pthread_exit(NULL);
-EXITLOG
 	return NULL;
 }
 
 /*! for multi thread, open socket */
-static int state_machine_open_socket(StateMachineClass this) {
+static int state_machine_open_socket(StateMachine this) {
 	return socketpair(AF_UNIX, SOCK_DGRAM, 0, this->sockpair);
 }
 
 /*! for multi thread, close socket */
-static void state_machine_close_socket(StateMachineClass this) {
+static void state_machine_close_socket(StateMachine this) {
 	close(this->sockpair[0]);
 	close(this->sockpair[1]);
 }
@@ -289,12 +269,12 @@ static void state_machine_close_socket(StateMachineClass this) {
 #define SOCK_WRITEID (1)
 
 /*! for multi thread, read */
-static inline int state_machine_read(StateMachineClass this, state_machine_msg_t *msg) {
+static inline int state_machine_read(StateMachine this, state_machine_msg_t *msg) {
 	return read(this->sockpair[SOCK_READID], msg, sizeof(state_machine_msg_t));
 }
 
 /*! for multi thread, write */
-static inline int state_machine_write(StateMachineClass this, state_machine_msg_t *msg) {
+static inline int state_machine_write(StateMachine this, state_machine_msg_t *msg) {
 	return write(this->sockpair[SOCK_WRITEID], msg, sizeof(state_machine_msg_t));
 }
 /* }@ */
@@ -302,9 +282,8 @@ static inline int state_machine_write(StateMachineClass this, state_machine_msg_
 /*************
  * public API
 *************/
-StateMachineClass state_machine_new(size_t event_num, const state_event_info_t * event_infos, int is_multithread) {
-ENTERLOG
-	StateMachineClass instance = calloc(1, sizeof(*instance));
+StateMachine state_machine_new(size_t event_num, const state_event_info_t * event_infos, int is_multithread) {
+	StateMachine instance = calloc(1, sizeof(*instance));
 	if(!instance) {
 		DEBUG_ERRPRINT("allocate error\n");
 		goto err;
@@ -333,15 +312,13 @@ ENTERLOG
 		instance->call_event = state_machine_call_event_normally;
 		instance->free = state_machine_free_states_normally;
 	}
-EXITLOG
 	return instance;
 err:
 	state_machine_free(instance);
 	return NULL;
 }
 
-int state_machine_update_machine(StateMachineClass this, const state_event_info_t * event_info) {
-ENTERLOG
+int state_machine_update_machine(StateMachine this, const state_event_info_t * event_info) {
 	if(!this || !event_info) {
 		return STATE_MNG_FAILED;
 	}
@@ -350,7 +327,7 @@ ENTERLOG
 
 	int ret = STATE_MNG_SUCCESS;
 	if(state_manager) {
-		/* To update StateManagerClass , keep current state */
+		/* To update StateManager , keep current state */
 		int current_state = state_manager_get_current_state(state_manager->states);
 		state_manager_free(state_manager->states);
 
@@ -366,12 +343,10 @@ ENTERLOG
 		/* only add new event */
 		ret = state_machine_add_new_states(this, event_info);
 	}
-EXITLOG
 	return ret;
 }
 
-void state_machine_set_state(StateMachineClass this, int state) {
-ENTERLOG
+void state_machine_set_state(StateMachine this, int state) {
 	if(!this) {
 		return;
 	}
@@ -382,12 +357,10 @@ ENTERLOG
 		state_manager_set_state(state_manager->states, state);
 		state_manager=state_manager->next;
 	}
-EXITLOG
 	return;
 }
 
-int state_machine_call_event(StateMachineClass this, int event, void *arg, void (*response)(int result)) {
-ENTERLOG
+int state_machine_call_event(StateMachine this, int event, void *arg, void (*response)(int result)) {
 	if(!this) {
 		return STATE_MNG_FAILED;
 	}
@@ -395,8 +368,7 @@ ENTERLOG
 	return this->call_event(this, event, arg, response);
 }
 
-void state_machine_show(StateMachineClass this) {
-ENTERLOG
+void state_machine_show(StateMachine this) {
 	if(!this) {
 		return;
 	}
@@ -407,16 +379,13 @@ ENTERLOG
 		state_manager_show(state_manager->states);
 		state_manager=state_manager->next;
 	}
-EXITLOG
 }
 
-void state_machine_free(StateMachineClass this) {
-ENTERLOG
+void state_machine_free(StateMachine this) {
 	if(!this) {
 		return;
 	}
 
 	this->free(this);
 	free(this);
-EXITLOG
 }

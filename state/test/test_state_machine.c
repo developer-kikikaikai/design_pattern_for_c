@@ -55,7 +55,7 @@ static int test_state_end_event_end(void *arg) {
 
 static int test_state_machine_failsafe() {
 	state_event_info_t event_info;
-	if(!state_machine_update_machine(NULL, &event_info) || !state_machine_update_machine((StateMachineClass)&event_info, NULL) ) {
+	if(!state_machine_update_machine(NULL, &event_info) || !state_machine_update_machine((StateMachine)&event_info, NULL) ) {
 		printf("####Failed to check error state_machine_update_machine\n");
 		return -1;
 	}
@@ -87,7 +87,7 @@ static int test_state_machine_normally_usage() {
 		{EVENT_END, sizeof(state_for_endevent)/sizeof(state_for_endevent[0]), state_for_endevent},
 	};
 
-	StateMachineClass state_machine = state_machine_new(sizeof(event_info)/sizeof(event_info[0]), event_info, 0);
+	StateMachine state_machine = state_machine_new(sizeof(event_info)/sizeof(event_info[0]), event_info, 0);
 	if(!state_machine) {
 		printf("####Failed to call state_machine_new\n");
 		return -1;
@@ -142,7 +142,7 @@ static int test_state_machine_update_usage() {
 		{EVENT_END, sizeof(state_for_endevent)/sizeof(state_for_endevent[0]), state_for_endevent},
 	};
 
-	StateMachineClass state_machine = state_machine_new(sizeof(event_info)/sizeof(event_info[0]), event_info, 0);
+	StateMachine state_machine = state_machine_new(sizeof(event_info)/sizeof(event_info[0]), event_info, 0);
 	if(!state_machine) {
 		printf("####Failed to call state_machine_new\n");
 		return -1;
@@ -194,7 +194,7 @@ static int test_state_machine_multi_thread() {
 	};
 
 	//run by multi thread
-	StateMachineClass state_machine = state_machine_new(sizeof(event_info)/sizeof(event_info[0]), event_info, 1);
+	StateMachine state_machine = state_machine_new(sizeof(event_info)/sizeof(event_info[0]), event_info, 1);
 	if(!state_machine) {
 		printf("####Failed to call state_machine_new\n");
 		return -1;

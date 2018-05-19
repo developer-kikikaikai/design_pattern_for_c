@@ -2,8 +2,8 @@
  * @file state_machine.h
  * @brief This is API for Sate machine
 **/
-#ifndef STATE_MACHINE_
-#define STATE_MACHINE_
+#ifndef STATE_MACHINE_H_
+#define STATE_MACHINE_H_
 #include "state_manager.h"
 
 /*! @struct state_event_info_t
@@ -16,7 +16,7 @@
 } state_event_info_t;
 
 struct state_machine_t;
-typedef struct state_machine_t *StateMachineClass;
+typedef struct state_machine_t *StateMachine;
 
 
 /**
@@ -27,7 +27,7 @@ typedef struct state_machine_t *StateMachineClass;
  * @retval !=NULL  this class handle
  * @retval NULL error
  */
-StateMachineClass state_machine_new(size_t event_num, const state_event_info_t * event_infos, int is_multithread);
+StateMachine state_machine_new(size_t event_num, const state_event_info_t * event_infos, int is_multithread);
 /**
  * @brief update sate
  *
@@ -36,7 +36,7 @@ StateMachineClass state_machine_new(size_t event_num, const state_event_info_t *
  * @retval STATE_MNG_SUCCESS success
  * @retval other failed
 */
-int state_machine_update_machine(StateMachineClass this, const state_event_info_t * event_info);
+int state_machine_update_machine(StateMachine this, const state_event_info_t * event_info);
 /**
  * @brief set state
  *
@@ -44,7 +44,7 @@ int state_machine_update_machine(StateMachineClass this, const state_event_info_
  * @param[in] state update state, if there is no state in set list, state is changed to latest order.
  * @return none
  */
-void state_machine_set_state(StateMachineClass this, int state);
+void state_machine_set_state(StateMachine this, int state);
 /**
  * @brief call event trigger
  *
@@ -55,19 +55,19 @@ void state_machine_set_state(StateMachineClass this, int state);
  * @retval return value of method if you set by single thread mode
  * @retval STATE_MNG_SUCCESS and result is in callback you set callback if you set by multi thread mode.
  */
-int state_machine_call_event(StateMachineClass this, int event, void *arg, void (*response)(int result));
+int state_machine_call_event(StateMachine this, int event, void *arg, void (*response)(int result));
 /**
  * @brief set state
  *
  * @param[in] this class handle returned at state_manager_new
  * @return none
  */
-void state_machine_show(StateMachineClass this);
+void state_machine_show(StateMachine this);
 /**
  * @brief set state
  *
  * @param[in] this class handle returned at state_manager_new
  * @return none
  */
-void state_machine_free(StateMachineClass this);
+void state_machine_free(StateMachine this);
 #endif

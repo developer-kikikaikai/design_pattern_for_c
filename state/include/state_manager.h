@@ -31,7 +31,7 @@ typedef struct state_info_t {
  * @brief Class definition of state_manager, detail is defined in C file
 */
 struct state_manager_t;
-typedef struct state_manager_t *StateManagerClass;
+typedef struct state_manager_t *StateManager;
 
 /**
  * @brief define class for state_manager
@@ -42,7 +42,7 @@ typedef struct state_manager_t *StateManagerClass;
  * @retval !=NULL  this class handle
  * @retval NULL error
  */
-StateManagerClass state_manager_new(size_t state_info_num, const state_info_t * state);
+StateManager state_manager_new(size_t state_info_num, const state_info_t * state);
 /**
  * @brief update method related to state
  *
@@ -51,7 +51,7 @@ StateManagerClass state_manager_new(size_t state_info_num, const state_info_t * 
  * @retval STATE_MNG_SUCCESS success
  * @retval other failed to add
  */
-int state_manager_update_method(StateManagerClass this, const state_info_t * state);
+int state_manager_update_method(StateManager this, const state_info_t * state);
 /**
  * @brief set state
  *
@@ -59,14 +59,14 @@ int state_manager_update_method(StateManagerClass this, const state_info_t * sta
  * @param[in] state state, if there is no state in set list, state is changed to latest order.
  * @return none
 */
-void state_manager_set_state(StateManagerClass this, int state);
+void state_manager_set_state(StateManager this, int state);
 /**
  * @brief get current state
  *
  * @param[in] this class handle returned at state_manager_new
  * @return state value or STATE_MNG_FAILED if you don't set state
 */
-int state_manager_get_current_state(StateManagerClass this);
+int state_manager_get_current_state(StateManager this);
 /**
  * @brief call state method
  *
@@ -75,19 +75,19 @@ int state_manager_get_current_state(StateManagerClass this);
  * @retval STATE_MNG_SUCCESS success
  * @retval other failed
 */
-int state_manager_call(StateManagerClass this, void *arg);
+int state_manager_call(StateManager this, void *arg);
 /**
  * @brief show current state table
  *
  * @param[in] this class handle returned at state_manager_new
  * @return none
  */
-void state_manager_show(StateManagerClass this);
+void state_manager_show(StateManager this);
 /**
  * @brief free state manager
  *
  * @param[in] this class handle returned at state_manager_new
  * @return none
  */
-void state_manager_free(StateManagerClass this);
+void state_manager_free(StateManager this);
 #endif

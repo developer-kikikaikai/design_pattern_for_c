@@ -31,19 +31,19 @@ static int test_state_end(void *arg) {
 }
 
 static int test_state_begin_2_testing(void *arg) {
-	StateManagerClass manager = (StateManagerClass)arg;
+	StateManager manager = (StateManager)arg;
 	state_manager_set_state(manager, STATE_TESTING);
 	return STATE_BEGIN;
 }
 
 static int test_state_testing_2_end(void *arg) {
-	StateManagerClass manager = (StateManagerClass)arg;
+	StateManager manager = (StateManager)arg;
 	state_manager_set_state(manager, STATE_END);
 	return STATE_TESTING;
 }
 
 static int test_state_end_2_begin(void *arg) {
-	StateManagerClass manager = (StateManagerClass)arg;
+	StateManager manager = (StateManager)arg;
 	state_manager_set_state(manager, STATE_BEGIN);
 	return STATE_END;
 }
@@ -51,7 +51,7 @@ static int test_state_end_2_begin(void *arg) {
 
 static int test_state_manager_failsafe() {
 	state_info_t state;
-	if(!state_manager_update_method(NULL, &state) || !state_manager_update_method((StateManagerClass)&state, NULL) ) {
+	if(!state_manager_update_method(NULL, &state) || !state_manager_update_method((StateManager)&state, NULL) ) {
 		printf("####Failed to check error state_manager_update_method\n");
 		return -1;
 	}
@@ -75,7 +75,7 @@ static int test_state_manager_normally_usage() {
 		STATE_MNG_SET_INFO_INIT(STATE_END, test_state_end),
 	};
 
-	StateManagerClass manager = state_manager_new(sizeof(state_info)/sizeof(state_info[0]), state_info);
+	StateManager manager = state_manager_new(sizeof(state_info)/sizeof(state_info[0]), state_info);
 	if(!manager) {
 		printf("####Failed to call state_manager_new\n");
 		return -1;
@@ -122,7 +122,7 @@ static int test_state_manager_update_usage() {
 		{STATE_END, test_state_end},
 	};
 
-	StateManagerClass manager = state_manager_new(0, NULL);
+	StateManager manager = state_manager_new(0, NULL);
 	if(!manager) {
 		printf("####Failed to call state_manager_new\n");
 		return -1;
@@ -179,7 +179,7 @@ static int test_state_manager_change_state_in_func() {
 		STATE_MNG_SET_INFO_INIT(STATE_TESTING, test_state_testing_2_end),
 		STATE_MNG_SET_INFO_INIT(STATE_END, test_state_end_2_begin),
 	};
-	StateManagerClass manager = state_manager_new(sizeof(state_info)/sizeof(state_info[0]), state_info);
+	StateManager manager = state_manager_new(sizeof(state_info)/sizeof(state_info[0]), state_info);
 	if(!manager) {
 		printf("####Failed to call state_manager_new\n");
 		return -1;

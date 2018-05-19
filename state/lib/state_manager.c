@@ -25,7 +25,7 @@ struct state_manager_state_info_t {
 };
 
 /*! @struct state_manager_t
- * @brief StateManagerClass instance definition.
+ * @brief StateManager instance definition.
 */
 struct state_manager_t {
 	StateManagerStateInfo head;
@@ -36,15 +36,14 @@ struct state_manager_t {
 /*! @name private API for state_manager_t */
 /* @{ */
 /*! Add new state. */
-static int state_manager_add_new_state(StateManagerClass this, const state_info_t * state);
+static int state_manager_add_new_state(StateManager this, const state_info_t * state);
 /*! Find state. */
-StateManagerStateInfo state_manager_find_state(StateManagerClass this, int state);
+StateManagerStateInfo state_manager_find_state(StateManager this, int state);
 /* }@ */
 /*************
  * private API
 *************/
-static int state_manager_add_new_state(StateManagerClass this, const state_info_t * state) {
-ENTERLOG
+static int state_manager_add_new_state(StateManager this, const state_info_t * state) {
 	/*allocate and copy state info*/
 	StateManagerStateInfo state_info=calloc(1, sizeof(*state_info));
 	if(!state_info) {
@@ -55,12 +54,10 @@ ENTERLOG
 	memcpy(&state_info->state, state, sizeof(state_info_t));
 	/*push to list*/
 	dputil_list_push((DPUtilList)this, (DPUtilListData)state_info);
-EXITLOG
 	return STATE_MNG_SUCCESS;
 }
 
-StateManagerStateInfo state_manager_find_state(StateManagerClass this, int state) {
-ENTERLOG
+StateManagerStateInfo state_manager_find_state(StateManager this, int state) {
 	StateManagerStateInfo state_info=this->head;
 	while(state_info) {
 		if(state_info->state.state == state) {
@@ -69,15 +66,13 @@ ENTERLOG
 		state_info=state_info->next;
 	}
 
-EXITLOG
 	return state_info;
 }
 /*************
  * public interface API implement
 *************/
-StateManagerClass state_manager_new(size_t state_info_num, const state_info_t * state) {
-ENTERLOG
-	StateManagerClass instance = calloc(1, sizeof(*instance));
+StateManager state_manager_new(size_t state_info_num, const state_info_t * state) {
+	StateManager instance = calloc(1, sizeof(*instance));
 	if( !instance ) {
 		DEBUG_ERRPRINT("allocate error\n");
 		goto err;
@@ -92,15 +87,13 @@ ENTERLOG
 		}
 	}
 
-EXITLOG
 	return instance;
 err:
 	state_manager_free(instance);
 	return NULL;
 }
 
-int state_manager_update_method(StateManagerClass this, const state_info_t * state) {
-ENTERLOG
+int state_manager_update_method(StateManager this, const state_info_t * state) {
 	if(!this || !state) {
 		return STATE_MNG_FAILED;
 	}
@@ -112,21 +105,17 @@ ENTERLOG
 	} else {
 		ret = state_manager_add_new_state(this, state);
 	}
-EXITLOG
 	return ret;
 }
 
-void state_manager_set_state(StateManagerClass this, int state) {
-ENTERLOG
+void state_manager_set_state(StateManager this, int state) {
 	if(!this) {
 		return;
 	}
 	this->current_state = state_manager_find_state(this, state);
-EXITLOG
 }
 
-int state_manager_get_current_state(StateManagerClass this) {
-ENTERLOG
+int state_manager_get_current_state(StateManager this) {
 	if(!this) {
 		return STATE_MNG_FAILED;
 	}
@@ -135,11 +124,9 @@ ENTERLOG
 	if(this->current_state) {
 		current_state = this->current_state->state.state;
 	}
-EXITLOG
 	return current_state;
 }
-int state_manager_call(StateManagerClass this, void *arg) {
-ENTERLOG
+int state_manager_call(StateManager this, void *arg) {
 	/*fail safe*/
 	if(!this) {
 		return STATE_MNG_FAILED;
@@ -150,12 +137,10 @@ ENTERLOG
 		return STATE_MNG_FAILED;
 	}
 
-EXITLOG
 	return this->current_state->state.state_method(arg);
 }
 
-void state_manager_show(StateManagerClass this) {
-ENTERLOG
+void state_manager_show(StateManager this) {
 	if(!this) {
 		return;
 	}
@@ -174,11 +159,9 @@ ENTERLOG
 	}
 	printf("----------------------------------\n");
 
-EXITLOG
 }
 
-void state_manager_free(StateManagerClass this) {
-ENTERLOG
+void state_manager_free(StateManager this) {
 	if(!this) {
 		return;
 	}
@@ -189,5 +172,4 @@ ENTERLOG
 		state_info=(StateManagerStateInfo)dputil_list_pop((DPUtilList)this);
 	}
 	free(this);
-EXITLOG
 }
