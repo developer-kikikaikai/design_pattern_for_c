@@ -1,5 +1,5 @@
 #load common setting
-include $(top_srcdir)/ChainOfResponsibility/CoR_am.conf
+include $(top_srcdir)/chain_of_responsibility/CoR_am.conf
 
 bin_PROGRAMS = test
 

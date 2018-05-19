@@ -13066,7 +13066,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files Makefile design_pattern_util/Makefile design_pattern_util/lib/Makefile design_pattern_util/include/Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile publisher/Makefile publisher/lib/Makefile publisher/include/Makefile publisher/test/Makefile publisher/sample/Makefile ChainOfResponsibility/Makefile ChainOfResponsibility/lib/Makefile ChainOfResponsibility/include/Makefile ChainOfResponsibility/test/Makefile mediator/Makefile mediator/sample/Makefile state/Makefile state/lib/Makefile state/include/Makefile state/test/Makefile"
+ac_config_files="$ac_config_files Makefile design_pattern_util/Makefile design_pattern_util/lib/Makefile design_pattern_util/include/Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile publisher/Makefile publisher/lib/Makefile publisher/include/Makefile publisher/test/Makefile publisher/sample/Makefile chain_of_responsibility/Makefile chain_of_responsibility/lib/Makefile chain_of_responsibility/include/Makefile chain_of_responsibility/test/Makefile mediator/Makefile mediator/sample/Makefile state/Makefile state/lib/Makefile state/include/Makefile state/test/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -14102,10 +14102,10 @@ do
     "publisher/include/Makefile") CONFIG_FILES="$CONFIG_FILES publisher/include/Makefile" ;;
     "publisher/test/Makefile") CONFIG_FILES="$CONFIG_FILES publisher/test/Makefile" ;;
     "publisher/sample/Makefile") CONFIG_FILES="$CONFIG_FILES publisher/sample/Makefile" ;;
-    "ChainOfResponsibility/Makefile") CONFIG_FILES="$CONFIG_FILES ChainOfResponsibility/Makefile" ;;
-    "ChainOfResponsibility/lib/Makefile") CONFIG_FILES="$CONFIG_FILES ChainOfResponsibility/lib/Makefile" ;;
-    "ChainOfResponsibility/include/Makefile") CONFIG_FILES="$CONFIG_FILES ChainOfResponsibility/include/Makefile" ;;
-    "ChainOfResponsibility/test/Makefile") CONFIG_FILES="$CONFIG_FILES ChainOfResponsibility/test/Makefile" ;;
+    "chain_of_responsibility/Makefile") CONFIG_FILES="$CONFIG_FILES chain_of_responsibility/Makefile" ;;
+    "chain_of_responsibility/lib/Makefile") CONFIG_FILES="$CONFIG_FILES chain_of_responsibility/lib/Makefile" ;;
+    "chain_of_responsibility/include/Makefile") CONFIG_FILES="$CONFIG_FILES chain_of_responsibility/include/Makefile" ;;
+    "chain_of_responsibility/test/Makefile") CONFIG_FILES="$CONFIG_FILES chain_of_responsibility/test/Makefile" ;;
     "mediator/Makefile") CONFIG_FILES="$CONFIG_FILES mediator/Makefile" ;;
     "mediator/sample/Makefile") CONFIG_FILES="$CONFIG_FILES mediator/sample/Makefile" ;;
     "state/Makefile") CONFIG_FILES="$CONFIG_FILES state/Makefile" ;;

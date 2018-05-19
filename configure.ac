@@ -46,10 +46,10 @@ AC_CONFIG_FILES([Makefile
 		 publisher/include/Makefile
 		 publisher/test/Makefile
 		 publisher/sample/Makefile
-		 ChainOfResponsibility/Makefile
-		 ChainOfResponsibility/lib/Makefile
-		 ChainOfResponsibility/include/Makefile
-		 ChainOfResponsibility/test/Makefile
+		 chain_of_responsibility/Makefile
+		 chain_of_responsibility/lib/Makefile
+		 chain_of_responsibility/include/Makefile
+		 chain_of_responsibility/test/Makefile
 		 mediator/Makefile
 		 mediator/sample/Makefile
 		 state/Makefile
