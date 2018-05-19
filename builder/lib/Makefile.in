@@ -100,7 +100,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 liblower_layer_director_la_LIBADD =
-am_liblower_layer_director_la_OBJECTS = lower_layer_director.lo
+am_liblower_layer_director_la_OBJECTS = lower_layer_director.lo \
+	builder_action.lo director.lo
 liblower_layer_director_la_OBJECTS =  \
 	$(am_liblower_layer_director_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -311,7 +312,7 @@ STATE_DIR = $(top_srcdir)/state
 noinst_LTLIBRARIES = liblower_layer_director.la
 #
 #lib_LTLIBRARIES = libbuilder.la
-liblower_layer_director_la_SOURCES = lower_layer_director.c
+liblower_layer_director_la_SOURCES = lower_layer_director.c builder_action.c director.c
 #for statik library
 liblower_layer_director_la_LDFLAGS = -rpath $(libdir)
 all: all-am
@@ -369,6 +370,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/builder_action.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/director.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lower_layer_director.Plo@am__quote@
 
 .c.o:

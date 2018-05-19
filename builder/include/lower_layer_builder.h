@@ -3,8 +3,8 @@
  * @brief This is API name definition for lower layer plugin library
           lower_layer_builder will load plugin defined this API
  **/
-#ifndef LOWER_LAYER_BUILDER_LIB_
-#define LOWER_LAYER_BUILDER_LIB_
+#ifndef LOWER_LAYER_BUILDER_LIB_H_
+#define LOWER_LAYER_BUILDER_LIB_H_
 #define LL_BUILDER_SUCCESS (0)
 #define LL_BUILDER_FAILED (-1)
 

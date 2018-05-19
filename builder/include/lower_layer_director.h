@@ -6,19 +6,22 @@
 **/
 
 
-#ifndef LOWER_LAYER_DIRECTOR_
-#define LOWER_LAYER_DIRECTOR_
+#ifndef LOWER_LAYER_DIRECTOR_H_
+#define LOWER_LAYER_DIRECTOR_H_
 #include "lower_layer_builder.h"
 
-struct lower_layer_director_class;
-typedef struct lower_layer_director_class *DirectorClass;
+/*! @struct Director
+ * @brief director class
+*/
+struct director_t;
+typedef struct director_t *Director;
 
 /*! @struct LowerLayerDirector
  * @brief flyweight class method definition
 */
-typedef struct _lower_layer_director_s {
+typedef struct lower_layer_director_t {
 	void * lower_layer_interface;/*! interface which has lower layer(builder). If no interface, it is NULL*/
-	DirectorClass director;/*! director class pointer */
+	Director director;/*! director class pointer */
 } lower_layer_director_t, *LowerLayerDirector;
 
 /**
