@@ -2,8 +2,8 @@
  * @file publisher.h
  * @brief This is API as Observer(Publish-Subscribe) design petten
 **/
-#ifndef PUBLISHER_
-#define PUBLISHER_
+#ifndef PUBLISHER_H_
+#define PUBLISHER_H_
 
 #include <stddef.h>
 
@@ -11,9 +11,9 @@
 #define PUBLISHER_FAILED (-1)
 
 /* @brief Subscribe Account class */
-struct subscriber_account;
+struct subscriber_account_t;
 /* @brief Subscribe Account class */
-typedef struct subscriber_account *SubscriberAccount;
+typedef struct subscriber_account_t subscriber_account_t, *SubscriberAccount;
 
 /**
  * @brief new Publisher content, user can get notify to subscribe.

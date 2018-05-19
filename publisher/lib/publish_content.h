@@ -2,16 +2,16 @@
  * @file publish_content.h
  * @brief This is API for PublishContent class which managed in Publisher
 **/
-#ifndef PUBLISH_CONTENT_
-#define PUBLISH_CONTENT_
+#ifndef PUBLISH_CONTENT_H_
+#define PUBLISH_CONTENT_H_
 
 #include "publisher.h"
 
 /*! @struct publish_content
  * @brief PublishContent class instance definition, detail is in publish_content.c
 */
-struct publish_content;
-typedef struct publish_content publish_content_t, *PublishContent;
+struct publish_content_t;
+typedef struct publish_content_t publish_content_t, *PublishContent;
 
 /*
  * @brief new
