@@ -8,20 +8,20 @@
 #include <stddef.h>
 #include "dp_util.h"
 
-/*! @struct flyweight_class_methods_s
- * @brief flyweight class method definition
+/*! @struct FlyweightMethodsIF
+ * @brief Flyweight methods interface definition, to set flyweight_factory_new. This interface is used for generating instance into FlyweightFactory.
 */
-struct flyweight_class_methods_s {
+struct flyweight_methods_t {
 	/**
 	 * @brief constructor of class
-	 * @param[in] this this allocated memory
+	 * @param[in] this class instance
 	 * @param[in] size size of this instance
 	 * @param[in] input_parameter input parameter related to flyweight_get
 	 */
 	void (*constructor)(void *this, size_t size, void *input_parameter);
 	/**
 	 * @brief operand == 
-	 * @param[in] this this allocated memory
+	 * @param[in] this class instance
 	 * @param[in] size size of this instance
 	 * @param[in] input_parameter input parameter related to flyweight_get
 	 * @return defined value
@@ -31,36 +31,37 @@ struct flyweight_class_methods_s {
 	int (*equall_operand)(void *this, size_t size, void *input_parameter);
 	/**
 	 * @brief setter
-	 * @param[in] this this allocated memory
+	 * @param[in] this class instance
 	 * @param[in] size size of this instance
 	 * @param[in] input_parameter
 	 */
 	int (*setter)(void *this, size_t size, void *input_parameter);
 	/**
 	 * @brief destructor
-	 * @param[in] this this allocated memory
+	 * @param[in] this class instance
 	 * @note allocated memory will free into library, please free members in class
 	 */
 	void (*destructor)(void *this);
 };
+typedef struct flyweight_methods_t flyweight_methods_t, * FlyweightMethodsIF;
 
-/*! @struct ClassHandle
- * @brief flyweight class handle
+/*! @struct FlyweightFactory
+ * @brief FlyweightFactory definition, defined in flyweight.c
 */
-struct flyweight_class_factory_s;
-typedef struct flyweight_class_factory_s * ClassHandle;
+struct flyweight_factory_t;
+typedef struct flyweight_factory_t * FlyweightFactory;
 
 /**
  * @brief define class for flyweight
- * @param[in] class_size size of class, C have to know size to allocate memory, 
+ * @param[in] instance_size size of instance which defined in user side.
  * @param[in] is_threadsafe  if !=0, ensure threadsafe to create new class instace, please set !=0 if you want to use this API on multi thread
- * @param[in] methods prime method for this class.
+ * @param[in] methods for generating class instance by using FlyweightFactory.
  *            If NULL, use defautlt. If not NULL, override methods. override NULL, this method is no effect.
- *            destructor is called at flyweight_unregister_class or exit
+ *            destructor is called at free
  * @retval !=NULL  this class handle
  * @retval NULL error
  */
-ClassHandle flyweight_define_class(size_t class_size, int is_threadsafe, struct flyweight_class_methods_s *methods);
+FlyweightFactory flyweight_factory_new(size_t class_size, int is_threadsafe, FlyweightMethodsIF methods);
 
 /**
  * @brief getter
@@ -69,7 +70,7 @@ ClassHandle flyweight_define_class(size_t class_size, int is_threadsafe, struct 
  * @retval !NULL class instance
  * @retval NULL id is invalid
  */
-void * flyweight_get(ClassHandle classHandle, void * constructor_parameter);
+void * flyweight_get(FlyweightFactory this, void * constructor_parameter);
 
 /**
  * @brief setter
@@ -78,12 +79,12 @@ void * flyweight_get(ClassHandle classHandle, void * constructor_parameter);
  * @param[in] data set data pointer
  * @param[in] setter setter if you want to change setter ( if NULL, use setter related to flyweight_register_class input)
  */
-int flyweight_set(ClassHandle classHandle, void * constructor_parameter, void * data, int (*setter)(void *this, size_t size, void *input_parameter));
+int flyweight_set(FlyweightFactory this, void * constructor_parameter, void * data, int (*setter)(void *this, size_t size, void *input_parameter));
 
 /**
  * @brief clear class handle
  * @param [in] classHandle class handle returned at flyweight_register_class
  * @turn none
  */
-void flyweight_clear(ClassHandle classHandle);
+void flyweight_factory_free(FlyweightFactory this);
 #endif/*FLYWEIGHT_*/

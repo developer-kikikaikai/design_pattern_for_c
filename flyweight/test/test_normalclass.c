@@ -13,7 +13,7 @@ int test_normalclass(int is_threadsafe) {
 	struct testclass1 data2_different1={.data=1};
 
 	//test1, create handle
-	ClassHandle handle = flyweight_define_class(sizeof(struct testclass1), is_threadsafe, NULL);
+	FlyweightFactory handle = flyweight_factory_new(sizeof(struct testclass1), is_threadsafe, NULL);
 	if(!handle) {
 		ERRLOG("failed to create handle");
 	}
@@ -71,7 +71,7 @@ int test_normalclass(int is_threadsafe) {
 	}
 
 	{
-	if(flyweight_define_class(0,0,NULL) != NULL) {
+	if(flyweight_factory_new(0,0,NULL) != NULL) {
 		ERRLOG("fail safe check error");
 	}
 	if(flyweight_get(NULL,NULL) != NULL) {
@@ -90,7 +90,7 @@ int test_normalclass(int is_threadsafe) {
 	}
 	//exit
 
-	flyweight_clear(NULL);
-	flyweight_clear(handle);
+	flyweight_factory_free(NULL);
+	flyweight_factory_free(handle);
 	return testcnt;
 }

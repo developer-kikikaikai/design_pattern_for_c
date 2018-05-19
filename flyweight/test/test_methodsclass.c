@@ -60,7 +60,7 @@ static int set_for_operand_onlyid(void *this, size_t size, void *input_parameter
 	return 1;
 }
 
-static struct flyweight_class_methods_s onlyid_method={
+static flyweight_methods_t onlyid_method={
 	.constructor=constructor_member,
 	.equall_operand=equall_operand_onlyid,
 	.setter=set_for_operand_onlyid,
@@ -74,7 +74,7 @@ static int equall_operand_member(void *this, size_t size, void *input_parameter)
 	return (class_instance->id == input->id) && (strcmp(class_instance->name, input->name)==0);
 }
 
-static struct flyweight_class_methods_s member_method={
+static flyweight_methods_t member_method={
 	.constructor=constructor_member,
 	.equall_operand=equall_operand_member,
 	.setter=NULL,
@@ -105,7 +105,7 @@ int test_methodsclass(int is_threadsafe) {
 
 	//test1, check operator is check member
 	{
-	ClassHandle handle = flyweight_define_class(sizeof(struct testclass1), is_threadsafe, &member_method);
+	FlyweightFactory handle = flyweight_factory_new(sizeof(struct testclass1), is_threadsafe, &member_method);
 	if(!handle) {
 		ERRLOG("failed to create handle");
 	}
@@ -128,13 +128,13 @@ int test_methodsclass(int is_threadsafe) {
 	if(instances[0] == instances[1] || instances[1] == instances[2] ||instances[1] != instances[3]) {
 		ERRLOG("Instance usage failed")
 	}
-	flyweight_clear(handle);
+	flyweight_factory_free(handle);
 	testcnt++;
 	}
 
 	//test2, check operator is check only ID
 	{
-	ClassHandle handle = flyweight_define_class(sizeof(struct testclass1), is_threadsafe, &onlyid_method);
+	FlyweightFactory handle = flyweight_factory_new(sizeof(struct testclass1), is_threadsafe, &onlyid_method);
 	if(!handle) {
 		ERRLOG("failed to create handle");
 	}
@@ -187,7 +187,7 @@ int test_methodsclass(int is_threadsafe) {
 	if(strcmp(updatename, "Mr. update name") != 0) {
 		ERRLOG("Failed to set")
 	}
-	flyweight_clear(handle);
+	flyweight_factory_free(handle);
 	testcnt++;
 	}
 	
