@@ -2,8 +2,8 @@
  * @file flyweight.h
  * @brief This is API as Flyweight design petten
 **/
-#ifndef FLYWEIGHT_
-#define FLYWEIGHT_
+#ifndef FLYWEIGHT_H_
+#define FLYWEIGHT_H_
 
 #include <stddef.h>
 #include "dp_util.h"
@@ -17,6 +17,7 @@ struct flyweight_methods_t {
 	 * @param[in] this class instance
 	 * @param[in] size size of this instance
 	 * @param[in] input_parameter input parameter related to flyweight_get
+	 * @note default: memcpy size
 	 */
 	void (*constructor)(void *this, size_t size, void *input_parameter);
 	/**
@@ -27,6 +28,7 @@ struct flyweight_methods_t {
 	 * @return defined value
 	 * @note if you set function which return always 1, this class is same as Singleton.
 	 * @note if you set function which return always 0, this class always allocate new instance
+	 * @note default: memcmp size
 	 */
 	int (*equall_operand)(void *this, size_t size, void *input_parameter);
 	/**
@@ -34,12 +36,14 @@ struct flyweight_methods_t {
 	 * @param[in] this class instance
 	 * @param[in] size size of this instance
 	 * @param[in] input_parameter
+	 * @note default: memcpy size
 	 */
 	int (*setter)(void *this, size_t size, void *input_parameter);
 	/**
 	 * @brief destructor
 	 * @param[in] this class instance
 	 * @note allocated memory will free into library, please free members in class
+	 * @note default: none
 	 */
 	void (*destructor)(void *this);
 };

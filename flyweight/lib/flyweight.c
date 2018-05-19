@@ -1,6 +1,6 @@
 /**
  * @file flyweight.c
- *    @brief      Implement of Flyweight design petten library API, defined in flyweight.h
+ *  @brief   Implement of Flyweight design petten library API, defined in flyweight.h
 **/
 #include <stdarg.h>
 #include <stdio.h>
@@ -19,18 +19,21 @@
 #define FLYWEIGHT_SUCCESS (0) /*! success */
 /* @} */
 
-/*! @struct flyweight_instance_s
+/*! @struct flyweight_instance_t
  * @brief instance data definition, instance storaged by list
 */
-struct flyweight_instance_s {
-	struct flyweight_instance_s * next;
+struct flyweight_instance_t;
+typedef struct flyweight_instance_t * FlyweightInstance;
+
+struct flyweight_instance_t {
+	FlyweightInstance next;
 	void * instance;
 };
 
-/* ! new  flyweight_instance_s */
-static struct flyweight_instance_s * flyweight_instance_new(size_t size);	
-/* ! free flyweight_instance_s */
-static void flyweight_instance_free(struct flyweight_instance_s * instance);
+/* ! new flyweight_instance_t */
+static FlyweightInstance flyweight_instance_new(size_t size);	
+/* ! free flyweight_instance_t */
+static void flyweight_instance_free(FlyweightInstance instance);
 
 /*! @struct class_factory
  * @brief instance data definition.
@@ -39,25 +42,25 @@ struct flyweight_factory_t {
 	//private member
 	flyweight_methods_t methods;/*! methods */
 	size_t class_size;/*! size of class */
-	struct flyweight_instance_s *class_instances; /*! list of instance */
+	FlyweightInstance class_instances; /*! list of instance */
 	pthread_mutex_t *lock;/*! lock pointer, if != null, lock at getter and setter */
 };
 
-/*! @name public API for flyweight_instance_s */
+/*! @name public API with FlyweightInstance */
 /* @{ */
 /*! Check has instance. */
-static struct flyweight_instance_s * flyweight_factory_get_storaged_instance(FlyweightFactory class_factory, void * constructor_parameter);
+static FlyweightInstance flyweight_factory_get_storaged_instance(FlyweightFactory class_factory, void * constructor_parameter);
 /*! allocate. */
-static struct flyweight_instance_s * flyweight_factory_instance_new(FlyweightFactory class_factory, void *constructor_parameter);
+static FlyweightInstance flyweight_factory_instance_new(FlyweightFactory class_factory, void *constructor_parameter);
 /*! push instance into list. */
-static void flyweight_factory_push_instance(struct flyweight_instance_s * instance, FlyweightFactory class_factory);
+static void flyweight_factory_push_instance(FlyweightInstance instance, FlyweightFactory class_factory);
 /*! pop instance from list. */
-static struct flyweight_instance_s * flyweight_factory_pop_instance(FlyweightFactory class_factory);
+static FlyweightInstance flyweight_factory_pop_instance(FlyweightFactory class_factory);
 /*! Getter. */
-static struct flyweight_instance_s * flyweight_factory_get(FlyweightFactory class_factory, void * constructor_parameter);
+static FlyweightInstance flyweight_factory_get(FlyweightFactory class_factory, void * constructor_parameter);
 /* @} */
 
-/*! @name private API for flyweight_class_factory_s */
+/*! @name private API for FlyweightFactory */
 /* @{ */
 /*! Default constructor. */
 static inline void flyweight_class_default_constructor(void *this, size_t size, void *input_parameter);
@@ -72,11 +75,11 @@ static void flyweight_class_set_methods(FlyweightMethodsIF methods, FlyweightFac
 /* @} */
 
 /*************
- * for flyweight_instance_s API
+ * for FlyweightInstance API
 *************/
-static struct flyweight_instance_s * flyweight_instance_new(size_t size) {
+static FlyweightInstance flyweight_instance_new(size_t size) {
 
-	struct flyweight_instance_s * instance = (struct flyweight_instance_s *)calloc(1, sizeof(struct flyweight_instance_s) );
+	FlyweightInstance instance = (FlyweightInstance )calloc(1, sizeof(struct flyweight_instance_t) );
 	if( !instance ) {
 		return NULL;	
 	}
@@ -91,7 +94,7 @@ static struct flyweight_instance_s * flyweight_instance_new(size_t size) {
 	return instance;
 }
 
-static void flyweight_instance_free(struct flyweight_instance_s * instance) {
+static void flyweight_instance_free(FlyweightInstance instance) {
 	if( instance && instance->instance ) {
 		free(instance->instance);
 	}
@@ -99,16 +102,16 @@ static void flyweight_instance_free(struct flyweight_instance_s * instance) {
 }
 
 /*************
- * for flyweight_class_factory_s API
+ * for FlyweightFactory API
 *************/
-static struct flyweight_instance_s * flyweight_factory_get_storaged_instance(FlyweightFactory class_factory, void * constructor_parameter) {
+static FlyweightInstance flyweight_factory_get_storaged_instance(FlyweightFactory class_factory, void * constructor_parameter) {
 	//fail safe, if equall_operand == NULL, there is no case to store same instance
 	if( !class_factory->methods.equall_operand ) {
 		DEBUG_ERRPRINT("operand is NULL\n");
 		return NULL;
 	}
 
-	struct flyweight_instance_s * instance=class_factory->class_instances;
+	FlyweightInstance instance = class_factory->class_instances;
 	while(instance) {
 		if( class_factory->methods.equall_operand(instance->instance, class_factory->class_size, constructor_parameter) ) {
 			DEBUG_ERRPRINT("address %p instance is same\n", instance);
@@ -120,8 +123,8 @@ static struct flyweight_instance_s * flyweight_factory_get_storaged_instance(Fly
 	return instance;
 }
 
-static struct flyweight_instance_s * flyweight_factory_instance_new(FlyweightFactory class_factory, void *constructor_parameter) {
-	struct flyweight_instance_s * instance = flyweight_instance_new(class_factory->class_size);
+static FlyweightInstance flyweight_factory_instance_new(FlyweightFactory class_factory, void *constructor_parameter) {
+	FlyweightInstance instance = flyweight_instance_new(class_factory->class_size);
 	if( !instance ) {
 		return NULL;
 	}
@@ -132,13 +135,13 @@ static struct flyweight_instance_s * flyweight_factory_instance_new(FlyweightFac
 	return instance;
 }
 
-static void flyweight_factory_push_instance(struct flyweight_instance_s * instance, FlyweightFactory class_factory) {
+static void flyweight_factory_push_instance(FlyweightInstance instance, FlyweightFactory class_factory) {
 	instance->next = class_factory->class_instances;
 	class_factory->class_instances = instance;
 }
 
-static struct flyweight_instance_s * flyweight_factory_pop_instance(FlyweightFactory class_factory) {
-	struct flyweight_instance_s * instance = class_factory->class_instances;
+static FlyweightInstance flyweight_factory_pop_instance(FlyweightFactory class_factory) {
+	FlyweightInstance instance = class_factory->class_instances;
 	if( instance ) {
 		class_factory->class_instances = class_factory->class_instances->next;
 	}
@@ -146,8 +149,8 @@ static struct flyweight_instance_s * flyweight_factory_pop_instance(FlyweightFac
 	return instance;
 }
 
-static struct flyweight_instance_s * flyweight_factory_get(FlyweightFactory class_factory, void * constructor_parameter) {
-	struct flyweight_instance_s * instance = flyweight_factory_get_storaged_instance(class_factory, constructor_parameter);
+static FlyweightInstance flyweight_factory_get(FlyweightFactory class_factory, void * constructor_parameter) {
+	FlyweightInstance instance = flyweight_factory_get_storaged_instance(class_factory, constructor_parameter);
 	if( instance ) {
 		//if already keep method, return it;
 		return instance;
@@ -223,7 +226,7 @@ FlyweightFactory flyweight_factory_new(size_t class_size, int is_threadsafe, Fly
 	if( is_threadsafe ) {
 		class_factory->lock = (pthread_mutex_t *) calloc(1, sizeof(pthread_mutex_t));
 		if( !class_factory->lock ) {
-			DEBUG_ERRPRINT("class instance lock error:%s\n",  strerror(errno));
+			DEBUG_ERRPRINT("class instance lock error:%s\n", strerror(errno));
 			free(class_factory);
 			return NULL;
 		}
@@ -248,7 +251,7 @@ void * flyweight_get(FlyweightFactory this, void * constructor_parameter) {
 	FLYWEIGHT_CLASS_LOCK(this);
 
 	//get instance
-	struct flyweight_instance_s * instance = flyweight_factory_get(this, constructor_parameter);
+	FlyweightInstance instance = flyweight_factory_get(this, constructor_parameter);
 	if( instance ) {
 		ret = instance->instance;
 	}
@@ -270,7 +273,7 @@ int flyweight_set(FlyweightFactory this, void * constructor_parameter, void * da
 	FLYWEIGHT_CLASS_LOCK(this);
 
 	//get and set instance
-	struct flyweight_instance_s * instance = flyweight_factory_get(this, constructor_parameter);
+	FlyweightInstance instance = flyweight_factory_get(this, constructor_parameter);
 
 	if(!instance) {
 		DEBUG_ERRPRINT("Failed to get instance! handle[%p]\n", this );
@@ -298,7 +301,7 @@ void flyweight_factory_free(FlyweightFactory this) {
 	FLYWEIGHT_CLASS_LOCK(this);
 
 	//pop and free
-	struct flyweight_instance_s *instance=NULL;
+	FlyweightInstance instance=NULL;
 	while( (instance = flyweight_factory_pop_instance(this)) != NULL ) {
 		//call destcuctor
 		if(this->methods.destructor) {
