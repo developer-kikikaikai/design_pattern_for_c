@@ -2,8 +2,8 @@
  * @file chain_of_responsibility.h
  * @brief This is API for Chain of Responsibility design pettern class
 **/
-#ifndef CHAIN_OF_RESPONSIBILITY_
-#define CHAIN_OF_RESPONSIBILITY_
+#ifndef CHAIN_OF_RESPONSIBILITY_H_
+#define CHAIN_OF_RESPONSIBILITY_H_
 
 /*! @name CoR result */
 /* @{ */

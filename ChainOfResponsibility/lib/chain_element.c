@@ -28,7 +28,7 @@ static void chain_element_part_free(ChainElementPart this);
  /*! @struct chain_element
   * @brief ChainElement class instance definition
 */
-struct chain_element {
+struct chain_element_t {
 	ChainElementPart head;/*! list of ChainElementPart*/
 	ChainElementPart tail;
 	pthread_mutex_t lock;/*! lock */
@@ -41,32 +41,26 @@ struct chain_element {
  * for ChainElementPart class API definition
 *************/
 static ChainElementPart chain_element_part_new(chain_func func) {
-ENTERLOG
 	ChainElementPart element = calloc(1, sizeof(*element));
 	if(!element) {
 		return NULL;
 	}
 
 	element->func = func;
-EXITLOG
 	return element;
 }
 
 static void chain_element_part_free(ChainElementPart this) {
-ENTERLOG
 	free(this);
-EXITLOG
 }
 
 ChainElement chain_element_new(void) {
-ENTERLOG
 	ChainElement element = calloc(1, sizeof(*element));
 	if(!element) {
 		return NULL;
 	}
 
 	pthread_mutex_init(&element->lock, NULL);
-EXITLOG
 	return element;
 }
 
@@ -74,7 +68,6 @@ EXITLOG
  * public API definition
 *************/
 int chain_element_add_function(ChainElement this, chain_func func) {
-ENTERLOG
 	int ret = COR_FAILED;
 CHAIN_ELEMENT_LOCK(this)
 	ChainElementPart part=chain_element_part_new(func);
@@ -83,12 +76,10 @@ CHAIN_ELEMENT_LOCK(this)
 		ret = COR_SUCCESS;
 	}
 CHAIN_ELEMENT_UNLOCK
-EXITLOG
 	return ret;
 }
 
 void chain_element_remove_function(ChainElement this, chain_func func) {
-ENTERLOG
 CHAIN_ELEMENT_LOCK(this)
 	ChainElementPart part = this->head;
 	while(part) {
@@ -103,11 +94,9 @@ CHAIN_ELEMENT_LOCK(this)
 		}
 	}
 CHAIN_ELEMENT_UNLOCK
-EXITLOG
 }
 
 void chain_element_call(ChainElement this, void *arg) {
-ENTERLOG
 CHAIN_ELEMENT_LOCK(this)
 	ChainElementPart part = this->head;
 	while(part) {
@@ -118,11 +107,9 @@ CHAIN_ELEMENT_LOCK(this)
 		part=part->next;
 	}
 CHAIN_ELEMENT_UNLOCK
-EXITLOG
 }
 
 void chain_element_delete(ChainElement this) {
-ENTERLOG
 CHAIN_ELEMENT_LOCK(this)
 	ChainElementPart part;
 	do {
@@ -131,5 +118,4 @@ CHAIN_ELEMENT_LOCK(this)
 	} while(part);
 CHAIN_ELEMENT_UNLOCK
 	free(this);
-EXITLOG
 }
