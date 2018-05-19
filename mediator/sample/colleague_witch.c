@@ -54,7 +54,7 @@ static void witch_damage(Colleague this, int value) {
 	WitchColleague instance = (WitchColleague)this;
 	instance->curhp -= value * instance->guard;
 	if(instance->curhp < value * instance->guard * 2) {
-		//次2発で死ぬときはピンチ通知
+		//If he/she may be dead next 2 turn, notify to mediator
 		mediator_member_warning(instance->mediator);
 	}
 }

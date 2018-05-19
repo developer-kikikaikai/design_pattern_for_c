@@ -73,14 +73,14 @@ static void heal_all(Mediator this) {
 static int mediator_ownturn_inochi_daijini(Mediator this) {
 	printf("inochi-daijini\n");
 
-	//通知があったら回復
+	//if report, call heal_all
 	if(this->notify_cnt) {
 		heal_all(this);
 		this->notify_cnt=0;
 	}
 
 	show_order(this);
-	//HP5を切った人は防御させる
+	//guard if HP <= 5
 	int damage=0;
 	ColleagueList member = this->head;
 	while(member) {
@@ -99,13 +99,13 @@ static int mediator_ownturn_inochi_daijini(Mediator this) {
 static int mediator_ownturn_gangan(Mediator this) {
 	printf("gangan-ikoze!\n");
 	show_order(this);
-	//4回くらい通知がないと回復しない
+	//don't call heal_all without 4 time notify
 	if(this->notify_cnt==4) {
 		heal_all(this);
 		this->notify_cnt=0;
 	}
 
-	//後は攻撃あるのみ
+	//always attack!
 	int damage=0;
 	ColleagueList member = this->head;
 	while(member) {

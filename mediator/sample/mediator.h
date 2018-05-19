@@ -11,16 +11,16 @@ typedef enum mediator_status_e {
 } mediator_status_e;
 
 Mediator mediator_new(mediator_status_e status);
-//colleagueの追加
+//add colleague
 void mediator_add_colleague(Mediator this, Colleague colleague);
-//自身パーティーの攻撃
+//own attack turn
 int mediator_ownturn(Mediator this);
-//メンバーのピンチ報告
+//member report warning
 void mediator_member_warning(Mediator this);
-//攻撃対象と人数
+//damage value
 void mediator_damage(Mediator this, int value);
-//メンバーチェック
+//check
 int mediator_is_member(Mediator this);
-//最後の解放
+//free
 void mediator_free(Mediator this);
 #endif

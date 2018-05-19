@@ -3,5 +3,4 @@
 #include "colleague.h"
 #include "mediator.h"
 Colleague priest_new(Mediator mediator);
-//freeは普通のfreeでいいようにしよう
 #endif

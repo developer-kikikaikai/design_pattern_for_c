@@ -5,7 +5,7 @@ COLLEAGUE_IF
 	int maxhp;
 	int curhp;
 	float guard;
-	//脳筋なのでピンチなんて報告しない
+	//no report
 };
 
 #define DEFAULT_MAXHP (30)

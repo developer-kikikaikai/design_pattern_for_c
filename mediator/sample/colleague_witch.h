@@ -3,5 +3,4 @@
 #include "colleague.h"
 #include "mediator.h"
 Colleague witch_new(Mediator mediator);
-//freeは普通のfreeでいいようにしよう
 #endif

@@ -56,7 +56,7 @@ static void priest_damage(Colleague this, int value) {
 	PriestColleague instance = (PriestColleague)this;
 	instance->curhp -= value * instance->guard;
 	if(instance->curhp < value * instance->guard ) {
-		//次で死ぬときはピンチ通知
+		//If he/she may be dead next turn, notify to mediator
 		mediator_member_warning(instance->mediator);
 	}
 }
