@@ -38,7 +38,6 @@ static PublishContent publisher_get_content(int content_id) {
  * public interface API implement
 *************/
 int publisher_new(size_t contents_num) {
-ENTERLOG
 	/*is already called it?*/
 	if(publisher_g.contents) {
 		DEBUG_ERRPRINT("publisher_new was already called!\n");
@@ -69,13 +68,11 @@ ENTERLOG
 
 	return PUBLISHER_SUCCESS;
 err:
-EXITLOG
 	publisher_free();
 	return PUBLISHER_FAILED;	
 }
 
 void publisher_free(void) {
-ENTERLOG
 	if(!publisher_g.contents) {
 		return;
 	}
@@ -88,12 +85,10 @@ ENTERLOG
 	free(publisher_g.contents);
 
 	memset(&publisher_g, 0, sizeof(publisher_g));
-EXITLOG
 	return;
 }
 
 SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*notify)(int publish_type, void * detail) ) {
-ENTERLOG
 	if(!notify || publish_type == 0) {
 		DEBUG_ERRPRINT("There is no notification information, please set it!\n");
 		return NULL;
@@ -106,12 +101,10 @@ ENTERLOG
 	}
 
 	SubscriberAccount account= publish_content_subscribe(content, publish_type, notify);
-EXITLOG
 	return account;
 }
 
 void publisher_unsubscribe(int content_id, SubscriberAccount account) {
-ENTERLOG
 	PublishContent content = publisher_get_content(content_id);
 	if(!content) {
 		DEBUG_ERRPRINT("invalid content_id\n");
@@ -119,11 +112,9 @@ ENTERLOG
 	}
 
 	publish_content_unsubscribe(content, account);
-EXITLOG
 }
 
 void publisher_publish(int content_id, int publish_type, void * detail) {
-ENTERLOG
 	PublishContent content = publisher_get_content(content_id);
 	if(!content) {
 		DEBUG_ERRPRINT("invalid content_id\n");
@@ -131,5 +122,4 @@ ENTERLOG
 	}
 
 	publish_content_publish(content, publish_type, detail);
-EXITLOG
 }

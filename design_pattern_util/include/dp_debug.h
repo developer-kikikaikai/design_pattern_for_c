@@ -23,13 +23,4 @@
 #define DEBUG_ERRPRINT(...) 
 #endif
 
-//#define DBGENER
-#ifdef DBGENER
-#define ENTERLOG printf("<%s>enter\n", __FUNCTION__);
-#define EXITLOG  printf("<%s>exit\n", __FUNCTION__);
-#else
-#define ENTERLOG
-#define EXITLOG
-#endif
-
 #endif
