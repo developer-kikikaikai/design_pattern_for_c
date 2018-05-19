@@ -1,0 +1,8 @@
+{
+  global:
+    flyweight_factory_new;
+    flyweight_get;
+    flyweight_set;
+    flyweight_factory_free;
+  local: *;
+};

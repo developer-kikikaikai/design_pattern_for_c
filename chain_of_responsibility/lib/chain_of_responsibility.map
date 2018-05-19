@@ -1,0 +1,8 @@
+{
+  global:
+    cor_add_function;
+    cor_call;
+    cor_remove_function;
+    cor_clear;
+  local: *;
+};

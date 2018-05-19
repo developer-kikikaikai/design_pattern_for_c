@@ -1,0 +1,17 @@
+{
+  global:
+    state_manager_new;
+    state_manager_update_method;
+    state_manager_set_state;
+    state_manager_get_current_state;
+    state_manager_call;
+    state_manager_show;
+    state_manager_free;
+    state_machine_new;
+    state_machine_update_machine;
+    state_machine_set_state;
+    state_machine_call_event;
+    state_machine_show;
+    state_machine_free;
+  local: *;
+};

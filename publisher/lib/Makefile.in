@@ -311,7 +311,7 @@ libpublisher_la_SOURCES = publisher.c  publish_content.c
 #for statik library
 libpublisher_la_LDFLAGS = -rpath $(libdir) \
 	$(top_srcdir)/design_pattern_util/lib/libdputil.la \
-	-Wl,--version-script,libpublisher.map
+	-Wl,--version-script,publisher.map
 all: all-am
 
 .SUFFIXES:

@@ -1,0 +1,10 @@
+{
+  global:
+    lower_layer_builder_instance_new;
+    lower_layer_builder_instance_free;
+    layer;
+    lower_layer_director_new;
+    lower_layer_director_construct;
+    lower_layer_director_free;
+  local: *;
+};
