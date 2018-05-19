@@ -38,7 +38,7 @@ Related to Construct:
   |Flyweight       |  Yes  | see flyweight |                                            |
   |Adapter         |  No   | create future |                                            |
   |Bridge          |  No   | create future |                                            |
-  |Composite       |  No   | create future |                                            |
+  |Composite       |  No   |   No          | Please use a tree or a list as dp_list.h   |
   |Decorator       |  No   | create future |                                            |
   |Facade          |  No   | create future |                                            |
   |Proxy           |  No   |   No          | Please switch by library/dlopen/LD_PRELOAD |
