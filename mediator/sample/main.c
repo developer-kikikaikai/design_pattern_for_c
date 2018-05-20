@@ -31,13 +31,14 @@ Colleague get_colleage(Mediator mediator) {
 }
 
 int main(int argc, char *argv[]) {
+	int status;
+	int member_count;
 	if(argc<3) {
 		printf("Usage: %s <mode(0:GANGAN_IKOZE!, other:INOCHI_DIJINI)> <member_count>\n", argv[0]);
-		return -1;
+	} else {
+		status = 1;
+		member_count = 5;
 	}
-
-	int status = atoi(argv[1]);
-	int member_count = atoi(argv[2]);
 
 	printf("status:%d, member=%d\n", status, member_count);
 
@@ -62,7 +63,9 @@ int main(int argc, char *argv[]) {
 
 		mediator_damage(mediator, moster.base_damage + time.tv_nsec%5);
 		printf("Please enter\n");
-		getchar();
+		if(3 <= argc) {
+			getchar();
+		}
 	}
 
 	if(mediator_is_member(mediator)) {
