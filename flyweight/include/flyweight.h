@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include "dp_util.h"
 
-/*! @struct FlyweightMethodsIF
+/*! @struct flyweight_methods_t
  * @brief Flyweight methods interface definition, to set flyweight_factory_new. This interface is used for generating instance into FlyweightFactory.
 */
 struct flyweight_methods_t {
@@ -47,19 +47,23 @@ struct flyweight_methods_t {
 	 */
 	void (*destructor)(void *this);
 };
+
+/** @brief FlyweightMethodsInterface class definition, member is defined in flyweight_methods_t, */
 typedef struct flyweight_methods_t flyweight_methods_t, * FlyweightMethodsIF;
 
-/*! @struct FlyweightFactory
- * @brief FlyweightFactory definition, defined in flyweight.c
+/*! @struct flyweight_factory_t
+ * @brief FlyweightFactory member definition, defined in flyweight.c
 */
 struct flyweight_factory_t;
+
+/** @brief FlyweightFactory definition*/
 typedef struct flyweight_factory_t * FlyweightFactory;
 
 /**
  * @brief define class for flyweight
- * @param[in] instance_size size of instance which defined in user side.
+ * @param[in] class_size size of instance which defined in user side.
  * @param[in] is_threadsafe  if !=0, ensure threadsafe to create new class instace, please set !=0 if you want to use this API on multi thread
- * @param[in] methods for generating class instance by using FlyweightFactory.
+ * @param[in] methods for generating class instance
  *            If NULL, use defautlt. If not NULL, override methods. override NULL, this method is no effect.
  *            destructor is called at free
  * @retval !=NULL  this class handle
@@ -69,7 +73,7 @@ FlyweightFactory flyweight_factory_new(size_t class_size, int is_threadsafe, Fly
 
 /**
  * @brief getter
- * @param[in] classHandle class handle returned at flyweight_register_class, first time to call get, allocate class, memset 0 and call constructor
+ * @param[in] this FlyweightFactory instance returned at flyweight_factory_new, first time to call get, allocate class, memset 0 and call constructor
  * @param[in] constructor_parameter constructor parameter
  * @retval !NULL class instance
  * @retval NULL id is invalid
@@ -78,7 +82,7 @@ void * flyweight_get(FlyweightFactory this, void * constructor_parameter);
 
 /**
  * @brief setter
- * @param[in] classHandle class handle returned at flyweight_register_class
+ * @param[in] this FlyweightFactory instance returned at flyweight_factory_new,
  * @param[in] constructor_parameter constructor parameter
  * @param[in] data set data pointer
  * @param[in] setter setter if you want to change setter ( if NULL, use setter related to flyweight_register_class input)
@@ -87,8 +91,8 @@ int flyweight_set(FlyweightFactory this, void * constructor_parameter, void * da
 
 /**
  * @brief clear class handle
- * @param [in] classHandle class handle returned at flyweight_register_class
- * @turn none
+ * @param [in] this FlyweightFactory instance returned at flyweight_factory_new,
+ * @return none
  */
 void flyweight_factory_free(FlyweightFactory this);
 #endif/*FLYWEIGHT_*/

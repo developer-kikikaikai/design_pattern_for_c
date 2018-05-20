@@ -28,13 +28,14 @@ typedef struct state_info_t {
 #define STATE_MNG_SET_INFO(info, instate, fname) {(info).state=(instate); (info).name=#fname; (info).state_method = (fname) ; }
 
 /*! @struct state_manager_t
- * @brief Class definition of state_manager, detail is defined in C file
+ * @brief StateManager class member definition, detail is defined in C file
 */
 struct state_manager_t;
+/** @brief StateManager class definition, to management state*/
 typedef struct state_manager_t *StateManager;
 
 /**
- * @brief define class for state_manager
+ * @brief Create StateManager class
  *
  * @param[in] state_info_num num of state_info_t, we can set list of state af this API
  * @param[in] state state_info pinters, please define state_info_t's in some function, and set this pointer in here.
@@ -46,7 +47,7 @@ StateManager state_manager_new(size_t state_info_num, const state_info_t * state
 /**
  * @brief update method related to state
  *
- * @param[in] this class handle returned at state_manager_new
+ * @param[in] this StateManager instance returned at state_manager_new,
  * @param[in] state info of state. If there is no state, it is add to state list
  * @retval STATE_MNG_SUCCESS success
  * @retval other failed to add
@@ -55,7 +56,7 @@ int state_manager_update_method(StateManager this, const state_info_t * state);
 /**
  * @brief set state
  *
- * @param[in] this class handle returned at state_manager_new
+ * @param[in] this StateManager instance returned at state_manager_new,
  * @param[in] state state, if there is no state in set list, state is changed to latest order.
  * @return none
 */
@@ -63,14 +64,14 @@ void state_manager_set_state(StateManager this, int state);
 /**
  * @brief get current state
  *
- * @param[in] this class handle returned at state_manager_new
+ * @param[in] this StateManager instance returned at state_manager_new,
  * @return state value or STATE_MNG_FAILED if you don't set state
 */
 int state_manager_get_current_state(StateManager this);
 /**
  * @brief call state method
  *
- * @param[in] this class handle returned at state_manager_new
+ * @param[in] this StateManager instance returned at state_manager_new,
  * @param[in] arg argument vakue
  * @retval STATE_MNG_SUCCESS success
  * @retval other failed
@@ -79,14 +80,14 @@ int state_manager_call(StateManager this, void *arg);
 /**
  * @brief show current state table
  *
- * @param[in] this class handle returned at state_manager_new
+ * @param[in] this StateManager instance returned at state_manager_new,
  * @return none
  */
 void state_manager_show(StateManager this);
 /**
- * @brief free state manager
+ * @brief free StateManager class
  *
- * @param[in] this class handle returned at state_manager_new
+ * @param[in] this StateManager instance returned at state_manager_new,
  * @return none
  */
 void state_manager_free(StateManager this);

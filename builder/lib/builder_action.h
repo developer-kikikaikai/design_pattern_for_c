@@ -20,9 +20,9 @@ typedef struct builder_action_parameter_t {
 
 /*! @name BuilderAction public method */
 /* @{ */
-/* ! construct action */
+/*! @brief construct action */
 pthread_t builder_action_construct(builder_action_parameter_t * parameter);
-/* ! deconstruct action */
+/** @brief deconstruct action */
 void builder_action_destruct(pthread_t tid);
-/* }@ */
+/* @} */
 #endif

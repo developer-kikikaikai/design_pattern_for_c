@@ -85,7 +85,7 @@ static void state_machine_close_socket(StateMachine this);
 static inline int state_machine_read(StateMachine this, state_machine_msg_t *msg);
 /*! for multi thread, write */
 static inline int state_machine_write(StateMachine this, state_machine_msg_t *msg);
-/* }@ */
+/* @} */
 /*************
  * private API for StateManagerListData
 *************/
@@ -117,7 +117,7 @@ static void state_machine_manager_list_free(StateManagerListData this) {
 	state_manager_free(this->states);
 	free(this);
 }
-/* }@*/
+/* @}*/
 
 /*************
  * private API for StateMachine
@@ -277,7 +277,7 @@ static inline int state_machine_read(StateMachine this, state_machine_msg_t *msg
 static inline int state_machine_write(StateMachine this, state_machine_msg_t *msg) {
 	return write(this->sockpair[SOCK_WRITEID], msg, sizeof(state_machine_msg_t));
 }
-/* }@ */
+/* @} */
 
 /*************
  * public API

@@ -37,7 +37,7 @@ static int director_load_methods(char * conffile, char ***methodname);
 static void director_free_methods(int methodcnt, char **methodname);
 static int director_add_methods(Director this, int methodcnt, char **methodname);
 static void director_load_interface_method(Director this);
-/* }@ */
+/* @} */
 
 /*************
  * for Director private method
@@ -145,7 +145,7 @@ static void director_load_interface_method(Director this) {
 	}
 }
 
-/* }@ */
+/* @} */
 
 /*! @name Director public method implement*/
 /* @{ */
@@ -243,4 +243,4 @@ void director_free(Director this) {
 
 	free(this);
 }
-/* }@ */
+/* @} */

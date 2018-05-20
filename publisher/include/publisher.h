@@ -10,9 +10,12 @@
 #define PUBLISHER_SUCCESS (0)
 #define PUBLISHER_FAILED (-1)
 
-/* @brief Subscribe Account class */
+/*! @struct subscriber_account_t
+ * @brief SubscriberAccount class member definition, to get by publisher_subscribe. This is defined in publisher.c.
+*/
 struct subscriber_account_t;
-/* @brief Subscribe Account class */
+
+/** @brief SubscriberAccount class definition */
 typedef struct subscriber_account_t subscriber_account_t, *SubscriberAccount;
 
 /**

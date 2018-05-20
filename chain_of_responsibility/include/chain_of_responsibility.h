@@ -9,14 +9,14 @@
 /* @{ */
 #define COR_SUCCESS (0)
 #define COR_FAILED (-1)
-/* }@ */
+/* @} */
 
 /*! 
  * @brief chain_api result type
 */
 typedef enum {
-	CoR_GONEXT,/*! go to next */
-	CoR_RETURN,/*! return */
+	CoR_GONEXT,/*!< go to next */
+	CoR_RETURN,/*!< exit to call chain_api*/
 } cor_result_e;
 
 /**
@@ -24,7 +24,7 @@ typedef enum {
  *
  * @param[in] arg input parameter pointer, related to function
  * @retval CoR_GONEXT -> call next chain_api
- * @retval CoR_GONEXT
+ * @retval CoR_RETURN -> exit to call chain_api
  */
 typedef cor_result_e (*chain_func)(void *arg);
 

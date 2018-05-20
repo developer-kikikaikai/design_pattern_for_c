@@ -17,15 +17,16 @@
 */
 typedef builder_action_parameter_t *BuilderAction;
 
-/*! @name BuilderAction private method *
+/*! @name BuilderAction private method */
 /* @{ */
-/* ! run action */
+/*! @brief run action */
 static void * builder_action_run(void * this);
-/* }@ */
+/* @} */
 
 /*************
  * for BuilderAction method
 *************/
+
 static void * builder_action_run(void * arg) {
 	BuilderAction this = (BuilderAction) arg;
 	int i=0;
@@ -73,4 +74,4 @@ pthread_t builder_action_construct(builder_action_parameter_t * parameter) {
 	//free instance in builder_action_run
 	return tid;
 }
-/* }@ */
+/* @} */

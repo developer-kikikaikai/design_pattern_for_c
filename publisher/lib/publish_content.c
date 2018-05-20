@@ -22,16 +22,16 @@ struct publish_content_t {
 
 /*! @name PublishContent private method */
 /* @{ */
-/* ! push subscriber */
+/*! push subscriber */
 static inline void publish_content_push_subscriber(PublishContent this, SubscriberAccount account) {
 	dputil_list_push((DPUtilList)this, (DPUtilListData)account);
 }
-/* ! pull subscriber */
+/*! pull subscriber */
 static inline void publish_content_pull_subscriber(PublishContent this, SubscriberAccount account) {
 	dputil_list_pull((DPUtilList)this, (DPUtilListData)account);
 	free(account);
 }
-/* ! pop subscriber */
+/*! pop subscriber */
 static inline SubscriberAccount publish_content_pop_subscriber(PublishContent this) {
 	SubscriberAccount account = (SubscriberAccount)dputil_list_pop((DPUtilList)this);
 	free(account);

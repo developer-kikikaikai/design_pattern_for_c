@@ -39,7 +39,7 @@ struct state_manager_t {
 static int state_manager_add_new_state(StateManager this, const state_info_t * state);
 /*! Find state. */
 StateManagerStateInfo state_manager_find_state(StateManager this, int state);
-/* }@ */
+/* @} */
 /*************
  * private API
 *************/

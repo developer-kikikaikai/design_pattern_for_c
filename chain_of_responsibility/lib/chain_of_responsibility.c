@@ -20,13 +20,13 @@ struct chain_of_resp_t {
 
 /*! new API */
 static void chain_of_resp_new(void *this, size_t size, void *input_parameter);
-/*! equall operand, check name */
+/*! @brief equall operand, check name */
 static int chain_of_resp_equall_operand(void *this, size_t size, void *input_parameter);
-/*! setter, add function to ChainElement */
+/*! @brief setter, add function to ChainElement */
 static int chain_of_resp_setter(void *this, size_t size, void *input_parameter);
-/*! free member resource */
+/*! @brief free member resource */
 static void chain_of_resp_free(void *this);
-/* }@ */
+/* @} */
 
 /*! @struct chain_of_resp_mng_t
  * @brief management parameter of this class API, to use flyweight

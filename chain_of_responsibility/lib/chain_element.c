@@ -19,11 +19,11 @@ struct chain_element_part {
 	chain_func func;/*! fnction pointer */
 };
 
-/* ! new ChainElementPart */
+/*! @brief new ChainElementPart */
 static ChainElementPart chain_element_part_new(chain_func func);
-/* ! free ChainElementPart */
+/*! @brief free ChainElementPart */
 static void chain_element_part_free(ChainElementPart this);
-/* }@ */
+/* @} */
 
  /*! @struct chain_element
   * @brief ChainElement class instance definition
