@@ -51,12 +51,15 @@ AC_CONFIG_FILES([Makefile
 		 chain_of_responsibility/lib/Makefile
 		 chain_of_responsibility/include/Makefile
 		 chain_of_responsibility/test/Makefile
-		 mediator/Makefile
-		 mediator/sample/Makefile
 		 state/Makefile
 		 state/lib/Makefile
 		 state/include/Makefile
 		 state/test/Makefile
+		 mediator/Makefile
+		 mediator/sample/Makefile
+		 proxy/Makefile
+		 proxy/sample1/Makefile
+		 proxy/sample2/Makefile
 		 ])
 
 AC_OUTPUT

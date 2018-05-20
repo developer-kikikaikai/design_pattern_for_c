@@ -41,7 +41,7 @@ Related to Construct:
   |Composite       |  No   |   No          | Please use a tree or a list as dp_list.h   |
   |Decorator       |  No   | create future |                                            |
   |Facade          |  No   | create future |                                            |
-  |Proxy           |  No   |   No          | Please switch by library/dlopen/LD_PRELOAD |
+  |Proxy           |  No   | see proxy     | Please switch by library/dlopen/LD_PRELOAD |
 
 Related to Construct:
   |name                        |support| exist sample              |  other                        |
