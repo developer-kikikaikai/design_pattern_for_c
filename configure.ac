@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.59])
-AC_INIT([designpettern], [1.0.0], [])
+AC_INIT([designpettern], [0.01], [])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 AC_CONFIG_SRCDIR([flyweight/lib/flyweight.c])
 AC_CONFIG_HEADERS([config.h])
