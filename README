@@ -14,14 +14,15 @@
   1. configure
   2. make
   libraries are in dir/lib/.libs
-
   #Now updating usage
 
 # Version 
  no-release now
 
 # Support design pattern libraries (Not yet means planning now)
-  Please see https://qiita.com/developer-kikikaikai/items/8e7858c130c8ae8df488 (Japanese website) 
+
+Please see detail in wiki(https://github.com/developer-kikikaikai/design_pattern_for_c/wiki) or
+the page of this package base (https://qiita.com/developer-kikikaikai/items/8e7858c130c8ae8df488) * (Japanese website)
 
 Related to Create:
   |name            |support| exist sample  |  other             |
