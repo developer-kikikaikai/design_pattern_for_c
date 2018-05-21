@@ -11,13 +11,14 @@
 
 # How to use
   Build:
-  1. configure
+  1. ./configure
   2. make
-  libraries are in dir/lib/.libs
-  #Now updating usage
+  3. sudo make install
+
+  Headers and libraries are installed in prefix dir (default: /usr/local/lib)
 
 # Version 
- no-release now
+ 0.0.1 : first release
 
 # Support design pattern libraries (Not yet means planning now)
 

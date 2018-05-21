@@ -340,7 +340,8 @@ libchainofresp_la_SOURCES = chain_element.c chain_of_responsibility.c
 #for statik library
 libchainofresp_la_LDFLAGS = -shared \
 	$(top_srcdir)/design_pattern_util/lib/libdputil.la \
-	$(top_srcdir)/flyweight/lib/libflyweight.la -rpath $(libdir) \
+	$(top_srcdir)/flyweight/lib/libflyweight.la -Xlinker -rpath \
+	-Xlinker $(libdir) \
 	-Wl,--version-script,chain_of_responsibility.map
 all: all-am
 

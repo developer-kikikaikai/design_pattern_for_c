@@ -337,7 +337,7 @@ STATE_DIR = $(top_srcdir)/state
 lib_LTLIBRARIES = libpublisher.la
 libpublisher_la_SOURCES = publisher.c  publish_content.c
 #for statik library
-libpublisher_la_LDFLAGS = -shared -rpath $(libdir) \
+libpublisher_la_LDFLAGS = -shared \
 	$(top_srcdir)/design_pattern_util/lib/libdputil.la \
 	-Wl,--version-script,publisher.map
 all: all-am
