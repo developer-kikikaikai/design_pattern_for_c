@@ -199,6 +199,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GCOV_OPT = @GCOV_OPT@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -293,7 +294,7 @@ top_srcdir = @top_srcdir@
 
 #common header deifinition
 AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
-	-I$(top_srcdir)/design_pattern_util/include/ \
+	-I$(top_srcdir)/design_pattern_util/include/ $(GCOV_OPT) \
 	-I$(FLYWEIGHT_DIR)/include -I$(CoR_DIR)/include
 INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/design_pattern_util/include/ \

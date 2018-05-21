@@ -29,6 +29,25 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AC_CHECK_FUNCS([clock_gettime memset select strerror strstr])
 
+
+
+# Unit test option
+AC_ARG_ENABLE(coverage,
+[  --enable-coverage      enable coverage test, only for developer of this package. Please "Don't" use this package if you install it, gcov is GPL license [[default=no]]],
+[\
+case "${enableval}" in
+ yes) enable_coverage=yes ;;
+ *)   AC_MSG_ERROR(bad value for --enable-) ;;
+esac],
+enable_coverage=no)
+#check flag, and add gcov option
+if test x"${enable_coverage}" = x"yes"; then
+  AC_CHECK_LIB([gcov], [main])
+  GCOV_OPT="-fprofile-arcs -ftest-coverage"
+  AC_SUBST([GCOV_OPT])
+fi
+
+
 AC_CONFIG_FILES([Makefile
 		 design_pattern_util/Makefile
 		 design_pattern_util/lib/Makefile

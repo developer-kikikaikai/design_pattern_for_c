@@ -633,6 +633,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+GCOV_OPT
 CPP
 LT_SYS_LIBRARY_PATH
 OTOOL64
@@ -760,6 +761,7 @@ with_aix_soname
 with_gnu_ld
 with_sysroot
 enable_libtool_lock
+enable_coverage
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1411,6 +1413,7 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --enable-coverage      enable coverage test, only for developer of this package [default=no]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -13103,6 +13106,66 @@ _ACEOF
 
 fi
 done
+
+
+
+
+# Unit test option
+# Check whether --enable-coverage was given.
+if test "${enable_coverage+set}" = set; then :
+  enableval=$enable_coverage; \
+case "${enableval}" in
+ yes) enable_coverage=yes ;;
+ *)   as_fn_error $? "bad value for --enable-" "$LINENO" 5 ;;
+esac
+else
+  enable_coverage=no
+fi
+
+#check flag, and add gcov option
+if test x"${enable_coverage}" = x"yes"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lgcov" >&5
+$as_echo_n "checking for main in -lgcov... " >&6; }
+if ${ac_cv_lib_gcov_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgcov  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_gcov_main=yes
+else
+  ac_cv_lib_gcov_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gcov_main" >&5
+$as_echo "$ac_cv_lib_gcov_main" >&6; }
+if test "x$ac_cv_lib_gcov_main" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBGCOV 1
+_ACEOF
+
+  LIBS="-lgcov $LIBS"
+
+fi
+
+  GCOV_OPT="-fprofile-arcs -ftest-coverage"
+
+fi
 
 
 ac_config_files="$ac_config_files Makefile design_pattern_util/Makefile design_pattern_util/lib/Makefile design_pattern_util/include/Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile publisher/Makefile publisher/lib/Makefile publisher/include/Makefile publisher/test/Makefile publisher/sample/Makefile chain_of_responsibility/Makefile chain_of_responsibility/lib/Makefile chain_of_responsibility/include/Makefile chain_of_responsibility/test/Makefile state/Makefile state/lib/Makefile state/include/Makefile state/test/Makefile mediator/Makefile mediator/sample/Makefile proxy/Makefile proxy/sample1/Makefile proxy/sample2/Makefile"
