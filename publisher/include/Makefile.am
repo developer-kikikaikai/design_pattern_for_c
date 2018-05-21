@@ -1,1 +1,1 @@
-noinst_HEADERS = publisher.h
+include_HEADERS = publisher.h

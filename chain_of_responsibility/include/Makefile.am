@@ -1,1 +1,1 @@
-noinst_HEADERS = chain_of_responsibility.h
+include_HEADERS = chain_of_responsibility.h

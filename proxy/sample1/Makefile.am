@@ -1,6 +1,6 @@
 #load common setting
 
-bin_PROGRAMS = sample1
+noinst_PROGRAMS = sample1
 
 sample1_CFLAGS = -g -O0
 sample1_CFLAGS += -DPROXY

@@ -1,1 +1,1 @@
-noinst_HEADERS = state_machine.h  state_manager.h
+include_HEADERS = state_machine.h  state_manager.h

@@ -1,1 +1,1 @@
-noinst_HEADERS = flyweight.h
+include_HEADERS = flyweight.h
