@@ -1,1 +1,24 @@
-SUBDIRS = design_pattern_util flyweight builder publisher chain_of_responsibility state mediator proxy
+SUBDIRS=design_pattern_util
+if USE_FLYWEIGHT
+SUBDIRS+= flyweight
+endif
+
+if USE_BUILDER
+SUBDIRS+= builder
+endif
+
+if USE_PUBLISHER
+SUBDIRS+= publisher
+endif
+
+if USE_STATE
+SUBDIRS+= state
+endif
+
+if USE_COR
+SUBDIRS+= chain_of_responsibility
+endif
+
+if USE_SAMPLE
+SUBDIRS+= mediator proxy
+endif

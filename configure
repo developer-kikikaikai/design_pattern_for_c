@@ -634,6 +634,18 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 GCOV_OPT
+USE_SAMPLE_FALSE
+USE_SAMPLE_TRUE
+USE_COR_FALSE
+USE_COR_TRUE
+USE_FLYWEIGHT_FALSE
+USE_FLYWEIGHT_TRUE
+USE_STATE_FALSE
+USE_STATE_TRUE
+USE_PUBLISHER_FALSE
+USE_PUBLISHER_TRUE
+USE_BUILDER_FALSE
+USE_BUILDER_TRUE
 CPP
 LT_SYS_LIBRARY_PATH
 OTOOL64
@@ -761,6 +773,12 @@ with_aix_soname
 with_gnu_ld
 with_sysroot
 enable_libtool_lock
+with_builder
+with_publisher
+with_state
+with_flyweight
+with_cor
+with_sample
 enable_coverage
 '
       ac_precious_vars='build_alias
@@ -1413,7 +1431,7 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --enable-coverage      enable coverage test, only for developer of this package [default=no]
+  --enable-coverage      enable coverage test, only for developer of this package. Please "Don't" use this package if you install it, gcov is GPL license [default=no]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1426,6 +1444,13 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot[=DIR]    Search for dependent libraries within DIR (or the
                           compiler's sysroot if not specified).
+  --without-builder       exclude builder pattern library
+  --without-publisher     exclude publisher pattern library
+  --without-state         exclude state pattern/state machine library
+  --without-flyweight     exclude flyweight pattern library
+  --without-cor           exclude chain of responsibility pattern library, if
+                          flyweight is excluded, exclude it.
+  --without-sample        exclude only sample design pattern compile
 
 Some influential environment variables:
   CC          C compiler command
@@ -13109,7 +13134,128 @@ done
 
 
 
+###Disable option
+#without builder
 
+# Check whether --with-builder was given.
+if test "${with_builder+set}" = set; then :
+  withval=$with_builder; with_builder=$withval
+else
+  with_builder=yes
+
+fi
+
+#check flag
+ if test "$with_builder" = yes; then
+  USE_BUILDER_TRUE=
+  USE_BUILDER_FALSE='#'
+else
+  USE_BUILDER_TRUE='#'
+  USE_BUILDER_FALSE=
+fi
+
+
+#without publisher
+
+# Check whether --with-publisher was given.
+if test "${with_publisher+set}" = set; then :
+  withval=$with_publisher; with_publisher=$withval
+else
+  with_publisher=yes
+
+fi
+
+#check flag
+ if test "$with_publisher" = yes; then
+  USE_PUBLISHER_TRUE=
+  USE_PUBLISHER_FALSE='#'
+else
+  USE_PUBLISHER_TRUE='#'
+  USE_PUBLISHER_FALSE=
+fi
+
+
+#without state
+
+# Check whether --with-state was given.
+if test "${with_state+set}" = set; then :
+  withval=$with_state; with_state=$withval
+else
+  with_state=yes
+
+fi
+
+#check flag
+ if test "$with_state" = yes; then
+  USE_STATE_TRUE=
+  USE_STATE_FALSE='#'
+else
+  USE_STATE_TRUE='#'
+  USE_STATE_FALSE=
+fi
+
+
+#without flyweight
+
+# Check whether --with-flyweight was given.
+if test "${with_flyweight+set}" = set; then :
+  withval=$with_flyweight; with_flyweight=$withval
+else
+  with_flyweight=yes
+
+fi
+
+#check flag
+ if test "$with_flyweight" = yes; then
+  USE_FLYWEIGHT_TRUE=
+  USE_FLYWEIGHT_FALSE='#'
+else
+  USE_FLYWEIGHT_TRUE='#'
+  USE_FLYWEIGHT_FALSE=
+fi
+
+
+#without cor
+
+# Check whether --with-cor was given.
+if test "${with_cor+set}" = set; then :
+  withval=$with_cor; with_cor=$withval
+else
+  with_cor=yes
+
+fi
+
+#check flag
+ if test "$with_cor" = yes -a "$with_flyweight" = yes; then
+  USE_COR_TRUE=
+  USE_COR_FALSE='#'
+else
+  USE_COR_TRUE='#'
+  USE_COR_FALSE=
+fi
+
+
+#without sample
+
+# Check whether --with-sample was given.
+if test "${with_sample+set}" = set; then :
+  withval=$with_sample; with_sample=$withval
+else
+  with_sample=yes
+
+fi
+
+#check flag
+ if test "$with_sample" = yes; then
+  USE_SAMPLE_TRUE=
+  USE_SAMPLE_FALSE='#'
+else
+  USE_SAMPLE_TRUE='#'
+  USE_SAMPLE_FALSE=
+fi
+
+
+###
 # Unit test option
 # Check whether --enable-coverage was given.
 if test "${enable_coverage+set}" = set; then :
@@ -13306,6 +13452,30 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_BUILDER_TRUE}" && test -z "${USE_BUILDER_FALSE}"; then
+  as_fn_error $? "conditional \"USE_BUILDER\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_PUBLISHER_TRUE}" && test -z "${USE_PUBLISHER_FALSE}"; then
+  as_fn_error $? "conditional \"USE_PUBLISHER\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_STATE_TRUE}" && test -z "${USE_STATE_FALSE}"; then
+  as_fn_error $? "conditional \"USE_STATE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_FLYWEIGHT_TRUE}" && test -z "${USE_FLYWEIGHT_FALSE}"; then
+  as_fn_error $? "conditional \"USE_FLYWEIGHT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_COR_TRUE}" && test -z "${USE_COR_FALSE}"; then
+  as_fn_error $? "conditional \"USE_COR\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_SAMPLE_TRUE}" && test -z "${USE_SAMPLE_FALSE}"; then
+  as_fn_error $? "conditional \"USE_SAMPLE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

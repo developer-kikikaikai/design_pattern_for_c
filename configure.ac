@@ -30,7 +30,74 @@ AC_TYPE_SIZE_T
 AC_CHECK_FUNCS([clock_gettime memset select strerror strstr])
 
 
+###Disable option
+#without builder
+AC_ARG_WITH([builder],
+  [AC_HELP_STRING([--without-builder],
+    [exclude builder pattern library]
+  )],
+  [with_builder=$withval],
+  [with_builder=yes]
+)
+#check flag
+AM_CONDITIONAL([USE_BUILDER], [test "$with_builder" = yes])
 
+#without publisher
+AC_ARG_WITH([publisher],
+  [AC_HELP_STRING([--without-publisher],
+    [exclude publisher pattern library]
+  )],
+  [with_publisher=$withval],
+  [with_publisher=yes]
+)
+#check flag
+AM_CONDITIONAL([USE_PUBLISHER], [test "$with_publisher" = yes])
+
+#without state
+AC_ARG_WITH([state],
+  [AC_HELP_STRING([--without-state],
+    [exclude state pattern/state machine library]
+  )],
+  [with_state=$withval],
+  [with_state=yes]
+)
+#check flag
+AM_CONDITIONAL([USE_STATE], [test "$with_state" = yes])
+
+#without flyweight
+AC_ARG_WITH([flyweight],
+  [AC_HELP_STRING([--without-flyweight],
+    [exclude flyweight pattern library]
+  )],
+  [with_flyweight=$withval],
+  [with_flyweight=yes]
+)
+#check flag
+AM_CONDITIONAL([USE_FLYWEIGHT], [test "$with_flyweight" = yes])
+
+#without cor
+AC_ARG_WITH([cor],
+  [AC_HELP_STRING([--without-cor],
+    [exclude chain of responsibility pattern library, if flyweight is excluded, exclude it.]
+  )],
+  [with_cor=$withval],
+  [with_cor=yes]
+)
+#check flag
+AM_CONDITIONAL([USE_COR], [test "$with_cor" = yes -a "$with_flyweight" = yes])
+
+#without sample
+AC_ARG_WITH([sample],
+  [AC_HELP_STRING([--without-sample],
+    [exclude only sample design pattern compile]
+  )],
+  [with_sample=$withval],
+  [with_sample=yes]
+)
+#check flag
+AM_CONDITIONAL([USE_SAMPLE], [test "$with_sample" = yes])
+
+###
 # Unit test option
 AC_ARG_ENABLE(coverage,
 [  --enable-coverage      enable coverage test, only for developer of this package. Please "Don't" use this package if you install it, gcov is GPL license [[default=no]]],

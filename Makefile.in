@@ -87,6 +87,12 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@USE_FLYWEIGHT_TRUE@am__append_1 = flyweight
+@USE_BUILDER_TRUE@am__append_2 = builder
+@USE_PUBLISHER_TRUE@am__append_3 = publisher
+@USE_STATE_TRUE@am__append_4 = state
+@USE_COR_TRUE@am__append_5 = chain_of_responsibility
+@USE_SAMPLE_TRUE@am__append_6 = mediator proxy
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -156,7 +162,8 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = design_pattern_util flyweight builder publisher state \
+	chain_of_responsibility mediator proxy
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in README \
 	ar-lib compile config.guess config.sub depcomp install-sh \
 	ltmain.sh missing
@@ -319,7 +326,9 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = design_pattern_util flyweight builder publisher chain_of_responsibility state mediator proxy
+SUBDIRS = design_pattern_util $(am__append_1) $(am__append_2) \
+	$(am__append_3) $(am__append_4) $(am__append_5) \
+	$(am__append_6)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
