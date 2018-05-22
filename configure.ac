@@ -100,7 +100,9 @@ AM_CONDITIONAL([USE_SAMPLE], [test "$with_sample" = yes])
 ###
 # Unit test option
 AC_ARG_ENABLE(coverage,
-[  --enable-coverage      enable coverage test, only for developer of this package. Please "Don't" use this package if you install it, gcov is GPL license [[default=no]]],
+  [AC_HELP_STRING([--enable-coverage],
+    [enable coverage test, only for developer of this package. Please "Don't" use this package if you install it, gcov is GPL license [[default=no]]]
+  )],
 [\
 case "${enableval}" in
  yes) enable_coverage=yes ;;

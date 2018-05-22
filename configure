@@ -1431,7 +1431,9 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --enable-coverage      enable coverage test, only for developer of this package. Please "Don't" use this package if you install it, gcov is GPL license [default=no]
+  --enable-coverage       enable coverage test, only for developer of this
+                          package. Please "Don't" use this package if you
+                          install it, gcov is GPL license [[default=no]]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
