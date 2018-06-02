@@ -18,7 +18,7 @@ do
 	./$basefile > /dev/null
 	if [ $? != 0 ]; then
 		echo "test $data failed!!"
-		exit -1
+		exit 1
 	fi
 	cd -
 	echo "===$data Success!!"
