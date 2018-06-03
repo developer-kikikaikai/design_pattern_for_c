@@ -30,6 +30,8 @@ struct dputil_list_t {
 /* @{ */
 /*! list push */
 void dputil_list_push(DPUtilList this, DPUtilListData data);
+/*! list insert to point */
+void dputil_list_insert(DPUtilList this, DPUtilListData prev, DPUtilListData data);
 /*! list pull */
 void dputil_list_pull(DPUtilList this, DPUtilListData data);
 /*! list pop */

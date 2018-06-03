@@ -88,7 +88,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-subdir = state/lib
+subdir = threadpool/lib
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -127,23 +127,17 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libstate_machine_la_LIBADD =
-am_libstate_machine_la_OBJECTS = state_machine.lo
-libstate_machine_la_OBJECTS = $(am_libstate_machine_la_OBJECTS)
+libevent_threadpool_la_LIBADD =
+am_libevent_threadpool_la_OBJECTS = event_tpool_manager.lo \
+	event_thread.lo
+libevent_threadpool_la_OBJECTS = $(am_libevent_threadpool_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-libstate_machine_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+libevent_threadpool_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(libstate_machine_la_LDFLAGS) \
-	$(LDFLAGS) -o $@
-libstate_manager_la_LIBADD =
-am_libstate_manager_la_OBJECTS = state_manager.lo
-libstate_manager_la_OBJECTS = $(am_libstate_manager_la_OBJECTS)
-libstate_manager_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(libstate_manager_la_LDFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS) $(libevent_threadpool_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -179,10 +173,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libstate_machine_la_SOURCES) \
-	$(libstate_manager_la_SOURCES)
-DIST_SOURCES = $(libstate_machine_la_SOURCES) \
-	$(libstate_manager_la_SOURCES)
+SOURCES = $(libevent_threadpool_la_SOURCES)
+DIST_SOURCES = $(libevent_threadpool_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -208,7 +200,8 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/am.conf \
-	$(top_srcdir)/depcomp $(top_srcdir)/state/state_am.conf
+	$(top_srcdir)/depcomp \
+	$(top_srcdir)/threadpool/threadpool_am.conf
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -331,12 +324,11 @@ top_srcdir = @top_srcdir@
 #common header deifinition
 AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
 	-I$(top_srcdir)/design_pattern_util/include/ $(GCOV_OPT) \
-	-I$(STATE_DIR)/include
+	-I$(THREADPOOL_DIR)/include
 INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/design_pattern_util/include/ \
-	-I$(STATE_DIR)/include
-AM_LDFLAGS = $(STATE_DIR)/lib/libstate_machine.la \
-	$(STATE_DIR)/lib/libstate_manager.la
+	$(THREADPOOL_DIR)/include
+AM_LDFLAGS = $(THREADPOOL_DIR)/lib/libevent_threadpool.la
 FLYWEIGHT_DIR = $(top_srcdir)/flyweight
 BUILDER_DIR = $(top_srcdir)/builder
 PUBLISHER_DIR = $(top_srcdir)/publisher
@@ -345,20 +337,16 @@ STATE_DIR = $(top_srcdir)/state
 THREADPOOL_DIR = $(top_srcdir)/threadpool
 
 #load common setting
-lib_LTLIBRARIES = libstate_manager.la libstate_machine.la
-libstate_manager_la_SOURCES = state_manager.c
-libstate_manager_la_LDFLAGS = -shared -module \
+lib_LTLIBRARIES = libevent_threadpool.la
+libevent_threadpool_la_SOURCES = event_tpool_manager.c event_thread.c
+libevent_threadpool_la_LDFLAGS = -shared -module \
 	$(top_srcdir)/design_pattern_util/lib/libdputil.la \
-	-Wl,--version-script,state_manager.map
-libstate_machine_la_SOURCES = state_machine.c
-libstate_machine_la_LDFLAGS = -shared -module libstate_managerla \
-	$(top_srcdir)/design_pattern_util/lib/libdputil.la \
-	-Wl,--version-script,state_machine.map
+	-Wl,--version-script,threadpool.map
 all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/state/state_am.conf $(top_srcdir)/am.conf $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/threadpool/threadpool_am.conf $(top_srcdir)/am.conf $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -367,9 +355,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/state/state_am.conf 
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign state/lib/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign threadpool/lib/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign state/lib/Makefile
+	  $(AUTOMAKE) --foreign threadpool/lib/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -378,7 +366,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
-$(top_srcdir)/state/state_am.conf $(top_srcdir)/am.conf $(am__empty):
+$(top_srcdir)/threadpool/threadpool_am.conf $(top_srcdir)/am.conf $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -424,11 +412,8 @@ clean-libLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libstate_machine.la: $(libstate_machine_la_OBJECTS) $(libstate_machine_la_DEPENDENCIES) $(EXTRA_libstate_machine_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libstate_machine_la_LINK) -rpath $(libdir) $(libstate_machine_la_OBJECTS) $(libstate_machine_la_LIBADD) $(LIBS)
-
-libstate_manager.la: $(libstate_manager_la_OBJECTS) $(libstate_manager_la_DEPENDENCIES) $(EXTRA_libstate_manager_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libstate_manager_la_LINK) -rpath $(libdir) $(libstate_manager_la_OBJECTS) $(libstate_manager_la_LIBADD) $(LIBS)
+libevent_threadpool.la: $(libevent_threadpool_la_OBJECTS) $(libevent_threadpool_la_DEPENDENCIES) $(EXTRA_libevent_threadpool_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libevent_threadpool_la_LINK) -rpath $(libdir) $(libevent_threadpool_la_OBJECTS) $(libevent_threadpool_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -436,8 +421,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/state_machine.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/state_manager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_thread.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_tpool_manager.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

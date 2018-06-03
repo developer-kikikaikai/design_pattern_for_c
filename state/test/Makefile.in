@@ -306,6 +306,7 @@ BUILDER_DIR = $(top_srcdir)/builder
 PUBLISHER_DIR = $(top_srcdir)/publisher
 CoR_DIR = $(top_srcdir)/chain_of_responsibility
 STATE_DIR = $(top_srcdir)/state
+THREADPOOL_DIR = $(top_srcdir)/threadpool
 test_CFLAGS = -g -O0 
 test_SOURCES = test_state_manager.c test_state_machine.c main.c
 all: all-am

@@ -12,6 +12,9 @@
 /* Define to 1 if you have the `dl' library (-ldl). */
 #undef HAVE_LIBDL
 
+/* Define to 1 if you have the `event' library (-levent). */
+#undef HAVE_LIBEVENT
+
 /* Define to 1 if you have the `gcov' library (-lgcov). */
 #undef HAVE_LIBGCOV
 

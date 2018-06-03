@@ -317,6 +317,7 @@ BUILDER_DIR = $(top_srcdir)/builder
 PUBLISHER_DIR = $(top_srcdir)/publisher
 CoR_DIR = $(top_srcdir)/chain_of_responsibility
 STATE_DIR = $(top_srcdir)/state
+THREADPOOL_DIR = $(top_srcdir)/threadpool
 
 #load common setting
 noinst_LTLIBRARIES = libossupport_device_plugin.la libusb_device_plugin.la

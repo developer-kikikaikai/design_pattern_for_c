@@ -306,6 +306,7 @@ BUILDER_DIR = $(top_srcdir)/builder
 PUBLISHER_DIR = $(top_srcdir)/publisher
 CoR_DIR = $(top_srcdir)/chain_of_responsibility
 STATE_DIR = $(top_srcdir)/state
+THREADPOOL_DIR = $(top_srcdir)/threadpool
 thread_sample_CFLAGS = -g -O0 
 thread_sample_SOURCES = subscriber.c main.c
 all: all-am

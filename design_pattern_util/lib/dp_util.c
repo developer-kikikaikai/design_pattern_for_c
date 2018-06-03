@@ -35,6 +35,23 @@ void dputil_list_push(DPUtilList this, DPUtilListData data) {
         }
 }
 
+void dputil_list_insert(DPUtilList this, DPUtilListData prev, DPUtilListData data) {
+
+	//there is a prev.
+	data->next = prev->next;
+	data->prev = prev;
+
+	//only to care prev has next or not
+	if(prev->next) {
+		prev->next->prev = data;
+	} else {
+		//there is no next=> prev is tail
+		this->tail = data;
+	}
+
+	prev->next = data;
+}
+
 void dputil_list_pull(DPUtilList this, DPUtilListData data) {
         if(!data) {
                 return;

@@ -1,6 +1,6 @@
 #!/bin/sh
 result_check() {
-	result=`echo "if( $1 > 90.00 ) 1 else 0" | bc`
+	result=`echo "if( $1 > 85.00 ) 1 else 0" | bc`
 	return ${result}
 }
 

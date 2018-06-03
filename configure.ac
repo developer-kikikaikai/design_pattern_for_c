@@ -18,6 +18,7 @@ AC_PROG_CC
 AC_CHECK_LIB([pthread], [main])
 AC_CHECK_LIB([dl], [main])
 AC_CHECK_LIB([rt], [main])
+AC_CHECK_LIB([event], [main])
 
 # Checks for header files.
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h sys/socket.h unistd.h])
@@ -86,6 +87,17 @@ AC_ARG_WITH([cor],
 #check flag
 AM_CONDITIONAL([USE_COR], [test "$with_cor" = yes -a "$with_flyweight" = yes])
 
+#without cor
+AC_ARG_WITH([threadpool],
+  [AC_HELP_STRING([--without-threadpool],
+    [exclude threadpool pattern library.]
+  )],
+  [with_threadpool=$withval],
+  [with_threadpool=yes]
+)
+#check flag
+AM_CONDITIONAL([USE_THREADPOOL], [test "$with_threadpool" = yes])
+
 #without sample
 AC_ARG_WITH([sample],
   [AC_HELP_STRING([--without-sample],
@@ -113,9 +125,9 @@ enable_coverage=no)
 if test x"${enable_coverage}" = x"yes"; then
   AC_CHECK_LIB([gcov], [main])
   GCOV_OPT="-fprofile-arcs -ftest-coverage"
+  CFLAGS="-g -O0"
   AC_SUBST([GCOV_OPT])
 fi
-
 
 AC_CONFIG_FILES([Makefile
 		 design_pattern_util/Makefile
@@ -148,6 +160,10 @@ AC_CONFIG_FILES([Makefile
 		 proxy/Makefile
 		 proxy/sample1/Makefile
 		 proxy/sample2/Makefile
+		 threadpool/Makefile
+		 threadpool/lib/Makefile
+		 threadpool/include/Makefile
+		 threadpool/test/Makefile
 		 ])
 
 AC_OUTPUT
