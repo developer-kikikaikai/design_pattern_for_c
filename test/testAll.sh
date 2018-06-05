@@ -15,7 +15,7 @@ do
 	dirname=`echo $data | cut -c 1-${length}`
 
 	cd $dirname
-	./$basefile > /dev/null
+	./$basefile > /dev/null 2>&1
 	if [ $? != 0 ]; then
 		echo "test $data failed!!"
 		exit 1

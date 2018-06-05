@@ -293,6 +293,42 @@ int test_tpoll_thread_safe() {
 	return 0;
 }
 
+int test_tpoll_free() {
+	EventTPoolManager tpool = event_tpool_manager_new(3, 1);
+	testdata_t testdata[TESTDATA];
+	memset(testdata, 0, sizeof(testdata));
+
+	for(int i=0;i<TESTDATA;i++) {
+		socketpair(AF_UNIX, SOCK_DGRAM, 0, testdata[i].sockpair);
+	}
+
+	event_subscriber_t subscriber[TESTDATA]={
+		{.fd = testdata[0].sockpair[SUBSCRIBER_FD], .eventflag=EV_READ, .event_callback = test_1},
+		{.fd = testdata[1].sockpair[SUBSCRIBER_FD], .eventflag=EV_READ|EV_PERSIST, .event_callback = test_2},
+		{.fd = testdata[2].sockpair[SUBSCRIBER_FD], .eventflag=EV_READ|EV_PERSIST, .event_callback = test_3},
+		{.fd = testdata[3].sockpair[SUBSCRIBER_FD], .eventflag=EV_READ|EV_PERSIST, .event_callback = test_4},
+	};
+
+	int tid[TESTDATA];
+	for(int i=0; i<TESTDATA-1; i++) {
+		printf("add[%d] fd:%d\n", i, subscriber[i].fd);
+		tid[i] = event_tpool_add(tpool, &subscriber[i], &testdata[i]);
+		if(tid[i] < 0) {
+			DEBUG_ERRPRINT("####Failed to call event_tpool_add[%d]\n", i);
+			return -1;
+		
+		}
+	}
+
+	//free before delete all
+	event_tpool_manager_free(tpool);
+	for(int i=0; i<TESTDATA-1; i++) {
+		close(testdata[i].sockpair[0]);
+		close(testdata[i].sockpair[1]);
+	}
+	return 0;
+}
+
 int main() {
 	if(test_tpoll_failsafe()) {
 		DEBUG_ERRPRINT("Failed to check fail safe\n");
@@ -308,6 +344,12 @@ int main() {
 		DEBUG_ERRPRINT("Failed to check thread safe\n");
 		return -1;
 	}
+
+	if(test_tpoll_free()) {
+		DEBUG_ERRPRINT("Failed to check thread safe\n");
+		return -1;
+	}
+
 	printf("Succecc to all test !!!\n");
 	return 0;
 }

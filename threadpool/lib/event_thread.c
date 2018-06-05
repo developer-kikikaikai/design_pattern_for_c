@@ -239,6 +239,18 @@ static void event_tpool_thread_remove_event_base(EventTPoolThread this) {
 	}
 }
 
+/** free thread instance, please call stop before calling it*/
+static void event_tpool_thread_free(EventTPoolThread this) {
+	EventSubscriberData data = event_thread_pop(this);
+	while(data) {
+		event_subscriber_data_free(data);	
+		data = event_thread_pop(this);
+	}
+	event_tpool_thread_remove_event_base(this);
+	close(this->sockpair[0]);
+	close(this->sockpair[1]);
+	free(this);
+}
 static EventSubscriberData event_tpool_thread_get_subscriber(EventTPoolThread this, int fd) {
 	EventSubscriberData subscriber = this->head;
 	while(subscriber) {
@@ -356,25 +368,9 @@ err:
 	free(instance);
 	return NULL;
 }
-/** free thread instance, please call stop before calling it*/
-void event_tpool_thread_free(EventTPoolThread this) {
-	EventSubscriberData data = event_thread_pop(this);
-	while(data) {
-		event_subscriber_data_free(data);	
-		data = event_thread_pop(this);
-	}
-	event_tpool_thread_remove_event_base(this);
-	close(this->sockpair[0]);
-	close(this->sockpair[1]);
-	free(this);
-}
 
 /** start thread */
 void event_tpool_thread_start(EventTPoolThread this) {
-	if(!this) {
-		return;
-	}
-
 	pthread_create(&this->tid, NULL, event_tpool_thread_main, this);
 }
 

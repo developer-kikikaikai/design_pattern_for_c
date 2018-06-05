@@ -17,11 +17,9 @@ typedef struct event_tpool_thread_t event_tpool_thread_t,  * EventTPoolThread;
 /*@{*/
 /** create and thread instance */
 EventTPoolThread event_tpool_thread_new(void);
-/** free thread instance, please call stop before calling it*/
-void event_tpool_thread_free(EventTPoolThread this);
 /** start thread */
 void event_tpool_thread_start(EventTPoolThread this);
-/** stop thread */
+/** stop thread, and remove resource*/
 void event_tpool_thread_stop(EventTPoolThread this);
 /** add new subscriber */
 void event_tpool_thread_add(EventTPoolThread this, EventSubscriber subscriber, void * arg);
