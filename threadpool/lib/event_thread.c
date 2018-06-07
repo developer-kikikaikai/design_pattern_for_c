@@ -74,8 +74,8 @@ struct event_tpool_thread_t {
 
 /*! @name API for message.*/
 /*@{*/
-#define wait_response(this) {int tmp;int ret = read(this->sockpair[EVE_THREAD_SOCK_FROM_MNG], &tmp, sizeof(tmp));}
-#define send_response(this) {int tmp;int ret = write(this->sockpair[EVE_THREAD_SOCK_FOR_MINE], &tmp, sizeof(tmp));}
+#define wait_response(this) {int tmp=0;int ret = read(this->sockpair[EVE_THREAD_SOCK_FROM_MNG], &tmp, sizeof(tmp));}
+#define send_response(this) {int tmp=0;int ret = write(this->sockpair[EVE_THREAD_SOCK_FOR_MINE], &tmp, sizeof(tmp));}
 #define event_thread_msg_send(this, msg) {int ret = write(this->sockpair[EVE_THREAD_SOCK_FROM_MNG], msg, sizeof(event_thread_msg_t));}
 static inline void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type);
 static inline void event_thread_msg_send_add(EventTPoolThread this, EventSubscriber subscriber, void *arg);
@@ -133,6 +133,7 @@ static void event_tpool_thread_cb(evutil_socket_t, short, void *);
 *************/
 static inline void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type) {
 	event_thread_msg_t msg;
+	memset(&msg, 0, sizeof(msg));
 	msg.type = type;
 	memcpy(&msg.body.add.subscriber, subscriber, sizeof(*subscriber));
 	msg.body.add.arg = arg;
@@ -194,8 +195,9 @@ static inline int event_subscriber_data_get_fd(EventSubscriberData this) {
 	return (int)event_get_fd(this->eventinfo);
 }
 static inline void event_tpool_thread_wait_stop(EventTPoolThread this) {
-	pthread_t tid = this->tid;
-	//free all instance into thread side
+	pthread_t tid = 0;
+	tid = this->tid;
+	//to free this, keep tid
 	pthread_join(tid, NULL);
 }
 /*************
@@ -251,6 +253,7 @@ static void event_tpool_thread_free(EventTPoolThread this) {
 	close(this->sockpair[1]);
 	free(this);
 }
+
 static EventSubscriberData event_tpool_thread_get_subscriber(EventTPoolThread this, int fd) {
 	EventSubscriberData subscriber = this->head;
 	while(subscriber) {

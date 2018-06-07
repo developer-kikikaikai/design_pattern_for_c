@@ -250,6 +250,7 @@ EventTPoolManager event_tpool_manager_new(int thread_num, int is_threadsafe) {
 			DEBUG_ERRPRINT("Failed to get instance lock!\n" );
 			goto err;
 		}
+		pthread_mutex_init(instance->lock, NULL);
 	}
 
 	//get thread instance

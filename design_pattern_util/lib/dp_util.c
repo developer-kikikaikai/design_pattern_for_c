@@ -8,16 +8,14 @@ void dputil_lock(void *handle) {
 	if(!handle) {
 		return;
 	}
-        pthread_mutex_t * lock=(pthread_mutex_t *)handle;
-        pthread_mutex_lock(lock);
+        pthread_mutex_lock((pthread_mutex_t *)handle);
 }
 /*! unlock */
 void dputil_unlock(void *handle) {
 	if(!handle) {
 		return;
 	}
-	pthread_mutex_t * lock=(pthread_mutex_t *)handle;
-        pthread_mutex_unlock(lock);
+        pthread_mutex_unlock((pthread_mutex_t *)handle);
 }
 
 void dputil_list_push(DPUtilList this, DPUtilListData data) {

@@ -19,22 +19,25 @@ int test_tpoll_failsafe() {
 	}
 
 	event_subscriber_t subscriber;
+	EventTPoolManager tpool = calloc(1, 1024);
+	memset(&subscriber, 0, sizeof(subscriber));
 	if(0<event_tpool_add(NULL, &subscriber, NULL)) {
 		DEBUG_ERRPRINT("####Failed to check NULL EventTPoolManager\n");
 		return -1;
 	}
 
-	if(0<event_tpool_add((EventTPoolManager)&subscriber, NULL, NULL)) {
+	if(0<event_tpool_add(tpool, NULL, NULL)) {
 		DEBUG_ERRPRINT("####Failed to check NULL subscriber\n");
 		return -1;
 	}
 
-	if(0<event_tpool_add_thread((EventTPoolManager)&subscriber, -1, &subscriber, NULL)) {
+	if(0<event_tpool_add_thread(tpool, -1, &subscriber, NULL)) {
 		DEBUG_ERRPRINT("####Failed to check call before event_tpool_manager_new\n");
 		return -1;
 	}
+	free(tpool);
 
-	EventTPoolManager tpool = event_tpool_manager_new(-1, 0);
+	tpool = event_tpool_manager_new(-1, 0);
 	if(!tpool) {
 		DEBUG_ERRPRINT("####Failed to create tpoll manager\n");
 		return -1;
