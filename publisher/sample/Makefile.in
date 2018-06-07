@@ -292,20 +292,19 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-
-#common header deifinition
-AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
-	-I$(top_srcdir)/design_pattern_util/include/ $(GCOV_OPT) \
-	-I$(PUBLISHER_DIR)/include
-INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
-	$(PUBLISHER_DIR)/include
 AM_LDFLAGS = $(PUBLISHER_DIR)/lib/libpublisher.la
+DPUTIL_DIR = $(top_srcdir)/design_pattern_util
 FLYWEIGHT_DIR = $(top_srcdir)/flyweight
 BUILDER_DIR = $(top_srcdir)/builder
 PUBLISHER_DIR = $(top_srcdir)/publisher
 CoR_DIR = $(top_srcdir)/chain_of_responsibility
 STATE_DIR = $(top_srcdir)/state
 THREADPOOL_DIR = $(top_srcdir)/threadpool
+
+#common header deifinition
+AM_CPPFLAGS = -I$(DPUTIL_DIR)/include/ $(GCOV_OPT) \
+	-I$(PUBLISHER_DIR)/include
+INCLUDES_PATH = $(DPUTIL_DIR)/include/ $(PUBLISHER_DIR)/include
 thread_sample_CFLAGS = -g -O0 
 thread_sample_SOURCES = subscriber.c main.c
 all: all-am

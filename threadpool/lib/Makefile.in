@@ -320,14 +320,8 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-
-#common header deifinition
-AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
-	-I$(top_srcdir)/design_pattern_util/include/ $(GCOV_OPT) \
-	-I$(THREADPOOL_DIR)/include
-INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
-	$(THREADPOOL_DIR)/include
 AM_LDFLAGS = $(THREADPOOL_DIR)/lib/libevent_threadpool.la
+DPUTIL_DIR = $(top_srcdir)/design_pattern_util
 FLYWEIGHT_DIR = $(top_srcdir)/flyweight
 BUILDER_DIR = $(top_srcdir)/builder
 PUBLISHER_DIR = $(top_srcdir)/publisher
@@ -335,12 +329,17 @@ CoR_DIR = $(top_srcdir)/chain_of_responsibility
 STATE_DIR = $(top_srcdir)/state
 THREADPOOL_DIR = $(top_srcdir)/threadpool
 
+#common header deifinition
+AM_CPPFLAGS = -I$(DPUTIL_DIR)/include/ $(GCOV_OPT) \
+	-I$(THREADPOOL_DIR)/include
+INCLUDES_PATH = $(DPUTIL_DIR)/include/ $(THREADPOOL_DIR)/include
+
 #load common setting
 lib_LTLIBRARIES = libevent_threadpool.la
 libevent_threadpool_la_SOURCES = event_tpool_manager.c event_thread.c
-libevent_threadpool_la_LDFLAGS = -shared -module \
-	$(top_srcdir)/design_pattern_util/lib/libdputil.la \
-	-Wl,--version-script,threadpool.map
+libevent_threadpool_la_LDFLAGS = -shared \
+	$(DPUTIL_DIR)/lib/libdputil.la -Xlinker -rpath -Xlinker \
+	$(libdir) -Wl,--version-script,threadpool.map
 all: all-am
 
 .SUFFIXES:

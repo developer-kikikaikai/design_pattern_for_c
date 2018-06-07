@@ -301,22 +301,21 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-
-#common header deifinition
-AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
-	-I$(top_srcdir)/design_pattern_util/include/ $(GCOV_OPT) \
-	-I$(top_srcdir)/builder/include \
-	-I$(top_srcdir)/builder/sample_plugin
-INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
-	$(top_srcdir)/builder/include \
-	$(top_srcdir)/builder/sample_plugin
 AM_LDFLAGS = $(top_srcdir)/builder/lib/liblower_layer_director.la
+DPUTIL_DIR = $(top_srcdir)/design_pattern_util
 FLYWEIGHT_DIR = $(top_srcdir)/flyweight
 BUILDER_DIR = $(top_srcdir)/builder
 PUBLISHER_DIR = $(top_srcdir)/publisher
 CoR_DIR = $(top_srcdir)/chain_of_responsibility
 STATE_DIR = $(top_srcdir)/state
 THREADPOOL_DIR = $(top_srcdir)/threadpool
+
+#common header deifinition
+AM_CPPFLAGS = -I$(DPUTIL_DIR)/include/ $(GCOV_OPT) \
+	-I$(top_srcdir)/builder/include \
+	-I$(top_srcdir)/builder/sample_plugin
+INCLUDES_PATH = $(DPUTIL_DIR)/include/ $(top_srcdir)/builder/include \
+	$(top_srcdir)/builder/sample_plugin
 
 #load common setting
 noinst_LTLIBRARIES = libossupport_device_plugin.la libusb_device_plugin.la

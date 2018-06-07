@@ -327,21 +327,21 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-
-#common header deifinition
-AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
-	-I$(top_srcdir)/design_pattern_util/include/ $(GCOV_OPT) \
-	-I$(STATE_DIR)/include -I$(THREADPOOL_DIR)/include
-INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
-	-I$(STATE_DIR)/include -I$(THREADPOOL_DIR)/include
 AM_LDFLAGS = $(STATE_DIR)/lib/libstate_machine.la \
 	$(STATE_DIR)/lib/libstate_manager.la
+DPUTIL_DIR = $(top_srcdir)/design_pattern_util
 FLYWEIGHT_DIR = $(top_srcdir)/flyweight
 BUILDER_DIR = $(top_srcdir)/builder
 PUBLISHER_DIR = $(top_srcdir)/publisher
 CoR_DIR = $(top_srcdir)/chain_of_responsibility
 STATE_DIR = $(top_srcdir)/state
 THREADPOOL_DIR = $(top_srcdir)/threadpool
+
+#common header deifinition
+AM_CPPFLAGS = -I$(DPUTIL_DIR)/include/ $(GCOV_OPT) \
+	-I$(STATE_DIR)/include -I$(THREADPOOL_DIR)/include
+INCLUDES_PATH = $(DPUTIL_DIR)/include/ -I$(STATE_DIR)/include \
+	-I$(THREADPOOL_DIR)/include
 
 #load common setting
 lib_LTLIBRARIES = libstate_manager.la libstate_machine.la
