@@ -90,9 +90,9 @@ host_triplet = @host@
 @USE_FLYWEIGHT_TRUE@am__append_1 = flyweight
 @USE_BUILDER_TRUE@am__append_2 = builder
 @USE_PUBLISHER_TRUE@am__append_3 = publisher
-@USE_STATE_TRUE@am__append_4 = state
-@USE_COR_TRUE@am__append_5 = chain_of_responsibility
-@USE_THREADPOOL_TRUE@am__append_6 = threadpool
+@USE_THREADPOOL_TRUE@am__append_4 = threadpool
+@USE_STATE_TRUE@am__append_5 = state
+@USE_COR_TRUE@am__append_6 = chain_of_responsibility
 @USE_SAMPLE_TRUE@am__append_7 = mediator proxy
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -163,8 +163,8 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
-DIST_SUBDIRS = design_pattern_util flyweight builder publisher state \
-	chain_of_responsibility threadpool mediator proxy
+DIST_SUBDIRS = design_pattern_util flyweight builder publisher \
+	threadpool state chain_of_responsibility mediator proxy
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in README \
 	ar-lib compile config.guess config.sub depcomp install-sh \
 	ltmain.sh missing

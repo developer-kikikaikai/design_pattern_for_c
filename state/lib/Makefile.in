@@ -331,10 +331,9 @@ top_srcdir = @top_srcdir@
 #common header deifinition
 AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
 	-I$(top_srcdir)/design_pattern_util/include/ $(GCOV_OPT) \
-	-I$(STATE_DIR)/include
+	-I$(STATE_DIR)/include -I$(THREADPOOL_DIR)/include
 INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
-	$(top_srcdir)/design_pattern_util/include/ \
-	-I$(STATE_DIR)/include
+	-I$(STATE_DIR)/include -I$(THREADPOOL_DIR)/include
 AM_LDFLAGS = $(STATE_DIR)/lib/libstate_machine.la \
 	$(STATE_DIR)/lib/libstate_manager.la
 FLYWEIGHT_DIR = $(top_srcdir)/flyweight
@@ -347,13 +346,14 @@ THREADPOOL_DIR = $(top_srcdir)/threadpool
 #load common setting
 lib_LTLIBRARIES = libstate_manager.la libstate_machine.la
 libstate_manager_la_SOURCES = state_manager.c
-libstate_manager_la_LDFLAGS = -shared -module \
+libstate_manager_la_LDFLAGS = -shared \
 	$(top_srcdir)/design_pattern_util/lib/libdputil.la \
 	-Wl,--version-script,state_manager.map
 libstate_machine_la_SOURCES = state_machine.c
-libstate_machine_la_LDFLAGS = -shared -module libstate_managerla \
+libstate_machine_la_LDFLAGS = -shared libstate_manager.la \
 	$(top_srcdir)/design_pattern_util/lib/libdputil.la \
-	-Wl,--version-script,state_machine.map
+	$(THREADPOOL_DIR)/lib/libevent_threadpool.la -Xlinker -rpath \
+	-Xlinker $(libdir) -Wl,--version-script,state_machine.map
 all: all-am
 
 .SUFFIXES:

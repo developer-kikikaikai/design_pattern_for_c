@@ -11,16 +11,16 @@ if USE_PUBLISHER
 SUBDIRS+= publisher
 endif
 
+if USE_THREADPOOL
+SUBDIRS+= threadpool
+endif
+
 if USE_STATE
 SUBDIRS+= state
 endif
 
 if USE_COR
 SUBDIRS+= chain_of_responsibility
-endif
-
-if USE_THREADPOOL
-SUBDIRS+= threadpool
 endif
 
 if USE_SAMPLE

@@ -43,6 +43,17 @@ AC_ARG_WITH([builder],
 #check flag
 AM_CONDITIONAL([USE_BUILDER], [test "$with_builder" = yes])
 
+#without threadpool
+AC_ARG_WITH([threadpool],
+  [AC_HELP_STRING([--without-threadpool],
+    [exclude threadpool pattern library.]
+  )],
+  [with_threadpool=$withval],
+  [with_threadpool=yes]
+)
+#check flag
+AM_CONDITIONAL([USE_THREADPOOL], [test "$with_threadpool" = yes])
+
 #without publisher
 AC_ARG_WITH([publisher],
   [AC_HELP_STRING([--without-publisher],
@@ -57,13 +68,13 @@ AM_CONDITIONAL([USE_PUBLISHER], [test "$with_publisher" = yes])
 #without state
 AC_ARG_WITH([state],
   [AC_HELP_STRING([--without-state],
-    [exclude state pattern/state machine library]
+    [exclude state pattern/state machine library, if threadpool is excluded, exclude it.]
   )],
   [with_state=$withval],
   [with_state=yes]
 )
 #check flag
-AM_CONDITIONAL([USE_STATE], [test "$with_state" = yes])
+AM_CONDITIONAL([USE_STATE], [test "$with_state" = yes -a "$with_threadpool" = yes])
 
 #without flyweight
 AC_ARG_WITH([flyweight],
@@ -86,17 +97,6 @@ AC_ARG_WITH([cor],
 )
 #check flag
 AM_CONDITIONAL([USE_COR], [test "$with_cor" = yes -a "$with_flyweight" = yes])
-
-#without cor
-AC_ARG_WITH([threadpool],
-  [AC_HELP_STRING([--without-threadpool],
-    [exclude threadpool pattern library.]
-  )],
-  [with_threadpool=$withval],
-  [with_threadpool=yes]
-)
-#check flag
-AM_CONDITIONAL([USE_THREADPOOL], [test "$with_threadpool" = yes])
 
 #without sample
 AC_ARG_WITH([sample],
@@ -151,6 +151,10 @@ AC_CONFIG_FILES([Makefile
 		 chain_of_responsibility/lib/Makefile
 		 chain_of_responsibility/include/Makefile
 		 chain_of_responsibility/test/Makefile
+		 threadpool/Makefile
+		 threadpool/lib/Makefile
+		 threadpool/include/Makefile
+		 threadpool/test/Makefile
 		 state/Makefile
 		 state/lib/Makefile
 		 state/include/Makefile
@@ -160,10 +164,6 @@ AC_CONFIG_FILES([Makefile
 		 proxy/Makefile
 		 proxy/sample1/Makefile
 		 proxy/sample2/Makefile
-		 threadpool/Makefile
-		 threadpool/lib/Makefile
-		 threadpool/include/Makefile
-		 threadpool/test/Makefile
 		 ])
 
 AC_OUTPUT

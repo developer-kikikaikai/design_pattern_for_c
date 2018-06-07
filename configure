@@ -636,8 +636,6 @@ LIBOBJS
 GCOV_OPT
 USE_SAMPLE_FALSE
 USE_SAMPLE_TRUE
-USE_THREADPOOL_FALSE
-USE_THREADPOOL_TRUE
 USE_COR_FALSE
 USE_COR_TRUE
 USE_FLYWEIGHT_FALSE
@@ -646,6 +644,8 @@ USE_STATE_FALSE
 USE_STATE_TRUE
 USE_PUBLISHER_FALSE
 USE_PUBLISHER_TRUE
+USE_THREADPOOL_FALSE
+USE_THREADPOOL_TRUE
 USE_BUILDER_FALSE
 USE_BUILDER_TRUE
 CPP
@@ -776,11 +776,11 @@ with_gnu_ld
 with_sysroot
 enable_libtool_lock
 with_builder
+with_threadpool
 with_publisher
 with_state
 with_flyweight
 with_cor
-with_threadpool
 with_sample
 enable_coverage
 '
@@ -1450,12 +1450,13 @@ Optional Packages:
   --with-sysroot[=DIR]    Search for dependent libraries within DIR (or the
                           compiler's sysroot if not specified).
   --without-builder       exclude builder pattern library
+  --without-threadpool    exclude threadpool pattern library.
   --without-publisher     exclude publisher pattern library
-  --without-state         exclude state pattern/state machine library
+  --without-state         exclude state pattern/state machine library, if
+                          threadpool is excluded, exclude it.
   --without-flyweight     exclude flyweight pattern library
   --without-cor           exclude chain of responsibility pattern library, if
                           flyweight is excluded, exclude it.
-  --without-threadpool    exclude threadpool pattern library.
   --without-sample        exclude only sample design pattern compile
 
 Some influential environment variables:
@@ -13200,6 +13201,26 @@ else
 fi
 
 
+#without threadpool
+
+# Check whether --with-threadpool was given.
+if test "${with_threadpool+set}" = set; then :
+  withval=$with_threadpool; with_threadpool=$withval
+else
+  with_threadpool=yes
+
+fi
+
+#check flag
+ if test "$with_threadpool" = yes; then
+  USE_THREADPOOL_TRUE=
+  USE_THREADPOOL_FALSE='#'
+else
+  USE_THREADPOOL_TRUE='#'
+  USE_THREADPOOL_FALSE=
+fi
+
+
 #without publisher
 
 # Check whether --with-publisher was given.
@@ -13231,7 +13252,7 @@ else
 fi
 
 #check flag
- if test "$with_state" = yes; then
+ if test "$with_state" = yes -a "$with_threadpool" = yes; then
   USE_STATE_TRUE=
   USE_STATE_FALSE='#'
 else
@@ -13277,26 +13298,6 @@ fi
 else
   USE_COR_TRUE='#'
   USE_COR_FALSE=
-fi
-
-
-#without cor
-
-# Check whether --with-threadpool was given.
-if test "${with_threadpool+set}" = set; then :
-  withval=$with_threadpool; with_threadpool=$withval
-else
-  with_threadpool=yes
-
-fi
-
-#check flag
- if test "$with_threadpool" = yes; then
-  USE_THREADPOOL_TRUE=
-  USE_THREADPOOL_FALSE='#'
-else
-  USE_THREADPOOL_TRUE='#'
-  USE_THREADPOOL_FALSE=
 fi
 
 
@@ -13379,7 +13380,7 @@ fi
 
 fi
 
-ac_config_files="$ac_config_files Makefile design_pattern_util/Makefile design_pattern_util/lib/Makefile design_pattern_util/include/Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile publisher/Makefile publisher/lib/Makefile publisher/include/Makefile publisher/test/Makefile publisher/sample/Makefile chain_of_responsibility/Makefile chain_of_responsibility/lib/Makefile chain_of_responsibility/include/Makefile chain_of_responsibility/test/Makefile state/Makefile state/lib/Makefile state/include/Makefile state/test/Makefile mediator/Makefile mediator/sample/Makefile proxy/Makefile proxy/sample1/Makefile proxy/sample2/Makefile threadpool/Makefile threadpool/lib/Makefile threadpool/include/Makefile threadpool/test/Makefile"
+ac_config_files="$ac_config_files Makefile design_pattern_util/Makefile design_pattern_util/lib/Makefile design_pattern_util/include/Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile publisher/Makefile publisher/lib/Makefile publisher/include/Makefile publisher/test/Makefile publisher/sample/Makefile chain_of_responsibility/Makefile chain_of_responsibility/lib/Makefile chain_of_responsibility/include/Makefile chain_of_responsibility/test/Makefile threadpool/Makefile threadpool/lib/Makefile threadpool/include/Makefile threadpool/test/Makefile state/Makefile state/lib/Makefile state/include/Makefile state/test/Makefile mediator/Makefile mediator/sample/Makefile proxy/Makefile proxy/sample1/Makefile proxy/sample2/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -13523,6 +13524,10 @@ if test -z "${USE_BUILDER_TRUE}" && test -z "${USE_BUILDER_FALSE}"; then
   as_fn_error $? "conditional \"USE_BUILDER\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${USE_THREADPOOL_TRUE}" && test -z "${USE_THREADPOOL_FALSE}"; then
+  as_fn_error $? "conditional \"USE_THREADPOOL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${USE_PUBLISHER_TRUE}" && test -z "${USE_PUBLISHER_FALSE}"; then
   as_fn_error $? "conditional \"USE_PUBLISHER\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -13537,10 +13542,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_COR_TRUE}" && test -z "${USE_COR_FALSE}"; then
   as_fn_error $? "conditional \"USE_COR\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${USE_THREADPOOL_TRUE}" && test -z "${USE_THREADPOOL_FALSE}"; then
-  as_fn_error $? "conditional \"USE_THREADPOOL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_SAMPLE_TRUE}" && test -z "${USE_SAMPLE_FALSE}"; then
@@ -14447,6 +14448,10 @@ do
     "chain_of_responsibility/lib/Makefile") CONFIG_FILES="$CONFIG_FILES chain_of_responsibility/lib/Makefile" ;;
     "chain_of_responsibility/include/Makefile") CONFIG_FILES="$CONFIG_FILES chain_of_responsibility/include/Makefile" ;;
     "chain_of_responsibility/test/Makefile") CONFIG_FILES="$CONFIG_FILES chain_of_responsibility/test/Makefile" ;;
+    "threadpool/Makefile") CONFIG_FILES="$CONFIG_FILES threadpool/Makefile" ;;
+    "threadpool/lib/Makefile") CONFIG_FILES="$CONFIG_FILES threadpool/lib/Makefile" ;;
+    "threadpool/include/Makefile") CONFIG_FILES="$CONFIG_FILES threadpool/include/Makefile" ;;
+    "threadpool/test/Makefile") CONFIG_FILES="$CONFIG_FILES threadpool/test/Makefile" ;;
     "state/Makefile") CONFIG_FILES="$CONFIG_FILES state/Makefile" ;;
     "state/lib/Makefile") CONFIG_FILES="$CONFIG_FILES state/lib/Makefile" ;;
     "state/include/Makefile") CONFIG_FILES="$CONFIG_FILES state/include/Makefile" ;;
@@ -14456,10 +14461,6 @@ do
     "proxy/Makefile") CONFIG_FILES="$CONFIG_FILES proxy/Makefile" ;;
     "proxy/sample1/Makefile") CONFIG_FILES="$CONFIG_FILES proxy/sample1/Makefile" ;;
     "proxy/sample2/Makefile") CONFIG_FILES="$CONFIG_FILES proxy/sample2/Makefile" ;;
-    "threadpool/Makefile") CONFIG_FILES="$CONFIG_FILES threadpool/Makefile" ;;
-    "threadpool/lib/Makefile") CONFIG_FILES="$CONFIG_FILES threadpool/lib/Makefile" ;;
-    "threadpool/include/Makefile") CONFIG_FILES="$CONFIG_FILES threadpool/include/Makefile" ;;
-    "threadpool/test/Makefile") CONFIG_FILES="$CONFIG_FILES threadpool/test/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

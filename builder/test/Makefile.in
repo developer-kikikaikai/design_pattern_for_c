@@ -297,7 +297,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ \
 	-I$(top_srcdir)/builder/include \
 	-I$(top_srcdir)/builder/sample_plugin
 INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ \
-	$(top_srcdir)/design_pattern_util/include/ \
 	$(top_srcdir)/builder/include \
 	$(top_srcdir)/builder/sample_plugin
 AM_LDFLAGS = $(top_srcdir)/builder/lib/liblower_layer_director.la

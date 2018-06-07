@@ -5,6 +5,7 @@
 #ifndef STATE_MACHINE_H_
 #define STATE_MACHINE_H_
 #include "state_manager.h"
+#include "event_threadpool.h"
 
 /*! @struct state_event_info_t
  * @brief event ID and related state functions
@@ -18,20 +19,24 @@ typedef struct state_event_info_t {
 /*! @struct state_machine_t
  * @brief StateMachine class member definition
 */
-struct state_machine_t;
+struct state_machine_t;	
 /** @brief StateMachine class definition */
 typedef struct state_machine_t *StateMachine;
 
+typedef struct state_machine_info {
+	StateMachine state_machine;
+	int thread_num;
+} state_machine_info_t,  *StateMachineInfo;
 
 /**
  * @brief Create StateMachine class
  * @param[in] event_num event size
  * @param[in] event_infos list of event state data
- * @param[in] is_multithread if you want to run function on otherthread, please set 1.
+ * @param[in] threadpool event threadpool instance by creating event_threadpool API if you want to use state machine in other threads
  * @retval !=NULL  this class handle
  * @retval NULL error
  */
-StateMachine state_machine_new(size_t event_num, const state_event_info_t * event_infos, int is_multithread);
+StateMachineInfo state_machine_new(size_t event_num, const state_event_info_t * event_infos, EventTPoolManager threadpool );
 /**
  * @brief update sate
  *
@@ -73,5 +78,5 @@ void state_machine_show(StateMachine this);
  * @param[in] this StateMachine class instance returned at state_machine_new
  * @return none
  */
-void state_machine_free(StateMachine this);
+void state_machine_free(StateMachineInfo this);
 #endif
