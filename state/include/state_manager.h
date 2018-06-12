@@ -73,8 +73,8 @@ int state_manager_get_current_state(StateManager this);
  *
  * @param[in] this StateManager instance returned at state_manager_new,
  * @param[in] arg argument vakue
- * @retval STATE_MNG_SUCCESS success
- * @retval other failed
+ * @retval STATE_MNG_FAILED failed
+ * @retval other return value of state_method
 */
 int state_manager_call(StateManager this, void *arg);
 /**

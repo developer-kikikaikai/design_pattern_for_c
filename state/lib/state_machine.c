@@ -64,14 +64,14 @@ typedef struct state_machine_msg_t {
 static int state_machine_add_new_states(StateMachine this, const state_event_info_t * event_info);
 /*! free normally */
 static void state_machine_free_states_normally(StateMachine this);
-/*! call state method normally */
-static int state_machine_call_event_normally(StateMachine this, int event, void *arg, void (*response)(int result));
 /*! Find state. */
 StateManagerListData state_machine_find_states(StateMachine this, int event);
 /*! for multi thread, initialize */
 static int state_machine_initial_thread(StateMachine this);
 /*! for multi thread, free */
 static void state_machine_free_states_multithread(StateMachine this);
+/*! for multi thread, call event */
+static int state_machine_call_event_normally(StateMachine this, int event, void *arg, void (*response)(int result));
 /*! for multi thread, call event */
 static int state_machine_call_event_multithread(StateMachine this, int event, void *arg, void (*response)(int result));
 /*! for multi thread, thread main callback for threadpool */
@@ -145,19 +145,6 @@ static void state_machine_free_states_normally(StateMachine this) {
 	}
 }
 
-/*! call state method normally */
-static int state_machine_call_event_normally(StateMachine this, int event, void *arg, void (*response)(int result)) {
-	/* not use response , only for use same format of multi thread*/
-	(void)response;
-
-	StateManagerListData state_manager = state_machine_find_states(this, event);
-	if(!state_manager) {
-		return STATE_MNG_FAILED;
-	}
-
-	return state_manager_call(state_manager->states, arg);
-}
-
 /*! Find state. */
 StateManagerListData state_machine_find_states(StateMachine this, int event) {
 	StateManagerListData state_manager = this->head;
@@ -199,6 +186,12 @@ static void state_machine_free_states_multithread(StateMachine this) {
 	state_machine_free_states_normally(this);
 }
 
+/*! for single thread, call event */
+static int state_machine_call_event_normally(StateMachine this, int event, void *arg, void (*response)(int result)) {
+	(void)(response);
+	return state_machine_call_event_directry(this, event, arg);
+}
+
 /*! for multi thread, call event */
 static int state_machine_call_event_multithread(StateMachine this, int event, void *args, void (*response)(int result)) {
 	state_machine_msg_t msg;
@@ -227,7 +220,7 @@ static void state_machine_thread_main(evutil_socket_t socketfd, short eventflag,
 	}
 
 	/* call */
-	ret = state_machine_call_event_normally(this, msg.event, msg.args, NULL);
+	ret = state_machine_call_event_directry(this, msg.event, msg.args);
 	if(msg.response) {
 		msg.response(ret);
 	}
@@ -354,6 +347,19 @@ int state_machine_call_event(StateMachine this, int event, void *arg, void (*res
 	}
 
 	return this->call_event(this, event, arg, response);
+}
+
+int state_machine_call_event_directry(StateMachine this, int event, void *arg) {
+	if(!this) {
+		return STATE_MNG_FAILED;
+	}
+
+	StateManagerListData state_manager = state_machine_find_states(this, event);
+	if(!state_manager) {
+		return STATE_MNG_FAILED;
+	}
+
+	return state_manager_call(state_manager->states, arg);
 }
 
 void state_machine_show(StateMachine this) {
