@@ -137,7 +137,8 @@ int state_manager_call(StateManager this, void *arg) {
 		return STATE_MNG_FAILED;
 	}
 
-	return this->current_state->state.state_method(arg);
+	int (*state_method)(void *arg) = this->current_state->state.state_method;
+	return state_method(arg);
 }
 
 void state_manager_show(StateManager this) {
@@ -145,19 +146,19 @@ void state_manager_show(StateManager this) {
 		return;
 	}
 
-	printf("-------- Show state table --------\n");
+	fprintf(stderr, "-------- Show state table --------\n");
 	if(this->current_state) {
-		printf("[Current state: %d] [method: %s] \n", this->current_state->state.state, this->current_state->state.name);
+		fprintf(stderr, "[Current state: %d] [method: %s] \n", this->current_state->state.state, this->current_state->state.name);
 	} else {
-		printf("[Currently no set state]\n");
+		fprintf(stderr, "[Currently no set state]\n");
 	}
 
 	StateManagerStateInfo state_info=this->head;
 	while(state_info) {
-		printf("\t[state: %d] [method: %s]\n", state_info->state.state, state_info->state.name);
+		fprintf(stderr,"\t[state: %d] [method: %s]\n", state_info->state.state, state_info->state.name);
 		state_info=state_info->next;
 	}
-	printf("----------------------------------\n");
+	fprintf(stderr,"----------------------------------\n");
 
 }
 
