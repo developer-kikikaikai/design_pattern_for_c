@@ -74,7 +74,7 @@ int state_machine_call_event(StateMachine this, int event, void *arg, void (*res
  * @retval return value of method
  * @retval STATE_MNG_SUCCESS and result is in callback you set callback if you set by multi thread mode.
  */
-static int state_machine_call_event_directry(StateMachine this, int event, void *arg);
+int state_machine_call_event_directry(StateMachine this, int event, void *arg);
 
 /**
  * @brief set state
