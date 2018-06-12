@@ -188,8 +188,13 @@ static void state_machine_free_states_multithread(StateMachine this) {
 
 /*! for single thread, call event */
 static int state_machine_call_event_normally(StateMachine this, int event, void *arg, void (*response)(int result)) {
-	(void)(response);
-	return state_machine_call_event_directry(this, event, arg);
+	(void)response;
+	StateManagerListData state_manager = state_machine_find_states(this, event);
+	if(!state_manager) {
+		return STATE_MNG_FAILED;
+	}
+
+	return state_manager_call(state_manager->states, arg);
 }
 
 /*! for multi thread, call event */
@@ -220,7 +225,7 @@ static void state_machine_thread_main(evutil_socket_t socketfd, short eventflag,
 	}
 
 	/* call */
-	ret = state_machine_call_event_directry(this, msg.event, msg.args);
+	ret = state_machine_call_event_normally(this, msg.event, msg.args, NULL);
 	if(msg.response) {
 		msg.response(ret);
 	}
@@ -299,12 +304,12 @@ err:
 	return NULL;
 }
 
-int state_machine_update_machine(StateMachine this, const state_event_info_t * event_info) {
+int state_machine_update_machine(StateMachineInfo this, const state_event_info_t * event_info) {
 	if(!this || !event_info) {
 		return STATE_MNG_FAILED;
 	}
 
-	StateManagerListData state_manager = state_machine_find_states(this, event_info->event);
+	StateManagerListData state_manager = state_machine_find_states(this->state_machine, event_info->event);
 
 	int ret = STATE_MNG_SUCCESS;
 	if(state_manager) {
@@ -322,18 +327,18 @@ int state_machine_update_machine(StateMachine this, const state_event_info_t * e
 		state_manager_set_state(state_manager->states, current_state);
 	} else {
 		/* only add new event */
-		ret = state_machine_add_new_states(this, event_info);
+		ret = state_machine_add_new_states(this->state_machine, event_info);
 	}
 	return ret;
 }
 
-void state_machine_set_state(StateMachine this, int state) {
+void state_machine_set_state(StateMachineInfo this, int state) {
 	if(!this) {
 		return;
 	}
 
 	/* Set all state_manager's state*/
-	StateManagerListData state_manager = this->head;
+	StateManagerListData state_manager = this->state_machine->head;
 	while(state_manager) {
 		state_manager_set_state(state_manager->states, state);
 		state_manager=state_manager->next;
@@ -341,33 +346,28 @@ void state_machine_set_state(StateMachine this, int state) {
 	return;
 }
 
-int state_machine_call_event(StateMachine this, int event, void *arg, void (*response)(int result)) {
+int state_machine_call_event(StateMachineInfo this, int event, void *arg, void (*response)(int result)) {
 	if(!this) {
 		return STATE_MNG_FAILED;
 	}
 
-	return this->call_event(this, event, arg, response);
+	return this->state_machine->call_event(this->state_machine, event, arg, response);
 }
 
-int state_machine_call_event_directry(StateMachine this, int event, void *arg) {
+int state_machine_call_event_directry(StateMachineInfo this, int event, void *arg) {
 	if(!this) {
 		return STATE_MNG_FAILED;
 	}
 
-	StateManagerListData state_manager = state_machine_find_states(this, event);
-	if(!state_manager) {
-		return STATE_MNG_FAILED;
-	}
-
-	return state_manager_call(state_manager->states, arg);
+	state_machine_call_event_normally(this->state_machine, event, arg, NULL);
 }
 
-void state_machine_show(StateMachine this) {
+void state_machine_show(StateMachineInfo this) {
 	if(!this) {
 		return;
 	}
 
-	StateManagerListData state_manager=this->head;
+	StateManagerListData state_manager=this->state_machine->head;
 	while(state_manager) {
 		printf("===[event: %d]===\n", state_manager->event);
 		state_manager_show(state_manager->states);
