@@ -76,12 +76,12 @@ struct event_tpool_thread_t {
 /*@{*/
 #define wait_response(this) {int tmp=0;int ret = read(this->sockpair[EVE_THREAD_SOCK_FROM_MNG], &tmp, sizeof(tmp));}
 #define send_response(this) {int tmp=0;int ret = write(this->sockpair[EVE_THREAD_SOCK_FOR_MINE], &tmp, sizeof(tmp));}
-#define event_thread_msg_send(this, msg) {int ret = write(this->sockpair[EVE_THREAD_SOCK_FROM_MNG], msg, sizeof(event_thread_msg_t));}
-static inline void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type);
-static inline void event_thread_msg_send_add(EventTPoolThread this, EventSubscriber subscriber, void *arg);
-static inline void event_thread_msg_send_update(EventTPoolThread this, EventSubscriber subscriber, void *arg);
-static inline void event_thread_msg_send_del(EventTPoolThread this, int fd);
-static inline void event_thread_msg_send_stop(EventTPoolThread this);
+#define event_thread_msg_send(this, msg) write(this->sockpair[EVE_THREAD_SOCK_FROM_MNG], msg, sizeof(event_thread_msg_t));
+static inline int event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type);
+static inline int event_thread_msg_send_add(EventTPoolThread this, EventSubscriber subscriber, void *arg);
+static inline int event_thread_msg_send_update(EventTPoolThread this, EventSubscriber subscriber, void *arg);
+static inline int event_thread_msg_send_del(EventTPoolThread this, int fd);
+static inline int event_thread_msg_send_stop(EventTPoolThread this);
 /*@}*/
 /*! @name API for EventSubscriberData.*/
 /*@{*/
@@ -118,7 +118,7 @@ static void event_tpool_thread_msg_cb_del(EventTPoolThread this, event_thread_ms
 /*! for stop*/
 static void event_tpool_thread_msg_cb_stop(EventTPoolThread this, event_thread_msg_t *msg);
 /*! callback table */
-static event_tpool_thread_msg_cb event_tpool_thread_msg_cb_tabe[]={
+static event_tpool_thread_msg_cb event_tpool_thread_msg_cb_table[]={
 	event_tpool_thread_msg_cb_add,/*!< for EVE_THREAD_MSG_TYPE_ADD*/
 	event_tpool_thread_msg_cb_update,/*!< for EVE_THREAD_MSG_TYPE_UPDATE*/
 	event_tpool_thread_msg_cb_del,/*!< for EVE_THREAD_MSG_TYPE_DEL*/
@@ -131,29 +131,47 @@ static void event_tpool_thread_cb(evutil_socket_t, short, void *);
 /*************
  * for EventSubscriberData.
 *************/
-static inline void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type) {
+static inline int event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type) {
 	event_thread_msg_t msg;
 	memset(&msg, 0, sizeof(msg));
 	msg.type = type;
 	memcpy(&msg.body.add.subscriber, subscriber, sizeof(*subscriber));
 	msg.body.add.arg = arg;
-	event_thread_msg_send(this, &msg);
+	int ret = 0;
+	if(pthread_self() != this->tid) {
+		ret = event_thread_msg_send(this, &msg);
+	} else {
+		event_tpool_thread_msg_cb_table[msg.type](this, &msg);
+	}
+	return ret;
 }
 
-static inline void event_thread_msg_send_add(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
-	event_thread_msg_send_subscribe(this, subscriber, arg, EVE_THREAD_MSG_TYPE_ADD);
+static inline int event_thread_msg_send_add(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
+	return event_thread_msg_send_subscribe(this, subscriber, arg, EVE_THREAD_MSG_TYPE_ADD);
 }
 
-static inline void event_thread_msg_send_update(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
-	event_thread_msg_send_subscribe(this, subscriber, arg, EVE_THREAD_MSG_TYPE_UPDATE);
+static inline int event_thread_msg_send_update(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
+	return event_thread_msg_send_subscribe(this, subscriber, arg, EVE_THREAD_MSG_TYPE_UPDATE);
 }
-static inline void event_thread_msg_send_del(EventTPoolThread this, int fd) {
+static inline int event_thread_msg_send_del(EventTPoolThread this, int fd) {
 	event_thread_msg_t msg={.type=EVE_THREAD_MSG_TYPE_DEL, .body.del.fd = fd};
-	event_thread_msg_send(this, &msg);
+	int ret = 0;
+	if(pthread_self() != this->tid) {
+		ret = event_thread_msg_send(this, &msg);
+	} else {
+		event_tpool_thread_msg_cb_table[msg.type](this, &msg);
+	}
+	return ret;
 }
-static inline void event_thread_msg_send_stop(EventTPoolThread this) {
+static inline int event_thread_msg_send_stop(EventTPoolThread this) {
 	event_thread_msg_t msg={.type=EVE_THREAD_MSG_TYPE_STOP};
-	event_thread_msg_send(this, &msg);
+	int ret = 0;
+	if (pthread_self() != this->tid) {
+		ret = event_thread_msg_send(this, &msg);
+	} else {
+		event_tpool_thread_msg_cb_table[msg.type](this, &msg);
+	}
+	return ret;
 }
 
 /*@}*/
@@ -272,7 +290,10 @@ static void * event_tpool_thread_main(void *arg) {
 	}
 	event_base_got_exit(this->event_base);
 	event_tpool_thread_free(this);
-	pthread_exit(NULL);
+	if(pthread_detach(pthread_self())) {
+		//already wait join, call exit
+		pthread_exit(NULL);
+	}
 	return NULL;
 }
 /*@}*/
@@ -334,7 +355,7 @@ static void event_tpool_thread_cb(evutil_socket_t fd, short flag, void * arg) {
 	EventTPoolThread this = (EventTPoolThread)arg;
 	event_thread_msg_t msg;
 	int ret = read(fd, &msg, sizeof(msg));
-	event_tpool_thread_msg_cb_tabe[msg.type](this, &msg);
+	event_tpool_thread_msg_cb_table[msg.type](this, &msg);
 }
 /*@}*/
 /*************
@@ -379,22 +400,30 @@ void event_tpool_thread_start(EventTPoolThread this) {
 
 /** stop thread */
 void event_tpool_thread_stop(EventTPoolThread this) {
-	event_thread_msg_send_stop(this);
-	event_tpool_thread_wait_stop(this);
+	int ret = event_thread_msg_send_stop(this);
+	if(ret) {
+		event_tpool_thread_wait_stop(this);
+	}
 }
 
 /** add new subscriber */
 void event_tpool_thread_add(EventTPoolThread this, EventSubscriber subscriber, void * arg) {
-	event_thread_msg_send_add(this, subscriber, arg);
-	wait_response(this);
+	int ret = event_thread_msg_send_add(this, subscriber, arg);
+	if(ret) {
+		wait_response(this);
+	}
 }
 void event_tpool_thread_update(EventTPoolThread this, EventSubscriber subscriber, void * arg) {
-	event_thread_msg_send_update(this, subscriber, arg);
-	wait_response(this);
+	int ret = event_thread_msg_send_update(this, subscriber, arg);
+	if(ret) {
+		wait_response(this);
+	}
 }
 
 /** delete subscriber */
 void event_tpool_thread_del(EventTPoolThread this, int fd) {
-	event_thread_msg_send_del(this, fd);
-	wait_response(this);
+	int ret = event_thread_msg_send_del(this, fd);
+	if(ret) {
+		wait_response(this);
+	}
 }

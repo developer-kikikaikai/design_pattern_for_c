@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -8,7 +9,7 @@
 #include "event_threadpool.h"
 #define DBGFLAG
 #include "dp_debug.h"
-
+#include <sys/eventfd.h>
 
 int test_tpoll_failsafe() {
 	event_tpool_manager_free(NULL);
@@ -79,6 +80,7 @@ int test_tpoll_failsafe() {
 #define TEST_FD (1)
 
 typedef struct testdata{
+	EventTPoolManager tpool;
 	int callcnt;
 	pthread_t tid;
 	int sockpair[2];
@@ -88,7 +90,16 @@ typedef struct testdata{
 
 static void common(evutil_socket_t fd, short eventflag, testdata_t * testdata) {
 	int tmp;
-	read(fd, &tmp, sizeof(tmp));
+	tmp=read(fd, &tmp, sizeof(tmp));
+	testdata->tid = pthread_self();
+	testdata->callcnt++;
+	if(fd != testdata->sockpair[SUBSCRIBER_FD]) {
+		testdata->checkresult=-1;
+	}
+}
+static void common2(evutil_socket_t fd, short eventflag, testdata_t * testdata) {
+	uint64_t tmp;
+	eventfd_read(fd, &tmp);
 	testdata->tid = pthread_self();
 	testdata->callcnt++;
 	if(fd != testdata->sockpair[SUBSCRIBER_FD]) {
@@ -117,6 +128,7 @@ static void test_3(evutil_socket_t fd, short eventflag, void * arg) {
 	testdata->funcname = __FUNCTION__;
 	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
+
 static void test_4(evutil_socket_t fd, short eventflag, void * arg) {
 	DEBUG_ERRPRINT("enter\n");
 	testdata_t * testdata = (testdata_t *)arg;
@@ -171,7 +183,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 	//call write
 	for(int i=0;i<TESTDATA;i++) {
 		int tmp=0;
-		write(testdata[i].sockpair[TEST_FD], &tmp, sizeof(tmp));
+		tmp=write(testdata[i].sockpair[TEST_FD], &tmp, sizeof(tmp));
 	}
 
 	sleep(5);
@@ -212,7 +224,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 	//rewrite
 	for(int i=0;i<TESTDATA;i++) {
 		int tmp=0;
-		write(testdata[i].sockpair[TEST_FD], &tmp, sizeof(tmp));
+		tmp=write(testdata[i].sockpair[TEST_FD], &tmp, sizeof(tmp));
 	}
 
 	sleep(5);
@@ -296,6 +308,123 @@ int test_tpoll_thread_safe() {
 	return 0;
 }
 
+
+testdata_t testdata_g[TESTDATA];
+event_subscriber_t subscriber_g[TESTDATA];
+
+static void own_test_1(evutil_socket_t fd, short eventflag, void * arg) {
+	DEBUG_ERRPRINT("enter\n");
+	testdata_t * testdata = (testdata_t *)arg;
+	common2(fd, eventflag, testdata);
+	testdata->funcname = __FUNCTION__;
+	testdata_g[1].tid = event_tpool_add(testdata->tpool, &subscriber_g[1], &testdata_g[1]);
+	testdata_g[2].tid = event_tpool_add(testdata->tpool, &subscriber_g[2], &testdata_g[2]);
+	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
+}
+static void own_test_2(evutil_socket_t fd, short eventflag, void * arg) {
+	DEBUG_ERRPRINT("enter\n");
+	testdata_t * testdata = (testdata_t *)arg;
+	common2(fd, eventflag, testdata);
+	testdata->funcname = __FUNCTION__;
+	testdata_g[3].tid = event_tpool_add_thread(testdata->tpool, testdata_g[2].tid, &subscriber_g[3], &testdata_g[3]);
+	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
+}
+static void own_test_3(evutil_socket_t fd, short eventflag, void * arg) {
+	DEBUG_ERRPRINT("enter\n");
+	testdata_t * testdata = (testdata_t *)arg;
+	common2(fd, eventflag, testdata);
+	testdata->funcname = __FUNCTION__;
+	event_tpool_del(testdata->tpool, subscriber_g[1].fd);
+	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
+}
+
+static void own_test_4(evutil_socket_t fd, short eventflag, void * arg) {
+	DEBUG_ERRPRINT("enter\n");
+	testdata_t * testdata = (testdata_t *)arg;
+	common2(fd, eventflag, testdata);
+	testdata->funcname = __FUNCTION__;
+	event_tpool_manager_free(testdata->tpool);
+	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
+}
+
+int test_tpoll_fo_ownthread() {
+	int i=0;
+	EventTPoolManager tpool = event_tpool_manager_new(3, 0);
+	if(!tpool) {
+		DEBUG_ERRPRINT("####Failed to call event_tpool_manager_new\n");
+		return -1;
+	}
+	void (*functable[])(evutil_socket_t fd, short eventflag, void * arg) = {
+		own_test_1,own_test_2,own_test_3,own_test_4
+	};
+
+	for(int i=0;i<TESTDATA;i++) {
+		testdata_g[i].tpool = tpool;
+		testdata_g[i].sockpair[SUBSCRIBER_FD] = eventfd(0,0);
+		subscriber_g[i].fd = testdata_g[i].sockpair[SUBSCRIBER_FD];
+		subscriber_g[i].eventflag=EV_READ|EV_PERSIST;
+		subscriber_g[i].event_callback = functable[i];
+	}
+	//add 1
+	testdata_g[0].tid = event_tpool_add(tpool, &subscriber_g[0], &testdata_g[0]);
+	if(testdata_g[0].tid < 0) {
+		DEBUG_ERRPRINT("####Failed to call event_tpool_add[0]\n");
+		return -1;
+	}
+
+	eventfd_write(testdata_g[0].sockpair[SUBSCRIBER_FD], 1);
+	sleep(1);
+	if(testdata_g[0].callcnt != 1 || testdata_g[0].checkresult== -1 || strcmp(testdata_g[0].funcname, "own_test_1") != 0) {
+		
+		DEBUG_ERRPRINT("####Failed to call event_tpool_add[0]\n");
+		return -1;
+	}
+
+	eventfd_write(testdata_g[1].sockpair[SUBSCRIBER_FD], 1);
+	sleep(1);
+	if(testdata_g[1].callcnt != 1 || testdata_g[1].checkresult== -1 || strcmp(testdata_g[1].funcname, "own_test_2") != 0 || testdata_g[2].tid != testdata_g[3].tid) {
+		DEBUG_ERRPRINT("####Failed to call event_tpool_add[1]\n");
+		return -1;
+	}
+
+	eventfd_write(testdata_g[2].sockpair[SUBSCRIBER_FD], 1);
+	sleep(1);
+	if(testdata_g[2].callcnt != 1 || testdata_g[2].checkresult== -1 || strcmp(testdata_g[2].funcname, "own_test_3") != 0) {
+		
+		DEBUG_ERRPRINT("####Failed to call event_tpool_add[2]\n");
+		return -1;
+	}
+
+	//delete check
+	eventfd_write(testdata_g[1].sockpair[SUBSCRIBER_FD], 1);
+	if(testdata_g[1].callcnt != 1 || testdata_g[1].checkresult== -1 || strcmp(testdata_g[1].funcname, "own_test_2") != 0 ) {
+		
+		DEBUG_ERRPRINT("####Failed to call delete[1]\n");
+		return -1;
+	}
+
+	//free
+	eventfd_write(testdata_g[3].sockpair[SUBSCRIBER_FD], 1);
+	sleep(1);
+	if(testdata_g[3].callcnt != 1 || testdata_g[3].checkresult== -1 || strcmp(testdata_g[3].funcname, "own_test_4") != 0) {
+		
+		DEBUG_ERRPRINT("####Failed to call event_tpool_add[1]\n");
+		return -1;
+	}
+	for(i=0;i<TESTDATA;i++) {
+		eventfd_write(testdata_g[i].sockpair[SUBSCRIBER_FD], 1);
+	}
+	sleep(3);
+	for(i=0;i<TESTDATA;i++) {
+		if(testdata_g[1].callcnt != 1) {
+			DEBUG_ERRPRINT("####Failed to free event_tpool[%d]\n", i);
+			return -1;
+			
+		}
+	}
+	return 0;
+}
+
 int test_tpoll_free() {
 	EventTPoolManager tpool = event_tpool_manager_new(3, 1);
 	testdata_t testdata[TESTDATA];
@@ -345,6 +474,11 @@ int main() {
 
 	if(test_tpoll_thread_safe()) {
 		DEBUG_ERRPRINT("Failed to check thread safe\n");
+		return -1;
+	}
+
+	if(test_tpoll_fo_ownthread()) {
+		DEBUG_ERRPRINT("Failed to check do own thread\n");
 		return -1;
 	}
 
