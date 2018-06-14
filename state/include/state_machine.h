@@ -60,11 +60,12 @@ void state_machine_set_state(StateMachineInfo this, int state);
  * @param[in] this StateMachineInfo class instance returned at state_machine_new
  * @param[in] event event id related to this function
  * @param[in] arg event argument
+ * @param[in] arglen event argument len
  * @param[in] response response callback method. If you set is_multithread=true , you must set this response callback,
  * @retval return value of method if you set by single thread mode
  * @retval STATE_MNG_SUCCESS and result is in callback you set callback if you set by multi thread mode.
  */
-int state_machine_call_event(StateMachineInfo this, int event, void *arg, void (*response)(int result));
+int state_machine_call_event(StateMachineInfo this, int event, void *arg, int arglen, void (*response)(int result));
 
 /*! call state method directry, if you want to call state_machine_call_event in the state_machine API, please call it.
  *

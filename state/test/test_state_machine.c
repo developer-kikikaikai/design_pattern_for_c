@@ -26,30 +26,30 @@ static int get_value(int event, int state) {
 
 static int test_state_begin_event_begin(void *arg) {
 	usleep(1000);
-	int * data = (int *)arg;
-	*data = get_value(EVENT_BEGIN, STATE_BEGIN);
-	return *data;
+	int ** data = (int **)arg;
+	**data = get_value(EVENT_BEGIN, STATE_BEGIN);
+	return **data;
 }
 
 static int test_state_end_event_begin(void *arg) {
 	usleep(1000);
-	int * data = (int *)arg;
-	*data = get_value(EVENT_BEGIN, STATE_END);
-	return *data;
+	int ** data = (int **)arg;
+	**data = get_value(EVENT_BEGIN, STATE_END);
+	return **data;
 }
 
 static int test_state_begin_event_end(void *arg) {
 	usleep(1000);
-	int * data = (int *)arg;
-	*data = get_value(EVENT_END, STATE_BEGIN);
-	return *data;
+	int ** data = (int **)arg;
+	**data = get_value(EVENT_END, STATE_BEGIN);
+	return **data;
 }
 
 static int test_state_end_event_end(void *arg) {
 	usleep(1000);
-	int * data = (int *)arg;
-	*data = get_value(EVENT_END, STATE_END);
-	return *data;
+	int ** data = (int **)arg;
+	**data = get_value(EVENT_END, STATE_END);
+	return **data;
 }
 /* }@*/
 
@@ -61,7 +61,7 @@ static int test_state_machine_failsafe() {
 	}
 
 	state_machine_set_state(NULL, STATE_BEGIN);
-	if(!state_machine_call_event(NULL, EVENT_BEGIN, NULL, NULL)) {
+	if(!state_machine_call_event(NULL, EVENT_BEGIN, NULL, 0, NULL)) {
 		printf("####Failed to check error state_machine_call_event\n");
 		return -1;
 	}
@@ -95,7 +95,7 @@ static int test_state_machine_normally_usage() {
 
 	state_machine_show(state_machine);
 
-	if(!state_machine_call_event(state_machine, EVENT_BEGIN, NULL, NULL)) {
+	if(!state_machine_call_event(state_machine, EVENT_BEGIN, NULL, 0, NULL)) {
 		printf("####Failed to check no state\n");
 		return -1;
 	}
@@ -110,7 +110,8 @@ static int test_state_machine_normally_usage() {
 		state_machine_show(state_machine);
 		for(event = EVENT_BEGIN; event < EVENT_MAX; event++ ) {
 			expected_value = get_value(event, state);
-			if(state_machine_call_event(state_machine, event, &response, NULL) != expected_value || response != expected_value) {
+			int *res_p=&response;
+			if(state_machine_call_event(state_machine, event, &(res_p), sizeof(res_p), NULL) != expected_value || response != expected_value) {
 				printf("####Failed to call event %d: state %d method(response=%d. expected_value=%d)\n", event, state, response, expected_value);
 				return -1;
 			}
@@ -166,7 +167,8 @@ static int test_state_machine_update_usage() {
 		state_machine_show(state_machine);
 		for(event = EVENT_BEGIN; event < EVENT_MAX; event++ ) {
 			expected_value = get_value(event, state);
-			if(state_machine_call_event(state_machine, event, &response, NULL) != expected_value || response != expected_value) {
+			int *res_p=&response;
+			if(state_machine_call_event(state_machine, event, &res_p, sizeof(res_p), NULL) != expected_value || response != expected_value) {
 				printf("####Failed to call event %d: state %d method(response=%d. expected_value=%d)\n", event, state, response, expected_value);
 				return -1;
 			}
@@ -175,6 +177,11 @@ static int test_state_machine_update_usage() {
 
 	state_machine_free(state_machine);
 	return 0;
+}
+
+static int result_g;
+static void test_response(int result) {
+	result_g = result;
 }
 
 static int test_state_machine_multi_thread() {
@@ -213,13 +220,14 @@ static int test_state_machine_multi_thread() {
 		state_machine_show(state_machine);
 		for(event = EVENT_BEGIN; event < EVENT_MAX; event++ ) {
 			expected_value = get_value(event, state);
-			if(state_machine_call_event(state_machine, event, &response, NULL) != STATE_MNG_SUCCESS) {
+			int *res_p=&response;
+			if(state_machine_call_event(state_machine, event, &res_p, sizeof(res_p), test_response) != STATE_MNG_SUCCESS) {
 				printf("####Failed to call event %d: state %d\n", event, state);
 				return -1;
 			}
 			//wait to call callback
 			sleep(1);
-			if(response != expected_value) {
+			if(response != expected_value || result_g != expected_value) {
 				printf("####Failed to call event %d: state %d method(response=%d. expected_value=%d)\n", event, state, response, expected_value);
 				return -1;
 			}
