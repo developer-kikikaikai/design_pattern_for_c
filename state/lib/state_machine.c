@@ -6,7 +6,7 @@
 #include <stdarg.h>
 #include <pthread.h>
 #include <sys/types.h>
-#include <sys/socket.h>
+#include <sys/eventfd.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <errno.h>
@@ -36,6 +36,16 @@ static StateManagerListData state_machine_manager_list_new(const state_event_inf
 static void state_machine_manager_list_free(StateManagerListData this);
 /* }@ */
 
+struct state_machine_msg_t;
+typedef struct state_machine_msg_t state_machine_msg_t , *StateMachineMsg;
+/*! information of state machine message list */
+struct state_machine_msg_list_t {
+	StateMachineMsg head;
+	StateMachineMsg tail;
+	pthread_mutex_t lock;
+	int eventfd;
+};
+typedef struct state_machine_msg_list_t state_machine_msg_list_t;
 /*! @struct state_manager_list_data_t
  * @brief information of StateMachine, to use as list
 */
@@ -43,20 +53,29 @@ struct state_machine_t {
 	StateManagerListData head;
 	StateManagerListData tail;
 	int (*call_event)(StateMachine this, int event, void *arg, int arglen, void (*response)(int result));/* call event API, to switch single/multi thread*/
+	int (*call_single_event)(StateMachine this, int event, void *arg, int arglen, void (*response)(int result));/* call event API, to call own thread*/
 	void (*free)(StateMachine this);/* call free API, to switch single/multi thread*/
 	/*data for multi thread mode*/
 	EventTPoolManager threadpool;
-	int sockpair[2];
+	pthread_t tid;
+
+	/*for recv event */
+	state_machine_msg_list_t msglist;
 };
+
+#define SMACHINE_LOCK(this) DPUTIL_LOCK(&this->msglist.lock);
+#define SMACHINE_UNLOCK DPUTIL_UNLOCK
 
 /*! @struct state_machine_msg_t
  * @brief message definition for multi thread
 */
-typedef struct state_machine_msg_t {
+struct state_machine_msg_t {
+	StateMachineMsg next;
+	StateMachineMsg prev;
 	int event;
 	void * args;
 	void (*response)(int result);
-} state_machine_msg_t;
+};
 
 /*! @name private API for StateMachine */
 /* @{ */
@@ -161,7 +180,7 @@ StateManagerListData state_machine_find_states(StateMachine this, int event) {
 /*! for multi thread, initialize */
 static int state_machine_initial_thread(StateMachine this) {
 	/* create socket */
-	if(state_machine_open_socket(this)) {
+	if(-1==state_machine_open_socket(this)) {
 		DEBUG_ERRPRINT("Failed to create socket pair!\n");
 		return STATE_MNG_FAILED;
 	}
@@ -205,21 +224,20 @@ static inline int state_machine_call_event_normal(StateMachine this, int event, 
 
 /*! for multi thread, call event */
 static int state_machine_call_event_multithread(StateMachine this, int event, void *arg, int arglen, void (*response)(int result)) {
-	state_machine_msg_t msg;
-	memset(&msg, 0, sizeof(msg));
-	msg.event = event;
-	msg.args = malloc(arglen);
-	if(!msg.args) {
+	StateMachineMsg msg = calloc(1, sizeof(*msg) + arglen);
+	if(!msg) {
 		return STATE_MNG_FAILED;
 	}
+	msg->event = event;
+	msg->args = (void *)(msg + 1);
 
-	memcpy(msg.args, arg, arglen);
-	msg.response = response;
+	memcpy(msg->args, arg, arglen);
+	msg->response = response;
 
 	int ret = STATE_MNG_SUCCESS;
-	if(state_machine_write(this, &msg) < 0) {
+	if(state_machine_write(this, msg) < 0) {
 		DEBUG_ERRPRINT("...failed to send, errno=%s\n", strerror(errno));
-		free(msg.args);
+		free(msg);
 		ret = STATE_MNG_FAILED;
 	}
 	return ret;
@@ -229,44 +247,62 @@ static int state_machine_call_event_multithread(StateMachine this, int event, vo
 static void state_machine_thread_main(evutil_socket_t socketfd, short eventflag, void * event_arg) {
 	StateMachine this = (StateMachine)event_arg;
 	int ret = 0;
-	state_machine_msg_t msg;
-	ret = read(socketfd, &msg, sizeof(msg));
+	StateMachineMsg msg;
+	eventfd_t cnt=0;
+
+	//set threadid
+	if(!this->tid) {
+		this->tid = pthread_self();
+	}
+
+	//read event
+	ret = eventfd_read(socketfd, &cnt);
 	if(ret < 0) {
 		DEBUG_ERRPRINT("failed to read, %s\n",  strerror(errno));
 		return;
 	}
 
-	/* call */
-	ret = state_machine_call_event_normal(this, msg.event, msg.args);
-	if(msg.response) {
-		msg.response(ret);
-	}
+SMACHINE_LOCK(this);
+	while(1) {
+		msg = (StateMachineMsg)dputil_list_pop((DPUtilList)&this->msglist);
+		if(!msg) {
+			break;
+		}
+		/* call */
+		ret = state_machine_call_event_normal(this, msg->event, msg->args);
+		if(msg->response) {
+			msg->response(ret);
+		}
 
-	free(msg.args);
+		free(msg);
+	}
+SMACHINE_UNLOCK(this);
 }
 
 /*! for multi thread, open socket */
 static inline int state_machine_open_socket(StateMachine this) {
-	return socketpair(AF_UNIX, SOCK_DGRAM, 0, this->sockpair);
+	pthread_mutex_init(&this->msglist.lock, NULL);
+	this->msglist.eventfd = eventfd(0,0);
+	return this->msglist.eventfd;
 }
 
 /*! for multi thread, close socket */
 static void state_machine_close_socket(StateMachine this) {
-	close(this->sockpair[0]);
-	close(this->sockpair[1]);
+	close(this->msglist.eventfd);
 }
 
-#define SOCK_READID (0)
-#define SOCK_WRITEID (1)
 
 /*! for multi thread, read */
 static inline int state_machine_get_read(StateMachine this) {
-	return this->sockpair[SOCK_READID];
+	return this->msglist.eventfd;
 }
 
 /*! for multi thread, write */
 static inline int state_machine_write(StateMachine this, state_machine_msg_t *msg) {
-	return write(this->sockpair[SOCK_WRITEID], msg, sizeof(state_machine_msg_t));
+SMACHINE_LOCK(this)
+	dputil_list_push((DPUtilList)(&this->msglist), (DPUtilListData)msg);
+SMACHINE_UNLOCK
+	return eventfd_write(this->msglist.eventfd, 1);
 }
 /* @} */
 
@@ -299,6 +335,7 @@ StateMachineInfo state_machine_new(size_t event_num, const state_event_info_t * 
 	if(threadpool) {
 		/* set information for multi thread */
 		instance->call_event = state_machine_call_event_multithread;
+		instance->call_single_event = state_machine_call_event_normally;
 		instance->free = state_machine_free_states_multithread;
 		instance->threadpool = threadpool;
 		instance_info->thread_num = state_machine_initial_thread(instance);
@@ -310,6 +347,7 @@ StateMachineInfo state_machine_new(size_t event_num, const state_event_info_t * 
 	} else {
 		/* only set call_event and free API */
 		instance->call_event = state_machine_call_event_normally;
+		instance->call_single_event = state_machine_call_event_normally;
 		instance->free = state_machine_free_states_normally;
 	}
 	return instance_info;
@@ -365,15 +403,11 @@ int state_machine_call_event(StateMachineInfo this, int event, void *arg, int ar
 		return STATE_MNG_FAILED;
 	}
 
-	return this->state_machine->call_event(this->state_machine, event, arg, arglen, response);
-}
-
-int state_machine_call_event_directry(StateMachineInfo this, int event, void *arg) {
-	if(!this) {
-		return STATE_MNG_FAILED;
+	if(this->state_machine->tid && this->state_machine->tid == pthread_self() ) {
+		return this->state_machine->call_single_event(this->state_machine, event, arg, arglen, response);
+	} else {
+		return this->state_machine->call_event(this->state_machine, event, arg, arglen, response);
 	}
-
-	state_machine_call_event_normal(this->state_machine, event, arg);
 }
 
 void state_machine_show(StateMachineInfo this) {
