@@ -288,7 +288,9 @@ static void * event_tpool_thread_main(void *arg) {
 	while(!this->is_stop) {
 		event_base_dispatch(this->event_base);
 	}
-	event_base_got_exit(this->event_base);
+	if(event_base_got_break(this->event_base)) {
+		event_base_loopbreak(this->event_base);
+	}
 	event_tpool_thread_free(this);
 	if(pthread_detach(pthread_self())) {
 		//already wait join, call exit
