@@ -301,6 +301,7 @@ PUBLISHER_DIR = $(top_srcdir)/publisher
 CoR_DIR = $(top_srcdir)/chain_of_responsibility
 STATE_DIR = $(top_srcdir)/state
 THREADPOOL_DIR = $(top_srcdir)/threadpool
+MEMPOOL_DIR = $(top_srcdir)/memorypool
 AM_CPPFLAGS = -I$(DPUTIL_DIR)/include/ $(GCOV_OPT)
 INCLUDES_PATH = $(DPUTIL_DIR)/include/
 test_CXXFLAGS = -g -O0

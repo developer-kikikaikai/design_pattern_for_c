@@ -98,6 +98,17 @@ AC_ARG_WITH([cor],
 #check flag
 AM_CONDITIONAL([USE_COR], [test "$with_cor" = yes -a "$with_flyweight" = yes])
 
+#without memorypool
+AC_ARG_WITH([memorypool],
+  [AC_HELP_STRING([--without-memorypool],
+    [exclude memorypool library]
+  )],
+  [with_memorypool=$withval],
+  [with_memorypool=yes]
+)
+#check flag
+AM_CONDITIONAL([USE_MEMPOOL], [test "$with_memorypool" = yes])
+
 #without sample
 AC_ARG_WITH([sample],
   [AC_HELP_STRING([--without-sample],
@@ -159,6 +170,10 @@ AC_CONFIG_FILES([Makefile
 		 state/lib/Makefile
 		 state/include/Makefile
 		 state/test/Makefile
+		 memorypool/Makefile
+		 memorypool/lib/Makefile
+		 memorypool/include/Makefile
+		 memorypool/test/Makefile
 		 mediator/Makefile
 		 mediator/sample/Makefile
 		 proxy/Makefile

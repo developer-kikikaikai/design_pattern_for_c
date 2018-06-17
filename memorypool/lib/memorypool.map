@@ -1,0 +1,8 @@
+{
+  global:
+    mpool_create;
+    mpool_delete;
+    mpool_malloc;
+    mpool_free;
+  local: *;
+};

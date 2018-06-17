@@ -23,6 +23,10 @@ if USE_COR
 SUBDIRS+= chain_of_responsibility
 endif
 
+if USE_MEMPOOL
+SUBDIRS+= memorypool
+endif
+
 if USE_SAMPLE
 SUBDIRS+= mediator proxy
 endif

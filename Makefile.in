@@ -93,7 +93,8 @@ host_triplet = @host@
 @USE_THREADPOOL_TRUE@am__append_4 = threadpool
 @USE_STATE_TRUE@am__append_5 = state
 @USE_COR_TRUE@am__append_6 = chain_of_responsibility
-@USE_SAMPLE_TRUE@am__append_7 = mediator proxy
+@USE_MEMPOOL_TRUE@am__append_7 = memorypool
+@USE_SAMPLE_TRUE@am__append_8 = mediator proxy
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -164,7 +165,8 @@ ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
 DIST_SUBDIRS = design_pattern_util flyweight builder publisher \
-	threadpool state chain_of_responsibility mediator proxy
+	threadpool state chain_of_responsibility memorypool mediator \
+	proxy
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in README \
 	ar-lib compile config.guess config.sub depcomp install-sh \
 	ltmain.sh missing
@@ -329,7 +331,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = design_pattern_util $(am__append_1) $(am__append_2) \
 	$(am__append_3) $(am__append_4) $(am__append_5) \
-	$(am__append_6) $(am__append_7)
+	$(am__append_6) $(am__append_7) $(am__append_8)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

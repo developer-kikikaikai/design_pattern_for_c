@@ -298,6 +298,7 @@ PUBLISHER_DIR = $(top_srcdir)/publisher
 CoR_DIR = $(top_srcdir)/chain_of_responsibility
 STATE_DIR = $(top_srcdir)/state
 THREADPOOL_DIR = $(top_srcdir)/threadpool
+MEMPOOL_DIR = $(top_srcdir)/memorypool
 
 #common header deifinition
 AM_CPPFLAGS = -I$(DPUTIL_DIR)/include/ $(GCOV_OPT) \
