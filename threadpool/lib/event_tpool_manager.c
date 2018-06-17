@@ -14,8 +14,6 @@
 *************/
 /*! @name thread information list definition.*/
 /*@{*/
-/*! used fd data list typedef */
-typedef struct event_tpool_fd_data_t *EventTPoolFDData;
 /*! used fd data list */
 struct event_tpool_fd_data_t {
 	EventTPoolFDData next;
@@ -51,7 +49,7 @@ static void event_tpool_thread_info_start_thread(EventTPoolThreadInfo instance);
 /*! stop thread */
 static void event_tpool_thread_info_stop_thread(EventTPoolThreadInfo this);
 /*! insert new thread */
-static void event_tpool_thread_insert_thread(event_tpool_insert_info_t * info, EventSubscriber subscriber, void * arg);
+static void * event_tpool_thread_insert_thread(event_tpool_insert_info_t * info, EventSubscriber subscriber, void * arg);
 /*! delete thread */
 static void event_tpool_thread_delete_thread(event_tpool_insert_info_t * info, int fd);
 /*! search current setting */
@@ -121,17 +119,19 @@ static void event_tpool_thread_info_stop_thread(EventTPoolThreadInfo this) {
 	event_tpool_thread_stop(this->tinstance);
 }
 /*! insert new thread */
-static void event_tpool_thread_insert_thread(event_tpool_insert_info_t * info, EventSubscriber subscriber, void * arg) {
+static void * event_tpool_thread_insert_thread(event_tpool_insert_info_t * info, EventSubscriber subscriber, void * arg) {
 	if(!(info->fdplace_lt) || info->fdplace_lt->fd != subscriber->fd ) {
 		EventTPoolFDData fddata = calloc(1, sizeof(*fddata));
 		if(!fddata) {
-			return;
+			return NULL;
 		}
 		fddata->fd = subscriber->fd;
 		event_tpool_thread_insert_fddata(info->threadinfo, info->fdplace_lt, fddata);
 		event_tpool_thread_add(info->threadinfo->tinstance, subscriber, arg);
+		return fddata;
 	} else {
 		event_tpool_thread_update(info->threadinfo->tinstance, subscriber, arg);
+		return info->fdplace_lt;
 	}
 }
 
@@ -298,10 +298,11 @@ EVT_TPOOL_MNG_UNLOCK
 	return size;
 }
 
-int event_tpool_add(EventTPoolManager this, EventSubscriber subscriber, void * arg) {
+event_tpool_add_result_t event_tpool_add(EventTPoolManager this, EventSubscriber subscriber, void * arg) {
+	event_tpool_add_result_t result={-1, NULL};
 	int id=-1;
 	if(!this || !subscriber) {
-		return id;
+		return result;
 	}
 EVT_TPOOL_MNG_LOCK(this);
 
@@ -309,26 +310,74 @@ EVT_TPOOL_MNG_LOCK(this);
 
 	id = event_tpool_manager_search_insert_thread(this, subscriber->fd, &info);
 
-	event_tpool_thread_insert_thread(&info, subscriber, arg);
+	/*reject if there is no same fd*/
+	if(info.fdplace_lt != NULL && info.fdplace_lt->fd == subscriber->fd) {
+		DEBUG_ERRPRINT("There is a setting for fd %d, please use event_tpool_update!\n", subscriber->fd);
+		goto end;
+	}
+
+	result.event_handle = event_tpool_thread_insert_thread(&info, subscriber, arg);
+	result.result = id;
+
+end:
+
 EVT_TPOOL_MNG_UNLOCK;
-	return id;
+	return result;
 }
 
-int event_tpool_add_thread(EventTPoolManager this, int threadid, EventSubscriber subscriber, void * arg) {
-	int id=-1;
+event_tpool_add_result_t event_tpool_add_thread(EventTPoolManager this, int threadid, EventSubscriber subscriber, void * arg) {
+	event_tpool_add_result_t result={.result=-1, .event_handle=NULL};
 	if(!this || !subscriber) {
-		return id;
+		return result;
 	}
 EVT_TPOOL_MNG_LOCK(this);
-	if(0 <= threadid && threadid < this->thread_size) {
-		event_tpool_insert_info_t info;
-		info.threadinfo=&this->threads[threadid];
-		info.fdplace_lt = event_tpool_thread_info_search_insert_place(&this->threads[threadid], subscriber->fd);
-		event_tpool_thread_insert_thread(&info, subscriber, arg);
-		id = threadid;
+	if(threadid < 0 || this->thread_size <= threadid) {
+		goto end;
+	}
+
+	event_tpool_insert_info_t info;
+	int id;
+	id = event_tpool_manager_search_insert_thread(this, subscriber->fd, &info);
+
+	/*reject  there is no same fd*/
+	if(info.fdplace_lt != NULL && info.fdplace_lt->fd == subscriber->fd) {
+		DEBUG_ERRPRINT("There is a setting for fd %d, please use event_tpool_update!\n", subscriber->fd);
+		goto end;
+	}
+
+	info.threadinfo=&this->threads[threadid];
+	/*accept if there is no same fd*/
+	info.fdplace_lt = event_tpool_thread_info_search_insert_place(&this->threads[threadid], subscriber->fd);
+
+	result.event_handle = event_tpool_thread_insert_thread(&info, subscriber, arg);
+	result.result = threadid;
+		
+
+end:
+EVT_TPOOL_MNG_UNLOCK;
+	return result;
+}
+
+event_tpool_add_result_t event_tpool_update(EventTPoolManager this, EventTPoolFDData event_handle, EventSubscriber subscriber, void * arg) {
+	event_tpool_add_result_t result={.result=-1, .event_handle=NULL};
+	int id = -1;
+	if(!this || !subscriber || !event_handle) {
+		return result;
+	}
+
+EVT_TPOOL_MNG_LOCK(this);
+	event_tpool_insert_info_t info={0};
+
+	id = event_tpool_manager_search_insert_thread(this, subscriber->fd, &info);
+
+	if(info.fdplace_lt == event_handle) {
+		/*update it for using insert func*/
+		result.event_handle = event_tpool_thread_insert_thread(&info, subscriber, arg);
+		result.result = id;
+		
 	}
 EVT_TPOOL_MNG_UNLOCK;
-	return id;
+	return result;
 }
 
 void event_tpool_del(EventTPoolManager this, int fd) {

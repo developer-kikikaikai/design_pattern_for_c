@@ -191,7 +191,8 @@ static int state_machine_initial_thread(StateMachine this) {
 		.event_callback = state_machine_thread_main,
 	};
 
-	return event_tpool_add(this->threadpool, &subscriber, this);
+	event_tpool_add_result_t result =  event_tpool_add(this->threadpool, &subscriber, this);
+	return result.result;
 }
 
 /*! for multi thread, free */

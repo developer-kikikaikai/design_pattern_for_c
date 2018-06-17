@@ -26,7 +26,23 @@ struct event_subscriber_t {
                        */
 	event_callback_fn event_callback;/*!< defined in event.h, void (*event_callback_fn)(evutil_socket_t socketfd, short eventflag, void * event_arg);*/
 };
+
 /** EventSubscriber class definition  */
 typedef struct event_subscriber_t event_subscriber_t,  * EventSubscriber;
+
+/*! @struct event_tpool_fd_data_t
+ * added event handler class instance definition
+ */
+struct event_tpool_fd_data_t;
+typedef struct event_tpool_fd_data_t *EventTPoolFDData;
+
+/** add result definition */
+struct event_tpool_add_result_t {
+	int result;
+	EventTPoolFDData event_handle;
+};
+
+typedef struct event_tpool_add_result_t event_tpool_add_result_t;
+
 /*@}*/
 #endif

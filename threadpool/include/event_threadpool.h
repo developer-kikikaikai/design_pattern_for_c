@@ -36,23 +36,36 @@ size_t event_tpool_manager_get_threadnum(EventTPoolManager this);
  * @param[in] this EventTPoolManager instance returned at event_tpool_new.
  * @param[in] subscriber EventSubscriber
  * @param[in] arg argument for event_callback
- * @retval thread id (0-thread_num-1) which subscriber added
- * @retval <0 error (no resource, or if a same fd's subscriber was already registred)
+ * @retval result: thread number (0-thread_num-1) which subscriber added, event_handle is used for update
+ * @retval result: <0 error (no resource, or if a same fd's subscriber was already registred)
  * @note if there already exist same fd's subscriber, it will override
  */
-int event_tpool_add(EventTPoolManager this, EventSubscriber subscriber, void * arg);
+event_tpool_add_result_t event_tpool_add(EventTPoolManager this, EventSubscriber subscriber, void * arg);
 /**
  *  add EventSubscriber to threadpool, if you want to choose thead, please use it.
  * @param[in] this EventTPoolManager instance returned at event_tpool_new.
  * @param[in] threadid thread id (0-thread_num-1)
  * @param[in] subscriber EventSubscriber
  * @param[in] arg argument for event_callback
- * @retval thread number (0-thread_num-1) which subscriber added
- * @retval <0 error (no resource, or if a same fd's subscriber was already registred)
+ * @retval result: thread number (0-thread_num-1) which subscriber added, event_handle is used for update
+ * @retval result: <0 error (no resource, or if a same fd's subscriber was already registred)
  * @note if there already exist same fd's subscriber, it will override
  * @note this API doesn't remove other thread's same fd setting.
  */
-int event_tpool_add_thread(EventTPoolManager this, int threadid, EventSubscriber subscriber, void * arg);
+event_tpool_add_result_t event_tpool_add_thread(EventTPoolManager this, int threadid, EventSubscriber subscriber, void * arg);
+/**
+ *  update EventSubscriber to threadpool. if you want to choose thead, please use it.
+ * @param[in] this EventTPoolManager instance returned at event_tpool_new.
+ * @param[in] event_handle handler of event returned at event_tpool_add/event_tpool_add_thread
+ * @param[in] subscriber EventSubscriber
+ * @param[in] arg argument for event_callback
+ * @retval result: thread number (0-thread_num-1) which subscriber added
+ * @retval result: <0 error (no resource, or if a same fd's subscriber was already registred)
+ * @note if there already exist same fd's subscriber, it will override
+ * @note this API doesn't remove other thread's same fd setting.
+ * @note handle will update
+ */
+event_tpool_add_result_t event_tpool_update(EventTPoolManager this, EventTPoolFDData event_handle, EventSubscriber subscriber, void * arg);
 /**
  * delete EventSubscriber to threadapool.
  * @param[in] this EventTPoolManager instance returned at event_tpool_new.

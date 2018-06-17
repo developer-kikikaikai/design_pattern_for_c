@@ -22,20 +22,40 @@ int test_tpoll_failsafe() {
 	event_subscriber_t subscriber;
 	EventTPoolManager tpool = calloc(1, 1024);
 	memset(&subscriber, 0, sizeof(subscriber));
-	if(0<event_tpool_add(NULL, &subscriber, NULL)) {
+	event_tpool_add_result_t result;
+	result = event_tpool_add(NULL, &subscriber, NULL);
+	if(0<result.result) {
 		DEBUG_ERRPRINT("####Failed to check NULL EventTPoolManager\n");
 		return -1;
 	}
 
-	if(0<event_tpool_add(tpool, NULL, NULL)) {
+	result = event_tpool_add(tpool, NULL, NULL);
+	if(0<result.result) {
 		DEBUG_ERRPRINT("####Failed to check NULL subscriber\n");
 		return -1;
 	}
 
-	if(0<event_tpool_add_thread(tpool, -1, &subscriber, NULL)) {
+	result = event_tpool_add_thread(tpool, -1, &subscriber, NULL);
+	if(0<result.result) {
 		DEBUG_ERRPRINT("####Failed to check call before event_tpool_manager_new\n");
 		return -1;
 	}
+	result = event_tpool_update(NULL, (EventTPoolFDData)&subscriber, &subscriber, NULL);
+	if(0<result.result) {
+		DEBUG_ERRPRINT("####Failed to check call before event_tpool_manager_new\n");
+		return -1;
+	}
+	result = event_tpool_update(tpool, (EventTPoolFDData)&subscriber, NULL, NULL);
+	if(0<result.result) {
+		DEBUG_ERRPRINT("####Failed to check call before event_tpool_manager_new\n");
+		return -1;
+	}
+	result = event_tpool_update(NULL, NULL, &subscriber, NULL);
+	if(0<result.result) {
+		DEBUG_ERRPRINT("####Failed to check call before event_tpool_manager_new\n");
+		return -1;
+	}
+
 	free(tpool);
 
 	tpool = event_tpool_manager_new(-1, 0);
@@ -57,16 +77,20 @@ int test_tpoll_failsafe() {
 		return -1;
 	}
 
-	if(0<event_tpool_add_thread((EventTPoolManager)tpool, size, &subscriber, NULL)) {
+	result = event_tpool_add_thread((EventTPoolManager)tpool, size, &subscriber, NULL);
+	if(0<result.result) {
 		DEBUG_ERRPRINT("####Failed to check over size");
 		return -1;
 	}
-	if(0<event_tpool_add_thread((EventTPoolManager)tpool, -1, &subscriber, NULL)) {
+
+	result = event_tpool_add_thread((EventTPoolManager)tpool, -1, &subscriber, NULL);
+	if(0<result.result) {
 		DEBUG_ERRPRINT("####Failed to check under size");
 		return -1;
 	}
 
-	if(0<event_tpool_add_thread((EventTPoolManager)tpool, size-1, NULL, NULL)) {
+	result = event_tpool_add_thread((EventTPoolManager)tpool, size-1, NULL, NULL);
+	if(0<result.result) {
 		DEBUG_ERRPRINT("####Failed to check subscriber NULL");
 		return -1;
 	}
@@ -157,11 +181,11 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 		{.fd = testdata[3].sockpair[SUBSCRIBER_FD], .eventflag=EV_READ|EV_PERSIST, .event_callback = test_4},
 	};
 
-	int tid[TESTDATA];
+	event_tpool_add_result_t tid[TESTDATA];
 	for(int i=0; i<TESTDATA-1; i++) {
 		printf("add[%d] fd:%d\n", i, subscriber[i].fd);
 		tid[i] = event_tpool_add(tpool, &subscriber[i], &testdata[i]);
-		if(tid[i] < 0) {
+		if(tid[i].result < 0) {
 			DEBUG_ERRPRINT("####Failed to call event_tpool_add[%d]\n", i);
 			return -1;
 		
@@ -169,15 +193,23 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 	}
 
 	if(separatecheck) {
-	if(tid[0]==tid[1] || tid[1]==tid[2] || tid[0]==tid[2]) {
-		DEBUG_ERRPRINT("####Failed to separate thread, %d %d %d\n", tid[0], tid[1], tid[2]);
+	if(tid[0].result==tid[1].result || tid[1].result==tid[2].result || tid[0].result==tid[2].result) {
+		DEBUG_ERRPRINT("####Failed to separate thread, %d %d %d\n", tid[0].result, tid[1].result, tid[2].result);
 		return -1;
 	}
 	}
 
-	if(event_tpool_add_thread(tpool, tid[1], &subscriber[3], &testdata[3]) != tid[1]) {
+	tid[3]=event_tpool_add_thread(tpool, tid[1].result, &subscriber[3], &testdata[3]);
+	if(separatecheck) {
+	if(tid[3].result != tid[1].result) {
 		DEBUG_ERRPRINT("####Failed to add event_tpool_add_thread[%d]\n", 3);
 		return -1;
+	}
+	} else {
+	if(tid[3].result == -1) {
+		DEBUG_ERRPRINT("####Failed to add event_tpool_add_thread[%d]\n", 3);
+		return -1;
+	}
 	}
 
 	//call write
@@ -186,7 +218,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 		tmp=write(testdata[i].sockpair[TEST_FD], &tmp, sizeof(tmp));
 	}
 
-	sleep(5);
+	sleep(3);
 	//check 0
 	if(testdata[0].callcnt != 1 || testdata[0].checkresult == -1 || strcmp(testdata[0].funcname, "test_1") != 0) {
 		DEBUG_ERRPRINT("####Failed to call testdata[0]\n");
@@ -219,15 +251,42 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 	event_tpool_del(tpool, subscriber[1].fd);
 	subscriber[3].event_callback = test_1;
 	printf("add[3] fd:%d\n", subscriber[3].fd);
-	event_tpool_add(tpool, &subscriber[3], &testdata[3]);
-
+	{
+	event_tpool_add_result_t tmp_result=event_tpool_add(tpool, &subscriber[3], &testdata[3]);
+	if(tmp_result.result != -1) {
+		DEBUG_ERRPRINT("####Failed to reject re-add event_tpool_add_thread[%d]\n", 3);
+		return -1;
+	}
+	}
+	{
+	event_tpool_add_result_t tmp_result=event_tpool_add_thread(tpool, tid[1].result, &subscriber[3], &testdata[3]);
+	if(tmp_result.result != -1) {
+		DEBUG_ERRPRINT("####Failed to reject re-add event_tpool_add_thread[%d]\n", 3);
+		return -1;
+	}
+	}
+	{
+	event_tpool_add_result_t tmp_result=event_tpool_add_thread(tpool, tid[3].result, &subscriber[3], &testdata[3]);
+	if(tmp_result.result != -1) {
+		DEBUG_ERRPRINT("####Failed to reject re-add event_tpool_add_thread[%d]\n", 3);
+		return -1;
+	}
+	}
+	{
+	printf("add[3] fd:%d\n", subscriber[3].fd);
+	event_tpool_add_result_t tmp_result=event_tpool_update(tpool, tid[3].event_handle, &subscriber[3], &testdata[3]);
+	if(tmp_result.result == -1) {
+		DEBUG_ERRPRINT("####Failed to update event_tpool_add_thread[%d]\n", 3);
+		return -1;
+	}
+	}
 	//rewrite
 	for(int i=0;i<TESTDATA;i++) {
 		int tmp=0;
 		tmp=write(testdata[i].sockpair[TEST_FD], &tmp, sizeof(tmp));
 	}
 
-	sleep(5);
+	sleep(3);
 	//check 0
 	if(testdata[0].callcnt != 1 || testdata[0].checkresult == -1 || strcmp(testdata[0].funcname, "test_1") != 0) {
 		DEBUG_ERRPRINT("####Failed to call testdata[0]\n");
@@ -317,8 +376,11 @@ static void own_test_1(evutil_socket_t fd, short eventflag, void * arg) {
 	testdata_t * testdata = (testdata_t *)arg;
 	common2(fd, eventflag, testdata);
 	testdata->funcname = __FUNCTION__;
-	testdata_g[1].tid = event_tpool_add(testdata->tpool, &subscriber_g[1], &testdata_g[1]);
-	testdata_g[2].tid = event_tpool_add(testdata->tpool, &subscriber_g[2], &testdata_g[2]);
+	event_tpool_add_result_t result;
+	result = event_tpool_add(testdata->tpool, &subscriber_g[1], &testdata_g[1]);
+	testdata_g[1].tid = result.result;
+	result = event_tpool_add(testdata->tpool, &subscriber_g[2], &testdata_g[2]);
+	testdata_g[2].tid = result.result;
 	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
 static void own_test_2(evutil_socket_t fd, short eventflag, void * arg) {
@@ -326,7 +388,9 @@ static void own_test_2(evutil_socket_t fd, short eventflag, void * arg) {
 	testdata_t * testdata = (testdata_t *)arg;
 	common2(fd, eventflag, testdata);
 	testdata->funcname = __FUNCTION__;
-	testdata_g[3].tid = event_tpool_add_thread(testdata->tpool, testdata_g[2].tid, &subscriber_g[3], &testdata_g[3]);
+	event_tpool_add_result_t result;
+	result = event_tpool_add_thread(testdata->tpool, testdata_g[2].tid, &subscriber_g[3], &testdata_g[3]);
+	testdata_g[3].tid = result.result;
 	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
 static void own_test_3(evutil_socket_t fd, short eventflag, void * arg) {
@@ -366,7 +430,9 @@ int test_tpoll_fo_ownthread() {
 		subscriber_g[i].event_callback = functable[i];
 	}
 	//add 1
-	testdata_g[0].tid = event_tpool_add(tpool, &subscriber_g[0], &testdata_g[0]);
+	event_tpool_add_result_t result;
+	result = event_tpool_add(tpool, &subscriber_g[0], &testdata_g[0]);
+	testdata_g[0].tid = result.result;
 	if(testdata_g[0].tid < 0) {
 		DEBUG_ERRPRINT("####Failed to call event_tpool_add[0]\n");
 		return -1;
@@ -414,7 +480,7 @@ int test_tpoll_fo_ownthread() {
 	for(i=0;i<TESTDATA;i++) {
 		eventfd_write(testdata_g[i].sockpair[SUBSCRIBER_FD], 1);
 	}
-	sleep(3);
+	sleep(2);
 	for(i=0;i<TESTDATA;i++) {
 		if(testdata_g[1].callcnt != 1) {
 			DEBUG_ERRPRINT("####Failed to free event_tpool[%d]\n", i);
@@ -444,7 +510,9 @@ int test_tpoll_free() {
 	int tid[TESTDATA];
 	for(int i=0; i<TESTDATA-1; i++) {
 		printf("add[%d] fd:%d\n", i, subscriber[i].fd);
-		tid[i] = event_tpool_add(tpool, &subscriber[i], &testdata[i]);
+		event_tpool_add_result_t result;
+		result = event_tpool_add(tpool, &subscriber[i], &testdata[i]);
+		tid[i] = result.result;
 		if(tid[i] < 0) {
 			DEBUG_ERRPRINT("####Failed to call event_tpool_add[%d]\n", i);
 			return -1;
