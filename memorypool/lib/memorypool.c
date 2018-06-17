@@ -67,6 +67,7 @@ static inline void mpool_list_push(MemoryPool this, malloc_data_t * data);
 static inline void mpool_list_pull(MemoryPool this, malloc_data_t * data);
 static inline void mpool_list_head(MemoryPool this, malloc_data_t * data);
 static inline void * mpool_get_memory(MemoryPool this);
+static inline void * mpool_get_next_memory(MemoryPool this, malloc_data_t * data);
 static inline void mpool_unuse_memory(MemoryPool this, void *ptr);
 static inline void mpool_unset_memory(malloc_data_t * memory, int is_used);
 static inline uint64_t mpool_get_buffer_place(MemoryPool this, uint8_t * buffer_list, void * ptr);
@@ -132,6 +133,18 @@ static inline void * mpool_get_memory(MemoryPool this) {
 	} else {
 		return NULL;
 	}
+}
+
+static inline void * mpool_get_next_memory(MemoryPool this, malloc_data_t * data) {
+	malloc_data_t * memory=NULL;
+
+	/* get memory place */
+	if(!data) memory=this->tail;
+	else memory=data->prev;
+
+	/* check used flag */
+	if(memory && memory->used) return memory;
+	else return NULL;
 }
 
 static inline void mpool_unuse_memory(MemoryPool this, void *ptr) {
@@ -222,6 +235,18 @@ void * mpool_malloc(MemoryPool this, size_t size) {
 MPOOL_LOCK(this)
 	mem = mpool_get_memory(this);
 	if(!mem) mem = calloc(1, size);
+MPOOL_UNLOCK
+	return mem;
+}
+
+void * mpool_get_next_usedmem(MemoryPool this, void * ptr) {
+	if(ptr && mpool_is_not_ptr_in_buf(this, ptr)) {
+		return NULL;
+	}
+
+	void * mem=NULL;
+MPOOL_LOCK(this)
+	mem = mpool_get_next_memory(this, (malloc_data_t *)ptr);
 MPOOL_UNLOCK
 	return mem;
 }

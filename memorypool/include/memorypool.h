@@ -41,6 +41,16 @@ void mpool_delete(MemoryPool this);
 void * mpool_malloc(MemoryPool this, size_t size);
 /*! get memory from pool as calloc, this is same as mpool_malloc */
 #define mpool_calloc(this, nmemb, size) mpool_malloc(this, nmemb*size)
+
+/**
+ * get used memory
+ *
+ * @param[in] this MemoryPool instance return,
+ * @param[in] ptr  used pointer
+ * @retval !=NULL  get next
+ * @retval NULL    this pointer is end
+ */
+void * mpool_get_next_usedmem(MemoryPool this, void * ptr);
 /**
  * free memory as free
  *

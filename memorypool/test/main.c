@@ -3,6 +3,7 @@
 #include<string.h>
 #include <elf.h>
 #include <pthread.h>
+#include <unistd.h>
 #include "memorypool.h"
 
 #define MAXSIZE 1024
@@ -36,6 +37,29 @@ void * test_mpool_malloc_thread(void *arg) {
 			goto end;
 		}
 	}
+	}
+
+	sleep(1);
+
+	//get next check
+	void *ptr=mpool_get_next_usedmem(data->this, NULL);
+	void *old_ptr=NULL;
+	while(ptr) {
+		if(old_ptr) {
+			size=(uint64_t)old_ptr - (uint64_t) ptr;
+			if(size != MAXSIZE) {
+				printf( "###(%d)failed\n", __LINE__);
+				goto end;
+			}
+		}
+		old_ptr = ptr;
+		ptr=mpool_get_next_usedmem(data->this, ptr);
+	}
+	//other area check
+	ptr=mpool_get_next_usedmem(data->this, data);
+	if(ptr) {
+		printf( "###(%d)failed\n", __LINE__);
+		goto end;
 	}
 
 	void * local = mpool_calloc(data->this, 1, MAXSIZE);
