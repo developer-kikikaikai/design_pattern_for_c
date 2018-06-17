@@ -3,7 +3,7 @@
  * This is API for memory pool
 **/
 #ifndef MEMORYPOOL_H
-#define MEMORYPOOL_H_
+#define MEMORYPOOL_H
 /*! @struct memorypool_t
  * @brief MemoryPool class member definition, detail is defined in C file.
 */
