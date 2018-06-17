@@ -44,11 +44,9 @@ void * mpool_malloc(MemoryPool this, size_t size);
 /**
  * free memory as free
  *
- * @param[in] max_size max of allocated memory size, to allocate fast, this value will update 2^n in library.
- * @param[in] max_cnt number of allocated memory
- * @param[in] is_multithread  threadsafe flag. If you want to use it on multi thread, please set 1.
- * @retval !=NULL  this class handle
- * @retval NULL error
+ * @param[in] this MemoryPool instance returned at mpool_malloc_new,
+ * @param[in] ptr allocated pointer which get from mpool_malloc
+ * @return none
  */
 void mpool_free(MemoryPool this, void * ptr);
 #endif
