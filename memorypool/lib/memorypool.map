@@ -3,6 +3,7 @@
     mpool_create;
     mpool_delete;
     mpool_malloc;
+    mpool_calloc;
     mpool_get_next_usedmem;
     mpool_free;
   local: *;

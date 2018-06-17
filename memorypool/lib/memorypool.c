@@ -154,7 +154,6 @@ static inline void mpool_unuse_memory(MemoryPool this, void *ptr) {
 
 	mpool_list_pull(this, memory);
 	mpool_unset_memory(memory, 0);
-	memset(memory->mem, 0, this->max_size);
 	mpool_list_head(this, memory);
 }
 
@@ -229,13 +228,19 @@ MPOOL_UNLOCK
 }
 
 void * mpool_malloc(MemoryPool this, size_t size) {
-	if(this->max_size < size) return calloc(1, size);
+	if(this->max_size < size) return malloc(size);
 
 	void * mem=NULL;
 MPOOL_LOCK(this)
 	mem = mpool_get_memory(this);
-	if(!mem) mem = calloc(1, size);
+	if(!mem) mem = malloc(size);
 MPOOL_UNLOCK
+	return mem;
+}
+
+void * mpool_calloc(MemoryPool this, size_t max_cnt, size_t size) {
+	void * mem= mpool_malloc(this, max_cnt*size);
+	if(mem) memset(mem, 0, max_cnt*size);
 	return mem;
 }
 
