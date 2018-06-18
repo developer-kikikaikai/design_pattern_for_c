@@ -6,7 +6,8 @@
 #include <unistd.h>
 #include "memorypool.h"
 
-#define MAXSIZE 1024
+#define MAXSIZE 1029
+#define MAXSIZE_LEN 2048
 #define MAXNUM 1024
 
 typedef struct mpool_result_t {
@@ -16,10 +17,9 @@ typedef struct mpool_result_t {
 	int result;
 } mpool_result_t;
 
-void *handle;
 void * test_mpool_malloc_thread(void *arg) {
 	mpool_result_t * data = (mpool_result_t *)arg;
-
+	char buf[MAXSIZE]={1};
 	void *mem_list[MAXNUM];
 	int i=0;
 	for(i=0;i<MAXNUM;i++) {
@@ -31,37 +31,15 @@ void * test_mpool_malloc_thread(void *arg) {
 	//memory check
 	for(i=0;i<MAXNUM-1;i++) {
 		size=(uint64_t)mem_list[i+1] - (uint64_t) mem_list[i];
-		//printf("size[%d] %d\n", i,  size);
-		if(size != MAXSIZE) {
+		if(size != MAXSIZE_LEN) {
 			printf( "###(%d)failed\n", __LINE__);
 			goto end;
 		}
 	}
 	}
+	printf("finish!\n");
 
 	sleep(1);
-
-	//get next check
-	void *ptr=mpool_get_next_usedmem(data->this, NULL);
-	void *old_ptr=NULL;
-	while(ptr) {
-		if(old_ptr) {
-			size=(uint64_t)old_ptr - (uint64_t) ptr;
-			if(size != MAXSIZE) {
-				printf( "###(%d)failed\n", __LINE__);
-				goto end;
-			}
-		}
-		old_ptr = ptr;
-		ptr=mpool_get_next_usedmem(data->this, ptr);
-	}
-	//other area check
-	ptr=mpool_get_next_usedmem(data->this, data);
-	if(ptr) {
-		printf( "###(%d)failed\n", __LINE__);
-		goto end;
-	}
-
 	void * local = mpool_calloc(data->this, 1, MAXSIZE);
 	for(i=0;i<MAXNUM;i++) {
 		//printf("0x%x\n", mem_list[i]);
@@ -131,8 +109,8 @@ end:
 	return NULL;
 }
 
-int test_mpool_malloc() {
-	mpool_result_t result={NULL, 0, MAXSIZE, -1};
+int test_mpool_malloc_single_thread() {
+	mpool_result_t result={NULL, 0, MAXSIZE_LEN, -1};
 	result.this = mpool_create(MAXSIZE, MAXNUM, result.is_multithread);
 
 	test_mpool_malloc_thread(&result);
@@ -141,11 +119,15 @@ int test_mpool_malloc() {
 		printf( "###(%d)failed\n", __LINE__);
 		return -1;
 	}
+	return 0;
+}
 
+int test_mpool_malloc_multi_thread() {
+	mpool_result_t result={NULL, 0, MAXSIZE, -1};
 	mpool_result_t result2;
-	result.maxsize = MAXSIZE*2;
+	result.maxsize = MAXSIZE_LEN;
 	result.is_multithread = 1;
-	result.this = mpool_create(MAXSIZE*2, MAXNUM, result.is_multithread);
+	result.this = mpool_create(MAXSIZE, MAXNUM*2, result.is_multithread);
 	memcpy(&result2, &result, sizeof(result));
 
 	pthread_t tid1, tid2;
@@ -169,11 +151,137 @@ int test_mpool_malloc() {
 	return 0;
 }
 
-int main(int argc, char *argv[]) {
-	if(test_mpool_malloc()) {
+void * malloc_thread(void *arg) {
+	MemoryPool mpool = (MemoryPool)arg;
+	int i=0;
+	for(i=0;i<MAXNUM/2;i++) {
+		mpool_malloc(mpool, MAXSIZE/2);
+	}
+	pthread_exit(NULL);
+	return NULL;
+}
+
+int test_mpool_malloc_getnext_check() {
+	MemoryPool mpool = mpool_create(MAXSIZE, MAXNUM, 1);
+	void *mem_list[MAXNUM];
+	void *ptr;
+
+	int cnt=0;
+	FOR_ALL_USEDMEM(mpool, ptr) {
+		cnt++;
+	}
+	if(cnt!=0) {
 		printf( "###(%d)failed\n", __LINE__);
+		return -1;
 	}
 
+	//only 3
+	mem_list[cnt++] = mpool_malloc(mpool, MAXSIZE/2);
+	mem_list[cnt++] = mpool_malloc(mpool, MAXSIZE);
+	mem_list[cnt++] = mpool_malloc(mpool, MAXSIZE);
+
+	FOR_ALL_USEDMEM(mpool, ptr) {
+		cnt--;
+		if(mem_list[cnt] != ptr) {
+			printf( "###(%d)failed, cnt=%d\n", __LINE__, cnt);
+			return -1;
+		}
+	}
+	if(cnt!=0) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
+
+	// check after free
+	mpool_free(mpool, mem_list[1]);
+	ptr = mpool_get_next_usedmem(mpool, NULL);
+	if(mem_list[2] != ptr) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
+	ptr = mpool_get_next_usedmem(mpool, ptr);
+	if(mem_list[0] != ptr) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
+	ptr = mpool_get_next_usedmem(mpool, ptr);
+	if(ptr != NULL) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
+
+	//check all
+	mem_list[1]=mem_list[2];
+
+	for(cnt=2; cnt<MAXNUM; cnt++) {
+		mem_list[cnt] = mpool_malloc(mpool, MAXSIZE);
+	}
+
+	FOR_ALL_USEDMEM(mpool, ptr) {
+		cnt--;
+		if(mem_list[cnt] != ptr) {
+			printf( "###(%d)failed, cnt=%d\n", __LINE__, cnt);
+			return -1;
+		}
+	}
+
+	if(cnt!=0) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
+
+	int cnt2=MAXNUM-1;
+	//free check
+	for(cnt2=MAXNUM-1; cnt2!=0; cnt2--) {
+		mpool_free(mpool, mem_list[cnt2]);
+		cnt = cnt2;
+		FOR_ALL_USEDMEM(mpool, ptr) {
+			cnt--;
+			if(mem_list[cnt] != ptr) {
+				printf( "###(%d)failed\n", __LINE__);
+				printf( "###(%d)failed, cnt=%d, cnt2=%d\n", __LINE__, cnt, cnt2);
+				return -1;
+			}
+		}
+		if(cnt!=0) {
+			printf( "###(%d)failed\n", __LINE__);
+			return -1;
+		}
+	}
+
+	//thread check
+	pthread_t tid1, tid2;
+
+	pthread_create(&tid1, NULL, malloc_thread, mpool);
+	pthread_create(&tid2, NULL, malloc_thread, mpool);
+	pthread_join(tid1, NULL);
+	pthread_join(tid2,NULL);
+
+	void *old_ptr;
+	cnt=0;
+	FOR_ALL_USEDMEM(mpool, ptr) {
+		cnt++;
+	}
+	if(cnt!=MAXNUM) {
+		printf( "###(%d)failed, cnt=%d\n", __LINE__, cnt);
+		return -1;	
+	}
+	return 0;
+}
+
+int main(int argc, char *argv[]) {
+	if(test_mpool_malloc_single_thread()) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
+	if(test_mpool_malloc_multi_thread()) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
+	if(test_mpool_malloc_getnext_check()) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
 	printf( "(%d)Finish to test!!\n", __LINE__);
 	return 0;
 }

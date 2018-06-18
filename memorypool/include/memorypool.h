@@ -59,6 +59,10 @@ void * mpool_calloc(MemoryPool this, size_t nmemb, size_t size);
  * @retval NULL    this pointer is end
  */
 void * mpool_get_next_usedmem(MemoryPool this, void * ptr);
+
+/*! define for used loop */
+#define FOR_ALL_USEDMEM(this,ptr) for(ptr=mpool_get_next_usedmem(this, NULL); ptr!=NULL; ptr = mpool_get_next_usedmem(this, ptr ))
+
 /**
  * free memory as free
  *

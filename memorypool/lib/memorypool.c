@@ -8,10 +8,8 @@
 /*! @name magic table hash API */
 /* @{ */
 #define HASH_LENGTH (64)
-static int magic_table[HASH_LENGTH];
-
 #define MAGIC_HASH 0x03F566ED27179461UL
-static void create_magic_table(void) {
+static void create_magic_table(int * magic_table) {
 	int i=0;
 	uint64_t hash = MAGIC_HASH;
 	for( i = 0; i < HASH_LENGTH; i ++ ) {
@@ -20,23 +18,23 @@ static void create_magic_table(void) {
 	}
 }
 /*! get right bit index */
-static int get_far_right_bit_index(uint64_t data) {
+static int get_far_right_bit_index(uint64_t data, int * magic_table) {
 	uint64_t rightbit = ( uint64_t ) ( data & ((-1)*data) );
 	uint64_t index = (rightbit * MAGIC_HASH ) >> 58;
 	return magic_table[index];
 }
 
 /*! get minimum of x, which 2^x > input_value*/
-static int get_bit_digit_index_over_size(uint64_t size) {
+static int get_bit_digit_index_over_size(uint64_t size, int * magic_table) {
 	uint64_t current_size=size;
 	int digit = 0, tmp_digit=0;
 	while(current_size != 0) {
-		tmp_digit = get_far_right_bit_index(current_size);
+		tmp_digit = get_far_right_bit_index(current_size, magic_table);
 		digit += tmp_digit + 1;
 		current_size = current_size >> tmp_digit + 1;
 	}
 
-	if(digit == get_far_right_bit_index(size) + 1) digit--;
+	if(digit == get_far_right_bit_index(size, magic_table) + 1) digit--;
 	return digit;
 }
 
@@ -67,7 +65,7 @@ static inline void mpool_list_push(MemoryPool this, malloc_data_t * data);
 static inline void mpool_list_pull(MemoryPool this, malloc_data_t * data);
 static inline void mpool_list_head(MemoryPool this, malloc_data_t * data);
 static inline void * mpool_get_memory(MemoryPool this);
-static inline void * mpool_get_next_memory(MemoryPool this, malloc_data_t * data);
+static inline void * mpool_get_next_memory(MemoryPool this, void * ptr);
 static inline void mpool_unuse_memory(MemoryPool this, void *ptr);
 static inline void mpool_unset_memory(malloc_data_t * memory, int is_used);
 static inline uint64_t mpool_get_buffer_place(MemoryPool this, uint8_t * buffer_list, void * ptr);
@@ -135,15 +133,20 @@ static inline void * mpool_get_memory(MemoryPool this) {
 	}
 }
 
-static inline void * mpool_get_next_memory(MemoryPool this, malloc_data_t * data) {
+static inline void * mpool_get_next_memory(MemoryPool this, void * ptr) {
 	malloc_data_t * memory=NULL;
 
 	/* get memory place */
-	if(!data) memory=this->tail;
-	else memory=data->prev;
+	if(!ptr) {
+		memory=this->tail;
+	} else {
+		uint64_t place = mpool_get_buffer_place(this, this->user_buf, ptr);
+		memory= ((malloc_data_t *)(this->buf) + place);
+		memory = memory->prev;
+	}
 
 	/* check used flag */
-	if(memory && memory->used) return memory;
+	if(memory && memory->used) return memory->mem;
 	else return NULL;
 }
 
@@ -180,14 +183,15 @@ MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread) {
 	//create magic hash table first
 	int ret=-1;
 	size_t slide_bit;
-	create_magic_table();
+	int magic_table[HASH_LENGTH]={0};
+	create_magic_table(magic_table);
 
 	MemoryPool instance;
 	size_t mutex_size=0;
 	if(is_multithread) mutex_size = sizeof(pthread_mutex_t);
 
 	//get slide bit to use hash
-	slide_bit = get_bit_digit_index_over_size(max_size);
+	slide_bit = get_bit_digit_index_over_size(max_size, magic_table);
 
 	//Update max size
 	max_size = 0x01 << slide_bit;
@@ -251,7 +255,8 @@ void * mpool_get_next_usedmem(MemoryPool this, void * ptr) {
 
 	void * mem=NULL;
 MPOOL_LOCK(this)
-	mem = mpool_get_next_memory(this, (malloc_data_t *)ptr);
+	
+	mem = mpool_get_next_memory(this, ptr);
 MPOOL_UNLOCK
 	return mem;
 }
