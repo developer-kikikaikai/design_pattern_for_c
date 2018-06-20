@@ -646,6 +646,10 @@ USE_STATE_FALSE
 USE_STATE_TRUE
 USE_PUBLISHER_FALSE
 USE_PUBLISHER_TRUE
+TPOOLEVENT_EPOLL_FALSE
+TPOOLEVENT_EPOLL_TRUE
+TPOOLEVENT_LIBEVENT_FALSE
+TPOOLEVENT_LIBEVENT_TRUE
 USE_THREADPOOL_FALSE
 USE_THREADPOOL_TRUE
 USE_BUILDER_FALSE
@@ -779,6 +783,7 @@ with_sysroot
 enable_libtool_lock
 with_builder
 with_threadpool
+with_threadpool_event
 with_publisher
 with_state
 with_flyweight
@@ -1454,6 +1459,8 @@ Optional Packages:
                           compiler's sysroot if not specified).
   --without-builder       exclude builder pattern library
   --without-threadpool    exclude threadpool pattern library.
+  --with-threadpool-event choose threadpool event from libevent and epool
+                          "[default: epool]"
   --without-publisher     exclude publisher pattern library
   --without-state         exclude state pattern/state machine library, if
                           threadpool is excluded, exclude it.
@@ -13059,45 +13066,6 @@ _ACEOF
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -levent" >&5
-$as_echo_n "checking for main in -levent... " >&6; }
-if ${ac_cv_lib_event_main+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-levent  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main ()
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_event_main=yes
-else
-  ac_cv_lib_event_main=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_event_main" >&5
-$as_echo "$ac_cv_lib_event_main" >&6; }
-if test "x$ac_cv_lib_event_main" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBEVENT 1
-_ACEOF
-
-  LIBS="-levent $LIBS"
-
-fi
-
 
 # Checks for header files.
 for ac_header in stddef.h stdlib.h string.h sys/socket.h unistd.h
@@ -13222,6 +13190,81 @@ fi
 else
   USE_THREADPOOL_TRUE='#'
   USE_THREADPOOL_FALSE=
+fi
+
+
+#without threadpool event
+
+# Check whether --with-threadpool-event was given.
+if test "${with_threadpool_event+set}" = set; then :
+  withval=$with_threadpool_event; with_threadpool_event=$withval
+else
+  with_threadpool_event="epoll"
+
+fi
+
+
+TPOOLEVENT_LIBEVENT=
+TPOOLEVENT_EPOLL=
+#check flag
+case "$with_threadpool_event" in
+  "libevent")
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -levent" >&5
+$as_echo_n "checking for main in -levent... " >&6; }
+if ${ac_cv_lib_event_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-levent  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_event_main=yes
+else
+  ac_cv_lib_event_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_event_main" >&5
+$as_echo "$ac_cv_lib_event_main" >&6; }
+if test "x$ac_cv_lib_event_main" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBEVENT 1
+_ACEOF
+
+  LIBS="-levent $LIBS"
+
+fi
+
+     TPOOLEVENT_LIBEVENT="yes";;
+  *) TPOOLEVENT_EPOLL="yes";;
+esac
+ if test "$TPOOLEVENT_LIBEVENT" = yes; then
+  TPOOLEVENT_LIBEVENT_TRUE=
+  TPOOLEVENT_LIBEVENT_FALSE='#'
+else
+  TPOOLEVENT_LIBEVENT_TRUE='#'
+  TPOOLEVENT_LIBEVENT_FALSE=
+fi
+
+ if test "$TPOOLEVENT_EPOLL" = yes; then
+  TPOOLEVENT_EPOLL_TRUE=
+  TPOOLEVENT_EPOLL_FALSE='#'
+else
+  TPOOLEVENT_EPOLL_TRUE='#'
+  TPOOLEVENT_EPOLL_FALSE=
 fi
 
 
@@ -13550,6 +13593,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_THREADPOOL_TRUE}" && test -z "${USE_THREADPOOL_FALSE}"; then
   as_fn_error $? "conditional \"USE_THREADPOOL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${TPOOLEVENT_LIBEVENT_TRUE}" && test -z "${TPOOLEVENT_LIBEVENT_FALSE}"; then
+  as_fn_error $? "conditional \"TPOOLEVENT_LIBEVENT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${TPOOLEVENT_EPOLL_TRUE}" && test -z "${TPOOLEVENT_EPOLL_FALSE}"; then
+  as_fn_error $? "conditional \"TPOOLEVENT_EPOLL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_PUBLISHER_TRUE}" && test -z "${USE_PUBLISHER_FALSE}"; then

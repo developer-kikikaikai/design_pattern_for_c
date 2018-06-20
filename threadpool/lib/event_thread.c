@@ -366,11 +366,6 @@ EventTPoolThread event_tpool_thread_new(void) {
 		goto err;
 	}
 
-	static int debugflag=0;
-	if(!debugflag) {
-		event_enable_debug_mode();
-		debugflag++;
-	}
 	if(event_tpool_thread_set_event_base(instance)) {
 		DEBUG_ERRPRINT("Failed to set base event!\n" );
 		goto err;

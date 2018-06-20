@@ -18,7 +18,6 @@ AC_PROG_CC
 AC_CHECK_LIB([pthread], [main])
 AC_CHECK_LIB([dl], [main])
 AC_CHECK_LIB([rt], [main])
-AC_CHECK_LIB([event], [main])
 
 # Checks for header files.
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h sys/socket.h unistd.h])
@@ -53,6 +52,27 @@ AC_ARG_WITH([threadpool],
 )
 #check flag
 AM_CONDITIONAL([USE_THREADPOOL], [test "$with_threadpool" = yes])
+
+#without threadpool event
+AC_ARG_WITH([threadpool-event],
+  [AC_HELP_STRING([--with-threadpool-event],
+    [choose threadpool event from libevent and epool "[default: epool]"]
+  )],
+  [with_threadpool_event=$withval],
+  [with_threadpool_event="epoll"]
+)
+
+TPOOLEVENT_LIBEVENT=
+TPOOLEVENT_EPOLL=
+#check flag
+case "$with_threadpool_event" in
+  "libevent") 
+     AC_CHECK_LIB([event], [main])
+     TPOOLEVENT_LIBEVENT="yes";;
+  *) TPOOLEVENT_EPOLL="yes";;
+esac
+AM_CONDITIONAL([TPOOLEVENT_LIBEVENT], [test "$TPOOLEVENT_LIBEVENT" = yes])
+AM_CONDITIONAL([TPOOLEVENT_EPOLL], [test "$TPOOLEVENT_EPOLL" = yes])
 
 #without publisher
 AC_ARG_WITH([publisher],

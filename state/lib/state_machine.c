@@ -95,7 +95,7 @@ static inline int state_machine_call_event_normal(StateMachine this, int event, 
 /*! for multi thread, call event */
 static int state_machine_call_event_multithread(StateMachine this, int event, void *arg, int arglen, void (*response)(int result));
 /*! for multi thread, thread main callback for threadpool */
-static void state_machine_thread_main(evutil_socket_t socketfd, short eventflag, void * event_arg);
+static void state_machine_thread_main(int socketfd, short eventflag, void * event_arg);
 /*! for multi thread, open socket */
 static inline int state_machine_open_socket(StateMachine this);
 /*! for multi thread, close socket */
@@ -187,7 +187,7 @@ static int state_machine_initial_thread(StateMachine this) {
 
 	event_subscriber_t subscriber={
 		.fd = state_machine_get_read(this),
-		.eventflag = EV_READ | EV_PERSIST,
+		.eventflag = EV_TPOOL_READ,
 		.event_callback = state_machine_thread_main,
 	};
 
@@ -245,7 +245,7 @@ static int state_machine_call_event_multithread(StateMachine this, int event, vo
 }
 
 /*! for multi thread, thread main */
-static void state_machine_thread_main(evutil_socket_t socketfd, short eventflag, void * event_arg) {
+static void state_machine_thread_main(int socketfd, short eventflag, void * event_arg) {
 	StateMachine this = (StateMachine)event_arg;
 	int ret = 0;
 	StateMachineMsg msg;
