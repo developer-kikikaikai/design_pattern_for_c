@@ -282,7 +282,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 		return -1;
 	}
 	}
-	sleep(1);
+	sleep(2);
 	//rewrite
 	for(int i=0;i<TESTDATA;i++) {
 		int tmp=0;
