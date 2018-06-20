@@ -129,7 +129,7 @@ am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libevent_threadpool_la_LIBADD =
 am_libevent_threadpool_la_OBJECTS = event_tpool_manager.lo \
-	event_thread.lo event_libevent.lo
+	event_thread.lo event_epoll.lo
 libevent_threadpool_la_OBJECTS = $(am_libevent_threadpool_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -337,9 +337,9 @@ INCLUDES_PATH = $(DPUTIL_DIR)/include/ $(THREADPOOL_DIR)/include
 
 #load common setting
 lib_LTLIBRARIES = libevent_threadpool.la
-#libevent_threadpool_la_SOURCES += event_epoll.c
 libevent_threadpool_la_SOURCES = event_tpool_manager.c event_thread.c \
-	event_libevent.c
+	event_epoll.c
+#libevent_threadpool_la_SOURCES += event_libevent.c
 libevent_threadpool_la_LDFLAGS = -shared \
 	$(DPUTIL_DIR)/lib/libdputil.la -Xlinker -rpath -Xlinker \
 	$(libdir) -Wl,--version-script,threadpool.map
@@ -422,7 +422,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_libevent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_epoll.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_thread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_tpool_manager.Plo@am__quote@
 

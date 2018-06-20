@@ -90,7 +90,7 @@ static inline int event_thread_msg_send_stop(EventTPoolThread this);
 /*! new instance */
 static EventSubscriberData event_subscriber_data_new(EventTPoolThread this, EventSubscriber subscriber, void *arg);
 /*! free instance */
-static void event_subscriber_data_free(EventSubscriberData this);
+static void event_subscriber_data_free(EventTPoolThread this, EventSubscriberData data);
 /*! get fd */
 static inline int event_subscriber_data_get_fd(EventSubscriberData this);
 /*@}*/
@@ -195,17 +195,16 @@ static EventSubscriberData event_subscriber_data_new(EventTPoolThread this, Even
 	return instance;
 
 err:
-	event_subscriber_data_free(instance);
+	event_subscriber_data_free(this, instance);
 	return NULL;
 }
 
 /*! free instance */
-static void event_subscriber_data_free(EventSubscriberData this) {
-	if(this->eventinfo) {
-		event_del(this->eventinfo);
-		event_free(this->eventinfo);
+static void event_subscriber_data_free(EventTPoolThread this, EventSubscriberData data) {
+	if(data->eventinfo) {
+		event_if_del(this->event_base, data->eventinfo);
 	}
-	free(this);
+	free(data);
 }
 /*! get fd */
 static inline int event_subscriber_data_get_fd(EventSubscriberData this) {
@@ -231,6 +230,8 @@ static int event_tpool_thread_set_event_base(EventTPoolThread this) {
 	}
 
 	/*add event*/
+	int val = fcntl(this->sockpair[EVE_THREAD_SOCK_FOR_MINE], F_GETFL, 0);
+	fcntl(this->sockpair[EVE_THREAD_SOCK_FOR_MINE], F_SETFL, val | O_NONBLOCK);
 	event_subscriber_t subscriber={this->sockpair[EVE_THREAD_SOCK_FOR_MINE], EV_TPOOL_READ, event_tpool_thread_cb};
 	this->msg_evfifo = event_if_add(this->event_base, &subscriber, this);
 	if(!this->msg_evfifo) {
@@ -257,7 +258,7 @@ static void event_tpool_thread_remove_event_base(EventTPoolThread this) {
 static void event_tpool_thread_free(EventTPoolThread this) {
 	EventSubscriberData data = event_thread_pop(this);
 	while(data) {
-		event_subscriber_data_free(data);	
+		event_subscriber_data_free(this, data);	
 		data = event_thread_pop(this);
 	}
 	event_tpool_thread_remove_event_base(this);
@@ -331,7 +332,7 @@ static void event_tpool_thread_msg_cb_del(EventTPoolThread this, event_thread_ms
 	//pull data from list
 	event_thread_pull(this, subscriber);
 	//delete event
-	event_subscriber_data_free(subscriber);
+	event_subscriber_data_free(this, subscriber);
 	send_response(this);
 }
 

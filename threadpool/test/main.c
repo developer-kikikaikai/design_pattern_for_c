@@ -213,6 +213,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 	}
 	}
 
+	//wait to add event
 	//call write
 	for(int i=0;i<TESTDATA;i++) {
 		int tmp=0;
