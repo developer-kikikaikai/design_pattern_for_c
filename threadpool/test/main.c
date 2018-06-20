@@ -175,10 +175,10 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 	}
 
 	event_subscriber_t subscriber[TESTDATA]={
-		{.fd = testdata[0].sockpair[SUBSCRIBER_FD], .eventflag=EV_READ, .event_callback = test_1},
-		{.fd = testdata[1].sockpair[SUBSCRIBER_FD], .eventflag=EV_READ|EV_PERSIST, .event_callback = test_2},
-		{.fd = testdata[2].sockpair[SUBSCRIBER_FD], .eventflag=EV_READ|EV_PERSIST, .event_callback = test_3},
-		{.fd = testdata[3].sockpair[SUBSCRIBER_FD], .eventflag=EV_READ|EV_PERSIST, .event_callback = test_4},
+		{.fd = testdata[0].sockpair[SUBSCRIBER_FD], .eventflag=EV_TPOOL_READ, .event_callback = test_1},
+		{.fd = testdata[1].sockpair[SUBSCRIBER_FD], .eventflag=EV_TPOOL_READ, .event_callback = test_2},
+		{.fd = testdata[2].sockpair[SUBSCRIBER_FD], .eventflag=EV_TPOOL_READ, .event_callback = test_3},
+		{.fd = testdata[3].sockpair[SUBSCRIBER_FD], .eventflag=EV_TPOOL_READ, .event_callback = test_4},
 	};
 
 	event_tpool_add_result_t tid[TESTDATA];
@@ -199,6 +199,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 	}
 	}
 
+	printf("###add[%d] fd:%d\n", 3, subscriber[3].fd);
 	tid[3]=event_tpool_add_thread(tpool, tid[1].result, &subscriber[3], &testdata[3]);
 	if(separatecheck) {
 	if(tid[3].result != tid[1].result) {
@@ -280,6 +281,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 		return -1;
 	}
 	}
+	sleep(1);
 	//rewrite
 	for(int i=0;i<TESTDATA;i++) {
 		int tmp=0;
@@ -288,7 +290,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 
 	sleep(3);
 	//check 0
-	if(testdata[0].callcnt != 1 || testdata[0].checkresult == -1 || strcmp(testdata[0].funcname, "test_1") != 0) {
+	if(testdata[0].callcnt != 2 || testdata[0].checkresult == -1 || strcmp(testdata[0].funcname, "test_1") != 0) {
 		DEBUG_ERRPRINT("####Failed to call testdata[0]\n");
 		return -1;
 	}
@@ -426,7 +428,7 @@ int test_tpoll_fo_ownthread() {
 		testdata_g[i].tpool = tpool;
 		testdata_g[i].sockpair[SUBSCRIBER_FD] = eventfd(0,0);
 		subscriber_g[i].fd = testdata_g[i].sockpair[SUBSCRIBER_FD];
-		subscriber_g[i].eventflag=EV_READ|EV_PERSIST;
+		subscriber_g[i].eventflag=EV_TPOOL_READ;
 		subscriber_g[i].event_callback = functable[i];
 	}
 	//add 1
@@ -501,10 +503,10 @@ int test_tpoll_free() {
 	}
 
 	event_subscriber_t subscriber[TESTDATA]={
-		{.fd = testdata[0].sockpair[SUBSCRIBER_FD], .eventflag=EV_READ, .event_callback = test_1},
-		{.fd = testdata[1].sockpair[SUBSCRIBER_FD], .eventflag=EV_READ|EV_PERSIST, .event_callback = test_2},
-		{.fd = testdata[2].sockpair[SUBSCRIBER_FD], .eventflag=EV_READ|EV_PERSIST, .event_callback = test_3},
-		{.fd = testdata[3].sockpair[SUBSCRIBER_FD], .eventflag=EV_READ|EV_PERSIST, .event_callback = test_4},
+		{.fd = testdata[0].sockpair[SUBSCRIBER_FD], .eventflag=EV_TPOOL_READ, .event_callback = test_1},
+		{.fd = testdata[1].sockpair[SUBSCRIBER_FD], .eventflag=EV_TPOOL_READ, .event_callback = test_2},
+		{.fd = testdata[2].sockpair[SUBSCRIBER_FD], .eventflag=EV_TPOOL_READ, .event_callback = test_3},
+		{.fd = testdata[3].sockpair[SUBSCRIBER_FD], .eventflag=EV_TPOOL_READ, .event_callback = test_4},
 	};
 
 	int tid[TESTDATA];

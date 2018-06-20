@@ -283,7 +283,7 @@ SMACHINE_UNLOCK(this);
 /*! for multi thread, open socket */
 static inline int state_machine_open_socket(StateMachine this) {
 	pthread_mutex_init(&this->msglist.lock, NULL);
-	this->msglist.eventfd = eventfd(0,0);
+	this->msglist.eventfd = eventfd(0,EFD_CLOEXEC | EFD_NONBLOCK);
 	return this->msglist.eventfd;
 }
 

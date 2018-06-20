@@ -10,6 +10,8 @@
 #include <sys/socket.h>
 #include <event2/event-config.h>
 #include <event2/event.h>
+#include <fcntl.h>
+#include "event_if.h"
 #include "event_thread.h"
 #include "dp_util.h"
 
@@ -49,7 +51,7 @@ typedef struct event_subscriber_data_t *EventSubscriberData;
 struct event_subscriber_data_t {
 	EventSubscriberData next;
 	EventSubscriberData prev;
-	struct event *eventinfo;/*!< event related to subscriber */
+	void * eventinfo;/*!< event related to subscriber */
 };
 
 #define event_thread_pop(this)  (EventSubscriberData)dputil_list_pop((DPUtilList)(this))
@@ -65,8 +67,8 @@ struct event_tpool_thread_t {
 	EventSubscriberData head;/*!<list of subscriber*/
 	EventSubscriberData tail;/*!<list of subscriber*/
 	int sockpair[2];/*!<socketpair to use add message*/
-	struct event_base* event_base;/*<! base event */
-	struct event *msg_evfifo;/*<! msg event info*/
+	EventInstance event_base;/*<! base event*/
+	EventHandler msg_evfifo;/*<! msg event info*/
 	pthread_t tid;/*<! thread id*/
 	int is_stop;/*<! stop flag*/
 };
@@ -139,8 +141,10 @@ static inline int event_thread_msg_send_subscribe(EventTPoolThread this, EventSu
 	msg.body.add.arg = arg;
 	int ret = 0;
 	if(pthread_self() != this->tid) {
+		DEBUG_ERRPRINT("other thread!\n" );
 		ret = event_thread_msg_send(this, &msg);
 	} else {
+		DEBUG_ERRPRINT("own thrad!\n" );
 		event_tpool_thread_msg_cb_table[msg.type](this, &msg);
 	}
 	return ret;
@@ -182,14 +186,9 @@ static EventSubscriberData event_subscriber_data_new(EventTPoolThread this, Even
 		return NULL;
 	}
 
-	instance->eventinfo = event_new(this->event_base, subscriber->fd, subscriber->eventflag, subscriber->event_callback, arg);
+	instance->eventinfo = event_if_add(this->event_base, subscriber, arg);
 	if(!instance->eventinfo) {
 		DEBUG_ERRPRINT("Failed to new event!\n" );
-		goto err;
-	}
-
-	if(event_add(instance->eventinfo, NULL) == -1) {
-		DEBUG_ERRPRINT("Failed to add event!\n" );
 		goto err;
 	}
 
@@ -210,7 +209,7 @@ static void event_subscriber_data_free(EventSubscriberData this) {
 }
 /*! get fd */
 static inline int event_subscriber_data_get_fd(EventSubscriberData this) {
-	return (int)event_get_fd(this->eventinfo);
+	return (int)event_if_getfd(this->eventinfo);
 }
 static inline void event_tpool_thread_wait_stop(EventTPoolThread this) {
 	pthread_t tid = 0;
@@ -225,21 +224,17 @@ static inline void event_tpool_thread_wait_stop(EventTPoolThread this) {
 /*@{*/
 /*! set event_base */
 static int event_tpool_thread_set_event_base(EventTPoolThread this) {
-	this->event_base = event_base_new();
+	this->event_base = event_if_new();
 	if(!this->event_base) {
 		DEBUG_ERRPRINT("Failed to new event_base!\n" );
 		goto err;
 	}
 
 	/*add event*/
-	this->msg_evfifo = event_new(this->event_base, this->sockpair[EVE_THREAD_SOCK_FOR_MINE], EV_READ|EV_PERSIST, event_tpool_thread_cb, this);
+	event_subscriber_t subscriber={this->sockpair[EVE_THREAD_SOCK_FOR_MINE], EV_TPOOL_READ, event_tpool_thread_cb};
+	this->msg_evfifo = event_if_add(this->event_base, &subscriber, this);
 	if(!this->msg_evfifo) {
 		DEBUG_ERRPRINT("Failed to new event!\n" );
-		goto err;
-	}
-
-	if(event_add(this->msg_evfifo, NULL) == -1) {
-		DEBUG_ERRPRINT("Failed to add event!\n" );
 		goto err;
 	}
 
@@ -251,11 +246,10 @@ err:
 
 static void event_tpool_thread_remove_event_base(EventTPoolThread this) {
 	if(this->msg_evfifo) {
-		event_del(this->msg_evfifo);
-		event_free(this->msg_evfifo);
+		event_if_del(this->event_base, this->msg_evfifo);
 	}
 	if(this->event_base) {
-		event_base_free(this->event_base);
+		event_if_free(this->event_base);
 	}
 }
 
@@ -286,11 +280,11 @@ static EventSubscriberData event_tpool_thread_get_subscriber(EventTPoolThread th
 static void * event_tpool_thread_main(void *arg) {
 	EventTPoolThread this = (EventTPoolThread)arg;
 	while(!this->is_stop) {
-		event_base_dispatch(this->event_base);
+		event_if_loop(this->event_base);
 	}
-	if(event_base_got_break(this->event_base)) {
-		event_base_loopbreak(this->event_base);
-	}
+
+	event_if_exit(this->event_base);
+
 	event_tpool_thread_free(this);
 	if(pthread_detach(pthread_self())) {
 		//already wait join, call exit
@@ -324,13 +318,8 @@ static void event_tpool_thread_msg_cb_update(EventTPoolThread this, event_thread
 	}
 
 	/*update event*/
-	event_del(subscriber->eventinfo);
-	subscriber->eventinfo = event_new(this->event_base, msg->body.update.subscriber.fd, msg->body.update.subscriber.eventflag, msg->body.update.subscriber.event_callback, msg->body.update.arg);
-	event_add(subscriber->eventinfo, NULL);
+	subscriber->eventinfo = event_if_update(this->event_base, subscriber->eventinfo, &msg->body.update.subscriber, msg->body.update.arg);
 	send_response(this);
-	
-	/*restart loop and reload settings*/
-	event_base_loopcontinue(this->event_base);
 }
 
 /*! for del*/
@@ -350,13 +339,14 @@ static void event_tpool_thread_msg_cb_del(EventTPoolThread this, event_thread_ms
 static void event_tpool_thread_msg_cb_stop(EventTPoolThread this, event_thread_msg_t *msg) {
 	(void)msg;
 	this->is_stop=1;
-	event_base_loopbreak(this->event_base);
+	event_if_loopbreak(this->event_base);
 }
 /*! callback main*/
 static void event_tpool_thread_cb(evutil_socket_t fd, short flag, void * arg) {
 	EventTPoolThread this = (EventTPoolThread)arg;
 	event_thread_msg_t msg;
 	int ret = read(fd, &msg, sizeof(msg));
+	DEBUG_ERRPRINT("own thrad!\n" );
 	event_tpool_thread_msg_cb_table[msg.type](this, &msg);
 }
 /*@}*/
@@ -397,13 +387,14 @@ err:
 
 /** start thread */
 void event_tpool_thread_start(EventTPoolThread this) {
+	this->tid=0;
 	pthread_create(&this->tid, NULL, event_tpool_thread_main, this);
 }
 
 /** stop thread */
 void event_tpool_thread_stop(EventTPoolThread this) {
 	int ret = event_thread_msg_send_stop(this);
-	if(ret) {
+	if(0<ret) {
 		event_tpool_thread_wait_stop(this);
 	}
 }
@@ -411,21 +402,23 @@ void event_tpool_thread_stop(EventTPoolThread this) {
 /** add new subscriber */
 void event_tpool_thread_add(EventTPoolThread this, EventSubscriber subscriber, void * arg) {
 	int ret = event_thread_msg_send_add(this, subscriber, arg);
-	if(ret) {
+	if(0<ret) {
 		wait_response(this);
 	}
 }
 void event_tpool_thread_update(EventTPoolThread this, EventSubscriber subscriber, void * arg) {
 	int ret = event_thread_msg_send_update(this, subscriber, arg);
-	if(ret) {
+	if(0<ret) {
+		DEBUG_ERRPRINT("wait!\n" );
 		wait_response(this);
+		DEBUG_ERRPRINT("wait end!\n" );
 	}
 }
 
 /** delete subscriber */
 void event_tpool_thread_del(EventTPoolThread this, int fd) {
 	int ret = event_thread_msg_send_del(this, fd);
-	if(ret) {
+	if(0<ret) {
 		wait_response(this);
 	}
 }

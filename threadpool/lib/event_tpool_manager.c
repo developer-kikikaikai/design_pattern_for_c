@@ -335,7 +335,7 @@ EVT_TPOOL_MNG_LOCK(this);
 		goto end;
 	}
 
-	event_tpool_insert_info_t info;
+	event_tpool_insert_info_t info={0};
 	int id;
 	id = event_tpool_manager_search_insert_thread(this, subscriber->fd, &info);
 
