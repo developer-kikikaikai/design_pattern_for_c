@@ -179,7 +179,7 @@ static inline int mpool_is_not_ptr_in_buf(MemoryPool this, void * ptr) {
 
 /*! @name public API*/
 /* @{ */
-MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread) {
+MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, void (*constructor)(void *)) {
 	//create magic hash table first
 	int ret=-1;
 	size_t slide_bit;
@@ -219,14 +219,22 @@ MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread) {
 	for(int i=0;i<max_cnt;i++) {
 		memory = (malloc_data_t *)(instance->buf + (sizeof(malloc_data_t) * i));
 		memory->mem = instance->user_buf + (max_size * i);
+		if(constructor) constructor(memory->mem);
 		mpool_list_push(instance, memory);
 	}
 
 	return instance;
 }
 
-void mpool_delete(MemoryPool this) {
+void mpool_delete(MemoryPool this, void (*destructor)(void *)) {
 MPOOL_LOCK(this)
+	if(destructor) {
+		malloc_data_t * memory = this->head;
+		while(memory) {
+			destructor(memory->mem);
+			memory = memory->next;
+		}
+	}
 MPOOL_UNLOCK
 	free(this);
 }

@@ -17,17 +17,19 @@ typedef struct memorypool_t * MemoryPool;
  * @param[in] max_size max of allocated memory size, to allocate fast, this value will update 2^n in library.
  * @param[in] max_cnt number of allocated memory
  * @param[in] is_multithread  threadsafe flag. If you want to use it on multi thread, please set 1.
+ * @param[in] constructor if you want to initialize memory first.
  * @retval !=NULL  this class handle
  * @retval NULL error
  */
-MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread);
+MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, void (*constructor)(void *));
 /**
  * free MemoryPool class
  *
  * @param[in] this MemoryPool instance returned at mpool_malloc_new,
+ * @param[in] destructor if you want to finialize memory
  * @return none
  */
-void mpool_delete(MemoryPool this);
+void mpool_delete(MemoryPool this, void (*destructor)(void *));
 
 /**
  * get memory from pool as malloc
