@@ -206,6 +206,8 @@ MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, voi
 	if(is_multithread) {
 		instance->lock=(pthread_mutex_t *) (instance + 1);
 		pthread_mutex_init(instance->lock, NULL);
+	} else {
+		instance->lock = NULL;
 	}
 
 	//keep pointer line, head is list of malloc_data_t
