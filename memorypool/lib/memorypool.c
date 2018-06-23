@@ -231,20 +231,11 @@ MPOOL_UNLOCK
 	free(this);
 }
 
-void * mpool_malloc(MemoryPool this, size_t size) {
-	if(this->max_size < size) return malloc(size);
-
+void * mpool_get(MemoryPool this) {
 	void * mem=NULL;
 MPOOL_LOCK(this)
 	mem = mpool_get_memory(this);
-	if(!mem) mem = malloc(size);
 MPOOL_UNLOCK
-	return mem;
-}
-
-void * mpool_calloc(MemoryPool this, size_t max_cnt, size_t size) {
-	void * mem= mpool_malloc(this, max_cnt*size);
-	if(mem) memset(mem, 0, max_cnt*size);
 	return mem;
 }
 
@@ -261,12 +252,11 @@ MPOOL_UNLOCK
 	return mem;
 }
 
-void mpool_free(MemoryPool this, void * ptr) {
+void mpool_release(MemoryPool this, void * ptr) {
 	if(!ptr) return;
 
 	if(mpool_is_not_ptr_in_buf(this, ptr)) {
 		//no info
-		free(ptr);
 		return;
 	}
 MPOOL_LOCK(this)

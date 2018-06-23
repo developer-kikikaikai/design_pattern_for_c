@@ -32,26 +32,14 @@ MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, voi
 void mpool_delete(MemoryPool this, void (*destructor)(void *));
 
 /**
- * get memory from pool as malloc
+ * get memory from pool
  *
  * @param[in] this MemoryPool instance returned at mpool_malloc_new,
- * @param[in] size allocates size bytes
  * @retval !=NULL  allocated pointer
- * @retval NULL    error
- * @note If size > max_size of allocated memory, or all allocated memories are already used, call calloc
+ * @retval NULL    max_size of allocated memory
+ * @note If already get all allocated pointer, return NULL
  */
-void * mpool_malloc(MemoryPool this, size_t size);
-/**
- * get memory from pool as malloc
- *
- * @param[in] this MemoryPool instance returned at mpool_malloc_new,
- * @param[in] size allocates size bytes
- * @retval !=NULL  allocated pointer
- * @retval NULL    error
- * @note Difference of malloc: all of return memories are initialize by 0.
- * @note If size > max_size of allocated memory, or all allocated memories are already used, call calloc
- */
-void * mpool_calloc(MemoryPool this, size_t nmemb, size_t size);
+void * mpool_get(MemoryPool this);
 /**
  * get used memory
  *
@@ -66,12 +54,12 @@ void * mpool_get_next_usedmem(MemoryPool this, void * ptr);
 #define FOR_ALL_USEDMEM(this,ptr) for(ptr=mpool_get_next_usedmem(this, NULL); ptr!=NULL; ptr = mpool_get_next_usedmem(this, ptr ))
 
 /**
- * free memory as free
+ * release memory to pool
  *
  * @param[in] this MemoryPool instance returned at mpool_malloc_new,
  * @param[in] ptr allocated pointer which get from mpool_malloc
  * @return none
  * @note not initialize memory
  */
-void mpool_free(MemoryPool this, void * ptr);
+void mpool_release(MemoryPool this, void * ptr);
 #endif

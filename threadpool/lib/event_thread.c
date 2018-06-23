@@ -183,6 +183,7 @@ static inline void event_thread_msg_send_del(EventTPoolThread this, int fd) {
 	msg->type=EVE_THREAD_MSG_TYPE_DEL;
 	event_thread_msg_body_del_t *body = (event_thread_msg_body_del_t *)(msg + 1);
 	body->fd = fd;
+	DEBUG_ERRPRINT("del, subscriber->%d!\n", fd);
 
 	if(pthread_self() != this->tid) {
 		event_thread_msg_send(this, msg);
@@ -225,6 +226,7 @@ static EventSubscriberData event_subscriber_data_new(EventTPoolThread this, Even
 		goto err;
 	}
 
+	DEBUG_ERRPRINT("this->eventinfo=%p\n", instance->eventinfo);
 	return instance;
 
 err:
@@ -241,6 +243,7 @@ static void event_subscriber_data_free(EventTPoolThread this, EventSubscriberDat
 }
 /*! get fd */
 static inline int event_subscriber_data_get_fd(EventSubscriberData this) {
+	DEBUG_ERRPRINT("this->eventinfo=%p\n", this->eventinfo);
 	return (int)event_if_getfd(this->eventinfo);
 }
 static inline void event_tpool_thread_wait_stop(EventTPoolThread this) {
@@ -338,13 +341,14 @@ static void event_tpool_thread_msg_cb_add(EventTPoolThread this, event_thread_ms
 	}
 
 	event_thread_push(this, instance);
-	//send_response(this);
+	DEBUG_ERRPRINT("head=%p(eventinfo=%p), tail=%p, instance->eventinfo=%p\n", this->head, this->head->eventinfo, this->tail, instance->eventinfo);
 }
 
 /*! for update*/
 static void event_tpool_thread_msg_cb_update(EventTPoolThread this, event_thread_msg_t *msg) {
 	/*add event*/
 	event_thread_msg_body_add_t * body = (event_thread_msg_body_add_t *)(msg + 1);
+	DEBUG_ERRPRINT("head=%p(eventinfo=%p), tail=%p\n", this->head, this->head->eventinfo, this->tail);
 	EventSubscriberData subscriber = event_tpool_thread_get_subscriber(this, body->subscriber.fd);
 	if(!subscriber) {
 		DEBUG_ERRPRINT("Failed to find subscriber!\n" );
@@ -353,7 +357,6 @@ static void event_tpool_thread_msg_cb_update(EventTPoolThread this, event_thread
 
 	/*update event*/
 	subscriber->eventinfo = event_if_update(this->event_base, subscriber->eventinfo, &body->subscriber, body->arg);
-	//send_response(this);
 }
 
 /*! for del*/
@@ -367,7 +370,6 @@ static void event_tpool_thread_msg_cb_del(EventTPoolThread this, event_thread_ms
 	event_thread_pull(this, subscriber);
 	//delete event
 	event_subscriber_data_free(this, subscriber);
-	//send_response(this);
 }
 
 /*! for stop*/
