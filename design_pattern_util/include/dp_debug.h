@@ -18,7 +18,7 @@
 #include <errno.h>
 #define DEBUG_ERRPRINT(...)  DEBUG_ERRPRINT_(__VA_ARGS__, "")
 #define DEBUG_ERRPRINT_(fmt, ...)  \
-        fprintf(stderr, "%s(%d): "fmt"%s", __FUNCTION__,__LINE__, __VA_ARGS__)
+        fprintf(stderr, "[%s(%s:%d)thread:%x]: "fmt"%s", __FUNCTION__,__FILE__,__LINE__,(unsigned int)pthread_self(), __VA_ARGS__)
 #else
 #define DEBUG_ERRPRINT(...) 
 #endif
