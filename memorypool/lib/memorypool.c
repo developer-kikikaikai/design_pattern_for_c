@@ -5,36 +5,28 @@
 #include <pthread.h>
 #include "memorypool.h"
 
-/*! @name magic table hash API */
+/*! @name index slide API */
 /* @{ */
-#define HASH_LENGTH (64)
-#define MAGIC_HASH 0x03F566ED27179461UL
-static void create_magic_table(int * magic_table) {
-	int i=0;
-	uint64_t hash = MAGIC_HASH;
-	for( i = 0; i < HASH_LENGTH; i ++ ) {
-		magic_table[ hash >> 58 ] = i;
-		hash <<= 1;
-	}
-}
 /*! get right bit index */
-static int get_far_right_bit_index(uint64_t data, int * magic_table) {
-	uint64_t rightbit = ( uint64_t ) ( data & ((-1)*data) );
-	uint64_t index = (rightbit * MAGIC_HASH ) >> 58;
-	return magic_table[index];
+static int get_far_right_bit_index(uint64_t data) {
+	int index=0;
+	while((data)&(0x01<<index)) {
+		break;
+	}
+	return index;
 }
 
 /*! get minimum of x, which 2^x > input_value*/
-static int get_bit_digit_index_over_size(uint64_t size, int * magic_table) {
+static int get_bit_digit_index_over_size(uint64_t size) {
 	uint64_t current_size=size;
 	int digit = 0, tmp_digit=0;
 	while(current_size != 0) {
-		tmp_digit = get_far_right_bit_index(current_size, magic_table);
+		tmp_digit = get_far_right_bit_index(current_size);
 		digit += tmp_digit + 1;
 		current_size = current_size >> tmp_digit + 1;
 	}
 
-	if(digit == get_far_right_bit_index(size, magic_table) + 1) digit--;
+	if(digit == get_far_right_bit_index(size) + 1) digit--;
 	return digit;
 }
 
@@ -183,15 +175,13 @@ MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, voi
 	//create magic hash table first
 	int ret=-1;
 	size_t slide_bit;
-	int magic_table[HASH_LENGTH]={0};
-	create_magic_table(magic_table);
 
 	MemoryPool instance;
 	size_t mutex_size=0;
 	if(is_multithread) mutex_size = sizeof(pthread_mutex_t);
 
 	//get slide bit to use hash
-	slide_bit = get_bit_digit_index_over_size(max_size, magic_table);
+	slide_bit = get_bit_digit_index_over_size(max_size);
 
 	//Update max size
 	max_size = 0x01 << slide_bit;
