@@ -399,6 +399,17 @@ void state_machine_set_state(StateMachineInfo this, int state) {
 	return;
 }
 
+int state_machine_get_current_state(StateMachineInfo this) {
+	if(!this) {
+		return STATE_MNG_FAILED;
+	}
+	if(this->state_machine->head) {
+		return state_manager_get_current_state(this->state_machine->head->states);
+	} else {
+		return STATE_MNG_FAILED;
+	}
+}
+
 int state_machine_call_event(StateMachineInfo this, int event, void *arg, int arglen, void (*response)(int result)) {
 	if(!this) {
 		return STATE_MNG_FAILED;

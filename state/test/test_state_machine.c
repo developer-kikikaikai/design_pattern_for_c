@@ -107,6 +107,12 @@ static int test_state_machine_normally_usage() {
 	int state, event;
 	for(state = STATE_BEGIN; state < STATE_MAX; state++) {
 		state_machine_set_state(state_machine, state);
+
+		if(state_machine_get_current_state(state_machine)!=state) {
+			printf("####Failed to change state %d:(current:%d)\n", state, state_machine_get_current_state(state_machine));
+			return -1;
+		}
+
 		state_machine_show(state_machine);
 		for(event = EVENT_BEGIN; event < EVENT_MAX; event++ ) {
 			expected_value = get_value(event, state);
@@ -165,6 +171,11 @@ static int test_state_machine_update_usage() {
 	for(state = STATE_BEGIN; state < STATE_MAX; state++) {
 		state_machine_set_state(state_machine, state);
 		state_machine_show(state_machine);
+		if(state_machine_get_current_state(state_machine)!=state) {
+			printf("####Failed to change state %d:(current:%d)\n", state, state_machine_get_current_state(state_machine));
+			return -1;
+		}
+
 		for(event = EVENT_BEGIN; event < EVENT_MAX; event++ ) {
 			expected_value = get_value(event, state);
 			int *res_p=&response;
@@ -217,6 +228,11 @@ static int test_state_machine_multi_thread() {
 	int state, event;
 	for(state = STATE_BEGIN; state < STATE_MAX; state++) {
 		state_machine_set_state(state_machine, state);
+		if(state_machine_get_current_state(state_machine)!=state) {
+			printf("####Failed to change state %d:(current:%d)\n", state, state_machine_get_current_state(state_machine));
+			return -1;
+		}
+
 		state_machine_show(state_machine);
 		for(event = EVENT_BEGIN; event < EVENT_MAX; event++ ) {
 			expected_value = get_value(event, state);

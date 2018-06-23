@@ -3,6 +3,7 @@
     state_machine_new;
     state_machine_update_machine;
     state_machine_set_state;
+    state_machine_get_current_state;
     state_machine_call_event;
     state_machine_show;
     state_machine_free;

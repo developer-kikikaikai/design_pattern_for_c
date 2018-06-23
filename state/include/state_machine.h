@@ -55,6 +55,13 @@ int state_machine_update_machine(StateMachineInfo this, const state_event_info_t
  */
 void state_machine_set_state(StateMachineInfo this, int state);
 /**
+ * @brief get state
+ *
+ * @param[in] this StateMachineInfo class instance returned at state_machine_new
+ * @return state
+ */
+int state_machine_get_current_state(StateMachineInfo this);
+/**
  * @brief call event trigger
  *
  * @param[in] this StateMachineInfo class instance returned at state_machine_new
