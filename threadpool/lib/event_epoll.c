@@ -64,10 +64,9 @@ err:
 /** add new event */
 EventHandler event_if_add(EventInstance this, EventSubscriber subscriber, void *arg) {
 
-	DEBUG_ERRPRINT("add subscriber->%d!\n", subscriber->fd);
 	EventEpoll base = (EventEpoll)this;
 
-	EventEpollHandler instance = malloc(sizeof(*instance));
+	EventEpollHandler instance = calloc(1, sizeof(*instance));
 	if(!instance) {
 		return NULL;
 	}
@@ -78,7 +77,6 @@ EventHandler event_if_add(EventInstance this, EventSubscriber subscriber, void *
 
 	struct epoll_event ev;
 	ev.events = convert_etpoll_eveid2own(subscriber->eventflag);
-	DEBUG_ERRPRINT("set instance %p!\n", instance);
 	ev.data.ptr = instance;
 
 	/*add event*/

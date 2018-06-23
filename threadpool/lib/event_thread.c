@@ -85,6 +85,7 @@ struct event_tpool_thread_t {
 /*@{*/
 #define EVMSG_LOCK(this) DPUTIL_LOCK(&this->msglist.lock);
 #define EVMSG_UNLOCK DPUTIL_UNLOCK
+#define EVMSG_NOTEREVC(this) pthread_cond_signal(&this->msglist.lock);
 
 static inline void event_thread_msg_send(EventTPoolThread this, EventThreadMsg msg);
 static inline void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type);
@@ -148,6 +149,10 @@ static inline void event_thread_msg_send(EventTPoolThread this, EventThreadMsg m
 EVMSG_LOCK(this)
 	dputil_list_push((DPUtilList)(&this->msglist), (DPUtilListData)msg);
 	eventfd_write(this->eventfd, 1);
+	/*wait receive message notification from event thread main*/
+	DEBUG_ERRPRINT("wait to receive msg!\n");
+	pthread_cond_wait(&this->msglist.cond, &this->msglist.lock);
+	DEBUG_ERRPRINT("wait to receive msg end!\n");
 EVMSG_UNLOCK
 }
 
@@ -208,6 +213,7 @@ static inline void event_tpool_thread_msg_cb_call(EventTPoolThread this, event_t
 /*@}*/
 /*! new instance */
 static EventSubscriberData event_subscriber_data_new(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
+	DEBUG_ERRPRINT("add subscriber->%d!\n", subscriber->fd);
 	EventSubscriberData instance = calloc(1, sizeof(*instance));
 	if(!instance) {
 		return NULL;
@@ -382,6 +388,10 @@ EVMSG_LOCK(this)
 		/* call */
 		event_tpool_thread_msg_cb_call(this, msg);
 		msg = (EventThreadMsg)dputil_list_pop((DPUtilList)&this->msglist);
+		DEBUG_ERRPRINT("finish to receive msg, notify to caller!\n");
+		/*notify event message to called API thread*/
+		pthread_cond_signal(&this->msglist.cond);
+		DEBUG_ERRPRINT("notify to caller end!\n");
 	}
 EVMSG_UNLOCK
 }
@@ -403,6 +413,7 @@ EventTPoolThread event_tpool_thread_new(void) {
 	}
 
 	pthread_mutex_init(&instance->msglist.lock, NULL);
+	pthread_cond_init(&instance->msglist.cond, NULL);
 
 	if(event_tpool_thread_set_event_base(instance)) {
 		DEBUG_ERRPRINT("Failed to set base event!\n" );
