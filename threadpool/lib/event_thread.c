@@ -137,6 +137,8 @@ static event_tpool_thread_msg_cb event_tpool_thread_msg_cb_table[]={
 
 static inline void event_tpool_thread_msg_cb_call(EventTPoolThread this, event_thread_msg_t *msg);
 
+/*! main messages caller*/
+static void event_tpool_thread_call_msgs(EventTPoolThread this);
 /*! callback main*/
 static void event_tpool_thread_cb(int, short, void *);
 /*@}*/
@@ -149,7 +151,9 @@ EVMSG_LOCK(this)
 	dputil_list_push((DPUtilList)(&this->msglist), (DPUtilListData)msg);
 	eventfd_write(this->eventfd, 1);
 	/*wait receive message notification from event thread main*/
+	DEBUG_ERRPRINT("(thread:%x)wait signal from event thread , %p\n", (unsigned int)pthread_self(), &this->msglist.cond );
 	pthread_cond_wait(&this->msglist.cond, &this->msglist.lock);
+	DEBUG_ERRPRINT("(thread:%x)wait signal from event thread %p end\n", (unsigned int)pthread_self(),&this->msglist.cond );
 EVMSG_UNLOCK
 }
 
@@ -314,6 +318,9 @@ static void * event_tpool_thread_main(void *arg) {
 
 	event_if_exit(this->event_base);
 
+	/*call remain msg all*/
+	event_tpool_thread_call_msgs(this);
+
 	event_tpool_thread_free(this);
 	if(pthread_detach(pthread_self())) {
 		//already wait join, call exit
@@ -371,12 +378,8 @@ static void event_tpool_thread_msg_cb_stop(EventTPoolThread this, event_thread_m
 	this->is_stop=1;
 	event_if_loopbreak(this->event_base);
 }
-/*! callback main*/
-static void event_tpool_thread_cb(int fd, short flag, void * arg) {
-	EventTPoolThread this = (EventTPoolThread)arg;
-	eventfd_t cnt=0;
-	eventfd_read(this->eventfd, &cnt);
 
+static void event_tpool_thread_call_msgs(EventTPoolThread this) {
 EVMSG_LOCK(this)
 	EventThreadMsg msg = (EventThreadMsg)dputil_list_pop((DPUtilList)&this->msglist);
 	while(msg) {
@@ -384,9 +387,20 @@ EVMSG_LOCK(this)
 		event_tpool_thread_msg_cb_call(this, msg);
 		msg = (EventThreadMsg)dputil_list_pop((DPUtilList)&this->msglist);
 		/*notify event message to called API thread*/
+		DEBUG_ERRPRINT("()cond signal from event thread to %p\n", &this->msglist.cond );
 		pthread_cond_signal(&this->msglist.cond);
+		DEBUG_ERRPRINT("cond signal from event thread to %p end\n", &this->msglist.cond );
 	}
 EVMSG_UNLOCK
+}
+
+/*! callback main*/
+static void event_tpool_thread_cb(int fd, short flag, void * arg) {
+	EventTPoolThread this = (EventTPoolThread)arg;
+	eventfd_t cnt=0;
+	eventfd_read(this->eventfd, &cnt);
+
+	event_tpool_thread_call_msgs(this);
 }
 /*@}*/
 /*************

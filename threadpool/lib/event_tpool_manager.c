@@ -316,6 +316,7 @@ EVT_TPOOL_MNG_LOCK(this);
 		goto end;
 	}
 
+
 	result.event_handle = event_tpool_thread_insert_thread(&info, subscriber, arg);
 	result.result = id;
 
@@ -351,7 +352,6 @@ EVT_TPOOL_MNG_LOCK(this);
 
 	result.event_handle = event_tpool_thread_insert_thread(&info, subscriber, arg);
 	result.result = threadid;
-		
 
 end:
 EVT_TPOOL_MNG_UNLOCK;
