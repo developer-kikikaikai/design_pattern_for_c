@@ -85,7 +85,6 @@ struct event_tpool_thread_t {
 /*@{*/
 #define EVMSG_LOCK(this) DPUTIL_LOCK(&this->msglist.lock);
 #define EVMSG_UNLOCK DPUTIL_UNLOCK
-#define EVMSG_NOTEREVC(this) pthread_cond_signal(&this->msglist.lock);
 
 static inline void event_thread_msg_send(EventTPoolThread this, EventThreadMsg msg);
 static inline void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type);
@@ -150,9 +149,7 @@ EVMSG_LOCK(this)
 	dputil_list_push((DPUtilList)(&this->msglist), (DPUtilListData)msg);
 	eventfd_write(this->eventfd, 1);
 	/*wait receive message notification from event thread main*/
-	DEBUG_ERRPRINT("wait to receive msg!\n");
 	pthread_cond_wait(&this->msglist.cond, &this->msglist.lock);
-	DEBUG_ERRPRINT("wait to receive msg end!\n");
 EVMSG_UNLOCK
 }
 
@@ -226,7 +223,6 @@ static EventSubscriberData event_subscriber_data_new(EventTPoolThread this, Even
 		goto err;
 	}
 
-	DEBUG_ERRPRINT("this->eventinfo=%p\n", instance->eventinfo);
 	return instance;
 
 err:
@@ -243,7 +239,6 @@ static void event_subscriber_data_free(EventTPoolThread this, EventSubscriberDat
 }
 /*! get fd */
 static inline int event_subscriber_data_get_fd(EventSubscriberData this) {
-	DEBUG_ERRPRINT("this->eventinfo=%p\n", this->eventinfo);
 	return (int)event_if_getfd(this->eventinfo);
 }
 static inline void event_tpool_thread_wait_stop(EventTPoolThread this) {
@@ -341,14 +336,12 @@ static void event_tpool_thread_msg_cb_add(EventTPoolThread this, event_thread_ms
 	}
 
 	event_thread_push(this, instance);
-	DEBUG_ERRPRINT("head=%p(eventinfo=%p), tail=%p, instance->eventinfo=%p\n", this->head, this->head->eventinfo, this->tail, instance->eventinfo);
 }
 
 /*! for update*/
 static void event_tpool_thread_msg_cb_update(EventTPoolThread this, event_thread_msg_t *msg) {
 	/*add event*/
 	event_thread_msg_body_add_t * body = (event_thread_msg_body_add_t *)(msg + 1);
-	DEBUG_ERRPRINT("head=%p(eventinfo=%p), tail=%p\n", this->head, this->head->eventinfo, this->tail);
 	EventSubscriberData subscriber = event_tpool_thread_get_subscriber(this, body->subscriber.fd);
 	if(!subscriber) {
 		DEBUG_ERRPRINT("Failed to find subscriber!\n" );
@@ -390,10 +383,8 @@ EVMSG_LOCK(this)
 		/* call */
 		event_tpool_thread_msg_cb_call(this, msg);
 		msg = (EventThreadMsg)dputil_list_pop((DPUtilList)&this->msglist);
-		DEBUG_ERRPRINT("finish to receive msg, notify to caller!\n");
 		/*notify event message to called API thread*/
 		pthread_cond_signal(&this->msglist.cond);
-		DEBUG_ERRPRINT("notify to caller end!\n");
 	}
 EVMSG_UNLOCK
 }

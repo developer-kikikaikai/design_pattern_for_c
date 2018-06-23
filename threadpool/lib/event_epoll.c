@@ -5,9 +5,9 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define EVENT_EPOLL_DEFMAX (16)
+#define EVENT_EPOLL_DEFMAX (128)
 //loop to add event
-#define EVENT_EPOLL_TIMEOUT (100)
+#define EVENT_EPOLL_TIMEOUT (50)
 
 struct event_epoll_t {
 	int epfd;
@@ -67,6 +67,10 @@ err:
 EventHandler event_if_add(EventInstance this, EventSubscriber subscriber, void *arg) {
 
 	EventEpoll base = (EventEpoll)this;
+	/*max size reached*/
+	if(base->maxevents <= base->curevent_cnt) {
+		return NULL;
+	}
 
 	EventEpollHandler instance = calloc(1, sizeof(*instance));
 	if(!instance) {
@@ -88,9 +92,6 @@ EventHandler event_if_add(EventInstance this, EventSubscriber subscriber, void *
 	}
 
 	base->curevent_cnt++;
-	if(base->maxevents < base->curevent_cnt) {
-		base->maxevents += EVENT_EPOLL_DEFMAX;
-	}
 
 	return instance;
 err:
@@ -168,16 +169,6 @@ void event_if_loop(EventInstance this) {
 			DEBUG_ERRPRINT("handler %p\n" , events[i].data.ptr);
 			handler = (EventEpollHandler)events[i].data.ptr;
 			handler->subscriber.event_callback(handler->subscriber.fd, eventflag, handler->arg);
-		}
- 
-		if(old_maxevents == base->maxevents || loop==0) {
-			continue;
-		}
-		DEBUG_ERRPRINT("realloc!\n");
-		events = realloc(events, base->maxevents);
-		if(!events) {
-			DEBUG_ERRPRINT("Failed to realloc!\n" );
-			break;
 		}
 	}
 
