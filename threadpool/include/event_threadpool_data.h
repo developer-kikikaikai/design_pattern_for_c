@@ -17,6 +17,7 @@ typedef struct event_tpool_manager_t * EventTPoolManager;
 
 #define EV_TPOOL_READ (0x01<<0)
 #define EV_TPOOL_WRITE (0x01<<1)
+#define EV_TPOOL_HUNGUP (0x01<<2)
 
 /*! @struct event_subscriber_t
  * EventSubscriber class instance definition, this is storaged in any threads.

@@ -7,6 +7,7 @@ static inline int convert_etpoll_eveid2own(int eventflag) {
 	int ret_eveflag=EV_PERSIST;
 	if(eventflag&EV_TPOOL_READ) ret_eveflag |= EV_READ;
 	if(eventflag&EV_TPOOL_WRITE) ret_eveflag |= EV_WRITE;
+	if(eventflag&EV_TPOOL_HUNGUP) ret_eveflag |= EV_SIGNAL;
 	return ret_eveflag;
 }
 

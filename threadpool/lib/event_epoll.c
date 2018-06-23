@@ -28,6 +28,7 @@ static inline int convert_etpoll_eveid2own(int eventflag) {
 	int ret_eveflag=0;
 	if(eventflag&EV_TPOOL_READ) ret_eveflag |= EPOLLIN;
 	if(eventflag&EV_TPOOL_WRITE) ret_eveflag |= EPOLLOUT;
+	if(eventflag&EV_TPOOL_HUNGUP) ret_eveflag |= EPOLLHUP;
 	return ret_eveflag;
 }
 
@@ -35,6 +36,7 @@ static inline short convert_etpoll_ownid2eve(int eventflag) {
 	int ret_eveflag=0;
 	if(eventflag&EPOLLIN) ret_eveflag |= EV_TPOOL_READ;
 	if(eventflag&EPOLLOUT) ret_eveflag |= EV_TPOOL_WRITE;
+	if(eventflag&EPOLLHUP) ret_eveflag |= EV_TPOOL_HUNGUP;
 	return ret_eveflag;
 }
 
