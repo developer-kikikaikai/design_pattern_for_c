@@ -17,13 +17,13 @@ typedef struct mpool_result_t {
 	int result;
 } mpool_result_t;
 
-void * test_mpool_malloc_thread(void *arg) {
+void * test_mpool_get_thread(void *arg) {
 	mpool_result_t * data = (mpool_result_t *)arg;
 	char buf[MAXSIZE]={1};
 	void *mem_list[MAXNUM];
 	int i=0;
 	for(i=0;i<MAXNUM;i++) {
-		mem_list[i] = mpool_calloc(data->this, 1, MAXSIZE);
+		mem_list[i] = mpool_get(data->this);
 	}
 
 	uint64_t size=0;
@@ -40,48 +40,24 @@ void * test_mpool_malloc_thread(void *arg) {
 	printf("finish!\n");
 
 	sleep(1);
-	void * local = mpool_calloc(data->this, 1, MAXSIZE);
-	for(i=0;i<MAXNUM;i++) {
-		//printf("0x%x\n", mem_list[i]);
-		if(local == mem_list[i]) {
-			printf( "###(%d)failed\n", __LINE__);
-			goto end;
-		}
+	void * local = mpool_get(data->this);
+	if(local != NULL) {
+		printf( "###(%d)failed\n", __LINE__);
+		goto end;
 	}
 //	printf("0x%x\n", local);
 
-	mpool_free(data->this, local);
-
-	//no free tmp data
+	//no release tmp data
 	for(i=0;i<MAXNUM;i++) {
 		memset(mem_list[i], 0, MAXSIZE);
 	}
 
-	//free data
-	mpool_free(data->this, mem_list[10]);
-	mpool_free(data->this, mem_list[50]);
+	//release data
+	mpool_release(data->this, mem_list[10]);
+	mpool_release(data->this, mem_list[50]);
 
-	local = mpool_calloc(data->this, 1, data->maxsize+1);
-	for(i=0;i<MAXNUM;i++) {
-		if(local == mem_list[i]) {
-			printf( "###(%d)failed\n", __LINE__);
-			goto end;
-		}
-	}
-
-	void * local2 = mpool_calloc(data->this, 2, data->maxsize/2 + 1);
-	for(i=0;i<MAXNUM;i++) {
-		if(local == mem_list[i]) {
-			printf( "###(%d)failed\n", __LINE__);
-			goto end;
-		}
-	}
-
-	mpool_free(data->this, local2);
-	mpool_free(data->this, local);
-
-	local = mpool_calloc(data->this, 1, MAXSIZE);
-	local2 = mpool_calloc(data->this, 1, MAXSIZE);
+	local = mpool_get(data->this);
+	void *local2 = mpool_get(data->this);
 	if(!data->is_multithread) {
 	if(local != mem_list[10] && local != mem_list[50]) {
 		printf( "###(%d)failed\n", __LINE__);
@@ -98,7 +74,7 @@ void * test_mpool_malloc_thread(void *arg) {
 	}
 
 	for(i=0;i<MAXNUM;i++) {
-		mpool_free(data->this, mem_list[i]);
+		mpool_release(data->this, mem_list[i]);
 	}
 
 	//exit
@@ -109,11 +85,11 @@ end:
 	return NULL;
 }
 
-int test_mpool_malloc_single_thread() {
+int test_mpool_get_single_thread() {
 	mpool_result_t result={NULL, 0, MAXSIZE_LEN, -1};
 	result.this = mpool_create(MAXSIZE, MAXNUM, result.is_multithread, NULL);
 
-	test_mpool_malloc_thread(&result);
+	test_mpool_get_thread(&result);
 	mpool_delete(result.this, NULL);
 	if(result.result == -1) {
 		printf( "###(%d)failed\n", __LINE__);
@@ -122,7 +98,7 @@ int test_mpool_malloc_single_thread() {
 	return 0;
 }
 
-int test_mpool_malloc_multi_thread() {
+int test_mpool_get_multi_thread() {
 	mpool_result_t result={NULL, 0, MAXSIZE, -1};
 	mpool_result_t result2;
 	result.maxsize = MAXSIZE_LEN;
@@ -132,8 +108,8 @@ int test_mpool_malloc_multi_thread() {
 
 	pthread_t tid1, tid2;
 
-	pthread_create(&tid1, NULL, test_mpool_malloc_thread, &result);
-	pthread_create(&tid2, NULL, test_mpool_malloc_thread, &result2);
+	pthread_create(&tid1, NULL, test_mpool_get_thread, &result);
+	pthread_create(&tid2, NULL, test_mpool_get_thread, &result2);
 	pthread_join(tid1, NULL);
 	pthread_join(tid2,NULL);
 
@@ -151,17 +127,17 @@ int test_mpool_malloc_multi_thread() {
 	return 0;
 }
 
-void * malloc_thread(void *arg) {
+void * get_thread(void *arg) {
 	MemoryPool mpool = (MemoryPool)arg;
 	int i=0;
 	for(i=0;i<MAXNUM/2;i++) {
-		mpool_malloc(mpool, MAXSIZE/2);
+		mpool_get(mpool);
 	}
 	pthread_exit(NULL);
 	return NULL;
 }
 
-int test_mpool_malloc_getnext_check() {
+int test_mpool_get_getnext_check() {
 	MemoryPool mpool = mpool_create(MAXSIZE, MAXNUM, 1, NULL);
 	void *mem_list[MAXNUM];
 	void *ptr;
@@ -176,9 +152,9 @@ int test_mpool_malloc_getnext_check() {
 	}
 
 	//only 3
-	mem_list[cnt++] = mpool_malloc(mpool, MAXSIZE/2);
-	mem_list[cnt++] = mpool_malloc(mpool, MAXSIZE);
-	mem_list[cnt++] = mpool_malloc(mpool, MAXSIZE);
+	mem_list[cnt++] = mpool_get(mpool);
+	mem_list[cnt++] = mpool_get(mpool);
+	mem_list[cnt++] = mpool_get(mpool);
 
 	FOR_ALL_USEDMEM(mpool, ptr) {
 		cnt--;
@@ -192,8 +168,8 @@ int test_mpool_malloc_getnext_check() {
 		return -1;
 	}
 
-	// check after free
-	mpool_free(mpool, mem_list[1]);
+	// check after release
+	mpool_release(mpool, mem_list[1]);
 	ptr = mpool_get_next_usedmem(mpool, NULL);
 	if(mem_list[2] != ptr) {
 		printf( "###(%d)failed\n", __LINE__);
@@ -214,7 +190,7 @@ int test_mpool_malloc_getnext_check() {
 	mem_list[1]=mem_list[2];
 
 	for(cnt=2; cnt<MAXNUM; cnt++) {
-		mem_list[cnt] = mpool_malloc(mpool, MAXSIZE);
+		mem_list[cnt] = mpool_get(mpool);
 	}
 
 	FOR_ALL_USEDMEM(mpool, ptr) {
@@ -231,9 +207,9 @@ int test_mpool_malloc_getnext_check() {
 	}
 
 	int cnt2=MAXNUM-1;
-	//free check
+	//release check
 	for(cnt2=MAXNUM-1; cnt2!=0; cnt2--) {
-		mpool_free(mpool, mem_list[cnt2]);
+		mpool_release(mpool, mem_list[cnt2]);
 		cnt = cnt2;
 		FOR_ALL_USEDMEM(mpool, ptr) {
 			cnt--;
@@ -252,8 +228,8 @@ int test_mpool_malloc_getnext_check() {
 	//thread check
 	pthread_t tid1, tid2;
 
-	pthread_create(&tid1, NULL, malloc_thread, mpool);
-	pthread_create(&tid2, NULL, malloc_thread, mpool);
+	pthread_create(&tid1, NULL, get_thread, mpool);
+	pthread_create(&tid2, NULL, get_thread, mpool);
 	pthread_join(tid1, NULL);
 	pthread_join(tid2,NULL);
 
@@ -280,7 +256,7 @@ void test_destructor(void *ptr) {
 	destructor_call++;
 }
 
-int test_mpool_malloc_initialize_chech() {
+int test_mpool_get_initialize_chech() {
 	MemoryPool mpool = mpool_create(MAXSIZE, MAXNUM, 1, test_constructor);
 	if(constructor_call != MAXNUM) {
 		printf( "###(%d)failed\n", __LINE__);
@@ -291,7 +267,7 @@ int test_mpool_malloc_initialize_chech() {
 	char checkdata[MAXSIZE];
 	memset(checkdata, 1, MAXSIZE);
 	for(i = 0;i < MAXNUM; i ++) {
-		ptr=mpool_malloc(mpool, MAXSIZE);
+		ptr=mpool_get(mpool);
 		if(memcmp(checkdata, ptr, MAXSIZE) != 0) {
 			printf( "###(%d)failed\n", __LINE__);
 			return -1;
@@ -307,19 +283,19 @@ int test_mpool_malloc_initialize_chech() {
 }
 
 int main(int argc, char *argv[]) {
-	if(test_mpool_malloc_single_thread()) {
+	if(test_mpool_get_single_thread()) {
 		printf( "###(%d)failed\n", __LINE__);
 		return -1;
 	}
-	if(test_mpool_malloc_multi_thread()) {
+	if(test_mpool_get_multi_thread()) {
 		printf( "###(%d)failed\n", __LINE__);
 		return -1;
 	}
-	if(test_mpool_malloc_getnext_check()) {
+	if(test_mpool_get_getnext_check()) {
 		printf( "###(%d)failed\n", __LINE__);
 		return -1;
 	}
-	if(test_mpool_malloc_initialize_chech()) {
+	if(test_mpool_get_initialize_chech()) {
 		printf( "###(%d)failed\n", __LINE__);
 		return -1;
 	}
