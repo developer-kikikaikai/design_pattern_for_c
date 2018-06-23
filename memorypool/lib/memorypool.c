@@ -201,7 +201,7 @@ MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, voi
 	}
 
 	//keep pointer line, head is list of malloc_data_t
-	instance->buf = (uint8_t *)(instance + 1 + mutex_size);
+	instance->buf = (uint8_t *)(instance + 1) + mutex_size;
 
 	//set user pointer list
 	instance->user_buf = instance->buf + (max_cnt * sizeof(malloc_data_t));
