@@ -24,10 +24,7 @@ typedef struct event_tpool_manager_t * EventTPoolManager;
 */
 struct event_subscriber_t {
 	int fd;/*!< file descripter of this subscriber */
-	int eventflag;/**< event flag related to event.h 
-                       *(or of EV_READ, EV_WRITE and EV_PERSIST.
-                       *If you want to keep notification many times, please set EV_PERSIST.)
-                       */
+	int eventflag;/**< OR value of  EV_TPOOL_XXX definition*/
 	void (*event_callback)(int socketfd, short eventflag, void * event_arg);
 };
 

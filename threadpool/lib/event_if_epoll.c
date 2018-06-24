@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define EVENT_EPOLL_DEFMAX (128)
+#define EVENT_EPOLL_DEFMAX (512)
 //loop to add event
 #define EVENT_EPOLL_TIMEOUT (50)
 
@@ -69,11 +69,13 @@ EventHandler event_if_add(EventInstance this, EventSubscriber subscriber, void *
 	EventEpoll base = (EventEpoll)this;
 	/*max size reached*/
 	if(base->maxevents <= base->curevent_cnt) {
+		DEBUG_ERRPRINT("#######Oversize of event!\n");
 		return NULL;
 	}
 
 	EventEpollHandler instance = calloc(1, sizeof(*instance));
 	if(!instance) {
+		DEBUG_ERRPRINT("#######calloc error!\n");
 		return NULL;
 	}
 
@@ -87,7 +89,7 @@ EventHandler event_if_add(EventInstance this, EventSubscriber subscriber, void *
 
 	/*add event*/
 	if(epoll_ctl(base->epfd, EPOLL_CTL_ADD, subscriber->fd, &ev) == -1) {
-		DEBUG_ERRPRINT("Failed to new event! %d\n" , errno);
+		DEBUG_ERRPRINT("Failed to new event! %s\n" , strerror(errno));
 		goto err;
 	}
 
@@ -111,7 +113,7 @@ void * event_if_update(EventInstance this, EventHandler handler, EventSubscriber
 		event.events = convert_etpoll_eveid2own(subscriber->eventflag);
 		event.data.ptr = handler;
 		if(epoll_ctl(base->epfd, EPOLL_CTL_MOD, subscriber->fd, &event)==-1) {
-			DEBUG_ERRPRINT("Failed to modify event! %d\n" , errno);
+			DEBUG_ERRPRINT("Failed to modify event! %s\n" , strerror(errno));
 		}
 	}
 
@@ -127,8 +129,9 @@ void event_if_del(EventInstance this, EventHandler handler) {
 	EventEpoll base = (EventEpoll)this;
 	EventEpollHandler instance = (EventEpollHandler) handler;
 	if(epoll_ctl(base->epfd, EPOLL_CTL_DEL, instance->subscriber.fd, NULL)) {
-		DEBUG_ERRPRINT("Failed to delete event!\n" );
+		DEBUG_ERRPRINT("Failed to delete event! %s\n", strerror(errno) );
 	}
+	sleep(1);
 	DEBUG_ERRPRINT("free handle %p!\n", handler );
 	free(handler);
 	base->curevent_cnt--;
@@ -150,9 +153,9 @@ void event_if_loop(EventInstance this) {
 
 	old_maxevents = base->maxevents;
 	int cnt=0, i=0, loop=0;
-	eventfd_t buffer=0;
 	short eventflag;
 	EventEpollHandler handler;
+	base->is_stop=0;
 	while(!base->is_stop) {
 		loop=0;
 		memset(events, 0, base->maxevents * sizeof(struct epoll_event));
@@ -171,6 +174,7 @@ void event_if_loop(EventInstance this) {
 			handler->subscriber.event_callback(handler->subscriber.fd, eventflag, handler->arg);
 		}
 	}
+	DEBUG_ERRPRINT("exit main\n" );
 
 	free(events);
 }

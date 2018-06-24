@@ -88,8 +88,9 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@TPOOLEVENT_LIBEVENT_TRUE@am__append_1 = event_libevent.c
-@TPOOLEVENT_EPOLL_TRUE@@TPOOLEVENT_LIBEVENT_FALSE@am__append_2 = event_epoll.c
+@TPOOLEVENT_SELECT_TRUE@am__append_1 = event_if_select.c
+@TPOOLEVENT_LIBEVENT_TRUE@am__append_2 = event_if_libevent.c
+@TPOOLEVENT_EPOLL_TRUE@am__append_3 = event_if_epoll.c
 subdir = threadpool/lib
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -131,11 +132,14 @@ am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libevent_threadpool_la_LIBADD =
 am__libevent_threadpool_la_SOURCES_DIST = event_tpool_manager.c \
-	event_thread.c event_libevent.c event_epoll.c
-@TPOOLEVENT_LIBEVENT_TRUE@am__objects_1 = event_libevent.lo
-@TPOOLEVENT_EPOLL_TRUE@@TPOOLEVENT_LIBEVENT_FALSE@am__objects_2 = event_epoll.lo
+	event_thread.c event_if_select.c event_if_libevent.c \
+	event_if_epoll.c
+@TPOOLEVENT_SELECT_TRUE@am__objects_1 = event_if_select.lo
+@TPOOLEVENT_LIBEVENT_TRUE@am__objects_2 = event_if_libevent.lo
+@TPOOLEVENT_EPOLL_TRUE@am__objects_3 = event_if_epoll.lo
 am_libevent_threadpool_la_OBJECTS = event_tpool_manager.lo \
-	event_thread.lo $(am__objects_1) $(am__objects_2)
+	event_thread.lo $(am__objects_1) $(am__objects_2) \
+	$(am__objects_3)
 libevent_threadpool_la_OBJECTS = $(am_libevent_threadpool_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -344,7 +348,7 @@ INCLUDES_PATH = $(DPUTIL_DIR)/include/ $(THREADPOOL_DIR)/include
 #load common setting
 lib_LTLIBRARIES = libevent_threadpool.la
 libevent_threadpool_la_SOURCES = event_tpool_manager.c event_thread.c \
-	$(am__append_1) $(am__append_2)
+	$(am__append_1) $(am__append_2) $(am__append_3)
 libevent_threadpool_la_LDFLAGS = -shared \
 	$(DPUTIL_DIR)/lib/libdputil.la -Xlinker -rpath -Xlinker \
 	$(libdir) -Wl,--version-script,threadpool.map
@@ -427,8 +431,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_epoll.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_libevent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_if_epoll.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_if_libevent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_if_select.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_thread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_tpool_manager.Plo@am__quote@
 

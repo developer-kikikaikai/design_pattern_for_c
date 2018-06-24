@@ -56,23 +56,26 @@ AM_CONDITIONAL([USE_THREADPOOL], [test "$with_threadpool" = yes])
 #without threadpool event
 AC_ARG_WITH([threadpool-event],
   [AC_HELP_STRING([--with-threadpool-event],
-    [choose threadpool event from libevent and epool "[default: epool]"]
+    [choose threadpool event from select, epoll and libevent "[default: select]"]
   )],
   [with_threadpool_event=$withval],
-  [with_threadpool_event="epoll"]
+  [with_threadpool_event="select"]
 )
 
 TPOOLEVENT_LIBEVENT=
 TPOOLEVENT_EPOLL=
 #check flag
 case "$with_threadpool_event" in
+  "epoll")
+    TPOOLEVENT_EPOLL="yes";;
   "libevent") 
      AC_CHECK_LIB([event], [main])
      TPOOLEVENT_LIBEVENT="yes";;
-  *) TPOOLEVENT_EPOLL="yes";;
+  *) TPOOLEVENT_SELECT="yes";;
 esac
 AM_CONDITIONAL([TPOOLEVENT_LIBEVENT], [test "$TPOOLEVENT_LIBEVENT" = yes])
 AM_CONDITIONAL([TPOOLEVENT_EPOLL], [test "$TPOOLEVENT_EPOLL" = yes])
+AM_CONDITIONAL([TPOOLEVENT_SELECT], [test "$TPOOLEVENT_SELECT" = yes])
 
 #without publisher
 AC_ARG_WITH([publisher],

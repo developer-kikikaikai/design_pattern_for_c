@@ -114,7 +114,9 @@ typedef struct testdata{
 
 static void common(evutil_socket_t fd, short eventflag, testdata_t * testdata) {
 	int tmp;
+	DEBUG_ERRPRINT("read start %d\n", eventflag);
 	tmp=read(fd, &tmp, sizeof(tmp));
+	DEBUG_ERRPRINT("read end\n");
 	testdata->tid = pthread_self();
 	testdata->callcnt++;
 	if(fd != testdata->sockpair[SUBSCRIBER_FD]) {
@@ -199,7 +201,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 	}
 	}
 
-	printf("###add[%d] fd:%d\n", 3, subscriber[3].fd);
+	printf("###add[%d] fd:%d to same as %d\n", 3, subscriber[3].fd, subscriber[1].fd);
 	tid[3]=event_tpool_add_thread(tpool, tid[1].result, &subscriber[3], &testdata[3]);
 	if(separatecheck) {
 	if(tid[3].result != tid[1].result) {
@@ -310,6 +312,9 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 		DEBUG_ERRPRINT("####Failed to call testdata[3]\n");
 		return -1;
 	}
+	event_tpool_del(tpool, subscriber[0].fd);
+	event_tpool_del(tpool, subscriber[2].fd);
+	event_tpool_del(tpool, subscriber[3].fd);
 
 	for(int i=0;i<TESTDATA;i++) {
 		close(testdata[i].sockpair[0]);
@@ -480,6 +485,8 @@ int test_tpoll_fo_ownthread() {
 		DEBUG_ERRPRINT("####Failed to call event_tpool_add[1]\n");
 		return -1;
 	}
+	//wait to stop, because no sync
+	sleep(2);
 	for(i=0;i<TESTDATA;i++) {
 		eventfd_write(testdata_g[i].sockpair[SUBSCRIBER_FD], 1);
 	}

@@ -646,6 +646,8 @@ USE_STATE_FALSE
 USE_STATE_TRUE
 USE_PUBLISHER_FALSE
 USE_PUBLISHER_TRUE
+TPOOLEVENT_SELECT_FALSE
+TPOOLEVENT_SELECT_TRUE
 TPOOLEVENT_EPOLL_FALSE
 TPOOLEVENT_EPOLL_TRUE
 TPOOLEVENT_LIBEVENT_FALSE
@@ -1459,8 +1461,8 @@ Optional Packages:
                           compiler's sysroot if not specified).
   --without-builder       exclude builder pattern library
   --without-threadpool    exclude threadpool pattern library.
-  --with-threadpool-event choose threadpool event from libevent and epool
-                          "[default: epool]"
+  --with-threadpool-event choose threadpool event from select, epoll and
+                          libevent "[default: select]"
   --without-publisher     exclude publisher pattern library
   --without-state         exclude state pattern/state machine library, if
                           threadpool is excluded, exclude it.
@@ -13199,7 +13201,7 @@ fi
 if test "${with_threadpool_event+set}" = set; then :
   withval=$with_threadpool_event; with_threadpool_event=$withval
 else
-  with_threadpool_event="epoll"
+  with_threadpool_event="select"
 
 fi
 
@@ -13208,6 +13210,8 @@ TPOOLEVENT_LIBEVENT=
 TPOOLEVENT_EPOLL=
 #check flag
 case "$with_threadpool_event" in
+  "epoll")
+    TPOOLEVENT_EPOLL="yes";;
   "libevent")
      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -levent" >&5
 $as_echo_n "checking for main in -levent... " >&6; }
@@ -13249,7 +13253,7 @@ _ACEOF
 fi
 
      TPOOLEVENT_LIBEVENT="yes";;
-  *) TPOOLEVENT_EPOLL="yes";;
+  *) TPOOLEVENT_SELECT="yes";;
 esac
  if test "$TPOOLEVENT_LIBEVENT" = yes; then
   TPOOLEVENT_LIBEVENT_TRUE=
@@ -13265,6 +13269,14 @@ fi
 else
   TPOOLEVENT_EPOLL_TRUE='#'
   TPOOLEVENT_EPOLL_FALSE=
+fi
+
+ if test "$TPOOLEVENT_SELECT" = yes; then
+  TPOOLEVENT_SELECT_TRUE=
+  TPOOLEVENT_SELECT_FALSE='#'
+else
+  TPOOLEVENT_SELECT_TRUE='#'
+  TPOOLEVENT_SELECT_FALSE=
 fi
 
 
@@ -13601,6 +13613,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${TPOOLEVENT_EPOLL_TRUE}" && test -z "${TPOOLEVENT_EPOLL_FALSE}"; then
   as_fn_error $? "conditional \"TPOOLEVENT_EPOLL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${TPOOLEVENT_SELECT_TRUE}" && test -z "${TPOOLEVENT_SELECT_FALSE}"; then
+  as_fn_error $? "conditional \"TPOOLEVENT_SELECT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_PUBLISHER_TRUE}" && test -z "${USE_PUBLISHER_FALSE}"; then

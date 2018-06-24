@@ -8,9 +8,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/eventfd.h>
+#include <errno.h>
 #include "event_if.h"
 #include "event_thread.h"
 #include "dp_util.h"
+
+#define EVENT_THREAD_WAIT_TIMEOUT (2)/*sec*/
 
 /*************
  * public define
@@ -80,7 +83,33 @@ struct event_tpool_thread_t {
 	int is_stop;/*<! stop flag*/
 };
 /*@}*/
+#if 0
+/*! @name event_delete check.*/
+/*@{*/
+/*to wait delete, keep delete fd, and wait if add descripter is same*/
+struct event_tpool_delete_info_t;
+typedef struct event_tpool_delete_info_t event_tpool_delete_info_t, *EventTpollDelInfo;
+struct event_tpool_delete_info_t {
+	EventTpollDelInfo next;
+	EventTpollDelInfo prev;
+	int fd;
+	pthread_t tid;
+	struct timespec time;
+};
 
+static struct event_tpool_delete_check_t {
+	EventTpollDelInfo head;
+	EventTpollDelInfo tail;
+	pthread_mutex_t lock;
+	struct timespec time;
+} evt_delcheck_g={NULL, NULL, PTHREAD_MUTEX_INITIALIZER, {0}};
+
+#define event_delcheck_push(data) dputil_list_push((DPUtilList)(&evt_delcheck_g), (DPUtilListData)(data))
+#define event_delcheck_pull(data) dputil_list_pull((DPUtilList)(&evt_delcheck_g), (DPUtilListData)(data));free(data);
+#define EVDEL_LOCK DPUTIL_LOCK(&evt_delcheck_g.lock);
+#define EVDEL_UNLOCK DPUTIL_UNLOCK
+/*@}*/
+#endif
 /*! @name API for message.*/
 /*@{*/
 #define EVMSG_LOCK(this) DPUTIL_LOCK(&this->msglist.lock);
@@ -147,13 +176,28 @@ static void event_tpool_thread_cb(int, short, void *);
  * for EventSubscriberData.
 *************/
 static inline void event_thread_msg_send(EventTPoolThread this, EventThreadMsg msg) {
+	int ret = 0;
 EVMSG_LOCK(this)
 	dputil_list_push((DPUtilList)(&this->msglist), (DPUtilListData)msg);
-	eventfd_write(this->eventfd, 1);
-	/*wait receive message notification from event thread main*/
-	DEBUG_ERRPRINT("(thread:%x)wait signal from event thread , %p\n", (unsigned int)pthread_self(), &this->msglist.cond );
-	pthread_cond_wait(&this->msglist.cond, &this->msglist.lock);
-	DEBUG_ERRPRINT("(thread:%x)wait signal from event thread %p end\n", (unsigned int)pthread_self(),&this->msglist.cond );
+	int ret = eventfd_write(this->eventfd, 1);
+	if(ret < 0) {
+		DEBUG_ERRPRINT("################Failed to send event\n");
+		ret = ETIMEDOUT;
+	} else {
+		/*wait receive message notification from event thread main*/
+		DEBUG_ERRPRINT("(thread:%x)wait signal from event thread , %p\n", (unsigned int)pthread_self(), &this->msglist.cond );
+		struct timespec timeout;
+		clock_gettime(CLOCK_REALTIME, &timeout);
+		timeout.tv_sec += EVENT_THREAD_WAIT_TIMEOUT;
+		ret = pthread_cond_timedwait(&this->msglist.cond, &this->msglist.lock, &timeout);
+		DEBUG_ERRPRINT("(thread:%x)wait signal from event thread %p end, ret=%d\n", (unsigned int)pthread_self(),&this->msglist.cond , ret);
+		if(ret == ETIMEDOUT) {
+			DEBUG_ERRPRINT("#####################timeout!!!!!!\n");
+			event_if_loopbreak(this->event_base);
+			timeout.tv_sec += EVENT_THREAD_WAIT_TIMEOUT;
+			ret = pthread_cond_timedwait(&this->msglist.cond, &this->msglist.lock, &timeout);
+		}
+	}
 EVMSG_UNLOCK
 }
 
@@ -170,12 +214,71 @@ static inline void event_thread_msg_send_subscribe(EventTPoolThread this, EventS
 		event_tpool_thread_msg_cb_call(this, msg);
 	}
 }
+#if 0
+#define EVDEL_WAITTIME (600000)
+#define EVDEL_USEC (1000000)
 
+static inline long event_thread_check_time(EventTpollDelInfo info) {
+	long difftime = (evt_delcheck_g.time.tv_sec - info->time.tv_sec) * EVDEL_USEC;
+	difftime += evt_delcheck_g.time.tv_nsec/1000 -info->time.tv_nsec/1000;
+	return EVDEL_WAITTIME - difftime;
+}
+
+static inline void event_thread_check_delete(EventTPoolThread this, int fd) {
+EVDEL_LOCK
+	clock_gettime(CLOCK_REALTIME_COARSE, &evt_delcheck_g.time);
+
+	long difftime=0;
+	/*check all deketed fd*/
+	EventTpollDelInfo info = NULL;
+	EventTpollDelInfo next = evt_delcheck_g.head;
+	while(next) {
+		/*slide*/
+		info=next;
+		next = info->next;
+		difftime = event_thread_check_time(info);
+		if(0 < difftime) {
+			if(info->fd == fd && info->tid != this->tid) {
+				/*wait to close parfectly*/
+				DEBUG_ERRPRINT("#####################wait %ld nsec, to add!!!!!!\n", difftime);
+				usleep(difftime);
+				event_delcheck_pull(info);
+				clock_gettime(CLOCK_REALTIME_COARSE, &evt_delcheck_g.time);
+			}
+			/*else, keep info*/
+		} else {
+			/*over time, free info*/
+			event_delcheck_pull(info);
+		}
+	}
+EVDEL_UNLOCK
+}
+static inline void event_thread_push_delete(EventTPoolThread this, int fd) {
+EVDEL_LOCK
+	EventTpollDelInfo info = calloc(1, sizeof(*info));
+	if(!info) {
+		DEBUG_ERRPRINT("Failed to calloc info\n");
+		goto end;
+	}
+
+	info->fd = fd;
+	info->tid = this->tid;
+	clock_gettime(CLOCK_REALTIME_COARSE, &info->time);
+	event_delcheck_push(info);
+end:
+EVDEL_UNLOCK
+}
+#endif
 static inline void event_thread_msg_send_add(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
+	DEBUG_ERRPRINT("add, subscriber->%d!\n", subscriber->fd);
+
+//	event_thread_check_delete(this, subscriber->fd);
+
 	event_thread_msg_send_subscribe(this, subscriber, arg, EVE_THREAD_MSG_TYPE_ADD);
 }
 
 static inline void event_thread_msg_send_update(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
+	DEBUG_ERRPRINT("update, subscriber->%d!\n", subscriber->fd);
 	event_thread_msg_send_subscribe(this, subscriber, arg, EVE_THREAD_MSG_TYPE_UPDATE);
 }
 static inline void event_thread_msg_send_del(EventTPoolThread this, int fd) {
@@ -185,6 +288,8 @@ static inline void event_thread_msg_send_del(EventTPoolThread this, int fd) {
 	event_thread_msg_body_del_t *body = (event_thread_msg_body_del_t *)(msg + 1);
 	body->fd = fd;
 	DEBUG_ERRPRINT("del, subscriber->%d!\n", fd);
+
+//	event_thread_push_delete(this, fd);
 
 	if(pthread_self() != this->tid) {
 		event_thread_msg_send(this, msg);
@@ -204,6 +309,7 @@ static inline int event_thread_msg_send_stop(EventTPoolThread this) {
 	} else {
 		event_tpool_thread_msg_cb_call(this, msg);
 	}
+	DEBUG_ERRPRINT("send stop, return %d!\n", ret);
 	return ret;
 }
 
@@ -266,6 +372,7 @@ static int event_tpool_thread_set_event_base(EventTPoolThread this) {
 
 	/*add event*/
 	event_subscriber_t subscriber={this->eventfd, EV_TPOOL_READ, event_tpool_thread_cb};
+	DEBUG_ERRPRINT("base fd=%d\n", this->eventfd);
 	this->msg_evinfo = event_if_add(this->event_base, &subscriber, this);
 	if(!this->msg_evinfo) {
 		DEBUG_ERRPRINT("Failed to new event!\n" );
@@ -314,12 +421,12 @@ static void * event_tpool_thread_main(void *arg) {
 	EventTPoolThread this = (EventTPoolThread)arg;
 	while(!this->is_stop) {
 		event_if_loop(this->event_base);
+		/*call remain msg all*/
+		//event_tpool_thread_call_msgs(this);
 	}
 
+	DEBUG_ERRPRINT("exit main thread!\n" );
 	event_if_exit(this->event_base);
-
-	/*call remain msg all*/
-	event_tpool_thread_call_msgs(this);
 
 	event_tpool_thread_free(this);
 	if(pthread_detach(pthread_self())) {
@@ -387,7 +494,7 @@ EVMSG_LOCK(this)
 		event_tpool_thread_msg_cb_call(this, msg);
 		msg = (EventThreadMsg)dputil_list_pop((DPUtilList)&this->msglist);
 		/*notify event message to called API thread*/
-		DEBUG_ERRPRINT("()cond signal from event thread to %p\n", &this->msglist.cond );
+		DEBUG_ERRPRINT("cond signal from event thread to %p\n", &this->msglist.cond );
 		pthread_cond_signal(&this->msglist.cond);
 		DEBUG_ERRPRINT("cond signal from event thread to %p end\n", &this->msglist.cond );
 	}
@@ -398,7 +505,10 @@ EVMSG_UNLOCK
 static void event_tpool_thread_cb(int fd, short flag, void * arg) {
 	EventTPoolThread this = (EventTPoolThread)arg;
 	eventfd_t cnt=0;
-	eventfd_read(this->eventfd, &cnt);
+	int ret = eventfd_read(this->eventfd, &cnt);
+	if(ret < 0) {
+		DEBUG_ERRPRINT("Failed to read event!\n" );
+	}
 
 	event_tpool_thread_call_msgs(this);
 }
