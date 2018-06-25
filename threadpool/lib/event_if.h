@@ -27,7 +27,7 @@ void event_if_del(EventInstance this, EventHandler handler);
 /** delete event */
 int event_if_getfd(EventHandler handler);
 /** main loop of this event */
-void event_if_loop(EventInstance this);
+int event_if_loop(EventInstance this);
 /** break event */
 void event_if_loopbreak(EventInstance this);
 /** exit after main loop */

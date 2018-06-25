@@ -142,9 +142,10 @@ int event_if_getfd(EventHandler handler) {
 }
 
 /** main loop of this event */
-void event_if_loop(EventInstance this) {
+int event_if_loop(EventInstance this) {
 	EventEpoll base = (EventEpoll)this;
 	int old_maxevents;
+	int ret=0;
 	struct epoll_event *events = malloc(base->maxevents * sizeof(struct epoll_event));
 	if(!events) {
 		return;
@@ -162,6 +163,7 @@ void event_if_loop(EventInstance this) {
 		cnt = epoll_wait(base->epfd, events, base->maxevents, EVENT_EPOLL_TIMEOUT);
 		if(cnt<0) {
 			DEBUG_ERRPRINT("Exit loop!\n" );
+			ret = -1;
 			break;
 		}
 
@@ -177,6 +179,7 @@ void event_if_loop(EventInstance this) {
 	DEBUG_ERRPRINT("exit main\n" );
 
 	free(events);
+	return ret;
 }
 
 /** break event */

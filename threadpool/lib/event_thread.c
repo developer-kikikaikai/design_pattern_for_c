@@ -420,9 +420,9 @@ static EventSubscriberData event_tpool_thread_get_subscriber(EventTPoolThread th
 static void * event_tpool_thread_main(void *arg) {
 	EventTPoolThread this = (EventTPoolThread)arg;
 	while(!this->is_stop) {
-		event_if_loop(this->event_base);
-		/*call remain msg all*/
-		//event_tpool_thread_call_msgs(this);
+		if(event_if_loop(this->event_base) < 0) {
+			break;
+		}
 	}
 
 	DEBUG_ERRPRINT("exit main thread!\n" );

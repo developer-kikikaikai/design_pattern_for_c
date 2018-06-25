@@ -109,7 +109,6 @@ EventHandler event_if_add(EventInstance this, EventSubscriber subscriber, void *
 			break;
 		}
 		prev = current;
-		DEBUG_ERRPRINT("current [%d]\n" , current->subscriber.fd);
 		current = current->next;
 	}
 	event_select_handler_insert(base, prev, instance);
@@ -173,7 +172,7 @@ int event_if_getfd(EventHandler handler) {
 }
 
 /** main loop of this event */
-void event_if_loop(EventInstance this) {
+int event_if_loop(EventInstance this) {
 	EventSelect base = (EventSelect)this;
 	int i=0, ret=0;
 	short eventflag;
@@ -188,13 +187,6 @@ void event_if_loop(EventInstance this) {
 		ret = select(base->maxfd + 1, &base->waitfds.readfds, &base->waitfds.writefds, &base->waitfds.exceptfds, &base->timeout);
 		if(ret<0) {
 			DEBUG_ERRPRINT("Exit loop! errno=%d\n", errno );
-			DEBUG_ERRPRINT("maxfd:%d\n", base->maxfd);
-			handler = base->head;
-			while(handler) {
-				subscriber = &handler->subscriber;
-				DEBUG_ERRPRINT("register handler[%d]\n", subscriber->fd);
-				handler=handler->next;
-			}
 			break;
 		}
 		/*timeout*/
@@ -205,17 +197,18 @@ void event_if_loop(EventInstance this) {
 		handler = base->head;
 		while(handler) {
 			subscriber = &handler->subscriber;
-			DEBUG_ERRPRINT("check event [%d]\n" , subscriber->fd);
+			//DEBUG_ERRPRINT("check event [%d]\n" , subscriber->fd);
 			eventflag = event_select_get_eventflag_from_fds(base, subscriber->fd);
 			if(eventflag & subscriber->eventflag) {
-				DEBUG_ERRPRINT("call handler of [%d]\n", subscriber->fd);
+			//	DEBUG_ERRPRINT("call handler of [%d]\n", subscriber->fd);
 				subscriber->event_callback(subscriber->fd, eventflag, handler->arg);
-				DEBUG_ERRPRINT("call handler of [%d] end\n", subscriber->fd);
+			//	DEBUG_ERRPRINT("call handler of [%d] end\n", subscriber->fd);
 			}
 			handler=handler->next;
 		}
 	}
 	DEBUG_ERRPRINT("###exit main loop\n");
+	return ret;
 }
 
 /** break event */

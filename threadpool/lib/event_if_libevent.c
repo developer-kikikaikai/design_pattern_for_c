@@ -67,8 +67,9 @@ int event_if_getfd(EventHandler handler) {
 }
 
 /** main loop of this event */
-void event_if_loop(EventInstance this) {
+int event_if_loop(EventInstance this) {
 	event_base_dispatch((struct event_base *)this);
+	return 0;
 }
 
 /** break event */
