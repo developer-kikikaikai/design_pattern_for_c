@@ -10,8 +10,8 @@
 /*! get right bit index */
 static int get_far_right_bit_index(uint64_t data) {
 	int index=0;
-	while((data)&(0x01<<index)) {
-		break;
+	for(index=0;index< 64;index++) {
+		if((data)&(0x01<<index))break;
 	}
 	return index;
 }
