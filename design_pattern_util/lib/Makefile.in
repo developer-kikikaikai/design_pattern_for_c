@@ -128,7 +128,7 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libdputil_la_LIBADD =
-am_libdputil_la_OBJECTS = dp_util.lo
+am_libdputil_la_OBJECTS = dp_util.lo dp_timelog.lo
 libdputil_la_OBJECTS = $(am_libdputil_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -322,7 +322,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/design_pattern_util/include/ -I$(top_srcdir)/desig
 INCLUDES_PATH = $(top_srcdir)/design_pattern_util/include/ $(top_srcdir)/design_pattern_util/include/
 lib_LTLIBRARIES = libdputil.la
 #
-libdputil_la_SOURCES = dp_util.c
+libdputil_la_SOURCES = dp_util.c dp_timelog.c
 libdputil_la_LDFLAGS = -shared
 all: all-am
 
@@ -402,6 +402,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dp_timelog.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dp_util.Plo@am__quote@
 
 .c.o:

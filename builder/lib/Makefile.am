@@ -5,5 +5,5 @@ lib_LTLIBRARIES = liblower_layer_director.la
 
 liblower_layer_director_la_SOURCES = lower_layer_director.c builder_action.c director.c
 #for statik library
-liblower_layer_director_la_LDFLAGS=-shared 
+liblower_layer_director_la_LDFLAGS=-shared $(top_srcdir)/design_pattern_util/lib/libdputil.la
 liblower_layer_director_la_LDFLAGS+=-Wl,--version-script,builder.map

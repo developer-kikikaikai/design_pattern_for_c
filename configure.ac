@@ -167,6 +167,7 @@ AC_CONFIG_FILES([Makefile
 		 design_pattern_util/Makefile
 		 design_pattern_util/lib/Makefile
 		 design_pattern_util/include/Makefile
+		 design_pattern_util/sample/Makefile
 		 flyweight/Makefile
 		 flyweight/lib/Makefile
 		 flyweight/include/Makefile
