@@ -192,25 +192,29 @@ MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, voi
 	instance->slide_bit = slide_bit;
 	instance->max_size = max_size;	
 	instance->max_cnt = max_cnt;
+	void *correut = (instance + 1);
 	//set lock
 	if(is_multithread) {
-		instance->lock=(pthread_mutex_t *) (instance + 1);
+		instance->lock=(pthread_mutex_t *) (correut);
+		correut = instance->lock + 1;
 		pthread_mutex_init(instance->lock, NULL);
 	} else {
 		instance->lock = NULL;
 	}
 
 	//keep pointer line, head is list of malloc_data_t
-	instance->buf = (uint8_t *)(instance + 1) + mutex_size;
+	instance->buf = (uint8_t *)(correut);
+	correut = instance->buf + max_cnt * sizeof(malloc_data_t);
 
 	//set user pointer list
-	instance->user_buf = instance->buf + (max_cnt * sizeof(malloc_data_t));
+	instance->user_buf = correut;
 
 	//set user pointer list
 	malloc_data_t * memory;
 	for(int i=0;i<max_cnt;i++) {
 		memory = (malloc_data_t *)(instance->buf + (sizeof(malloc_data_t) * i));
-		memory->mem = instance->user_buf + (max_size * i);
+		memory->mem = correut;
+		correut = memory->mem + max_size;
 		if(constructor) constructor(memory->mem);
 		mpool_list_push(instance, memory);
 	}
