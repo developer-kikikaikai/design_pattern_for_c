@@ -1,0 +1,40 @@
+1530135733.448325907,init
+1530135733.448329512,[event_thread_msg_send_add(event_thread.c:188)thread:92390740]: add, subscriber->143!
+1530135733.448333091,[event_thread_msg_send(event_thread.c:161)thread:92390740]: (thread:92390740)wait signal from event thread , 0x559a23401158
+1530135733.457713924,[event_subscriber_data_new(event_thread.c:235)thread:9066e700]: add subscriber->143!
+1530135733.457720419,[event_if_add(event_if_select.c:103)thread:9066e700]: event_add [143]
+1530135733.457721107,[event_if_add(event_if_select.c:121)thread:9066e700]: maxfd [143]
+1530135733.457723057,[event_tpool_thread_call_msgs(event_thread.c:408)thread:9066e700]: cond signal from event thread to 0x559a23401158
+1530135733.457730005,[event_tpool_thread_call_msgs(event_thread.c:410)thread:9066e700]: cond signal from event thread to 0x559a23401158 end
+1530135733.457732965,[event_thread_msg_send(event_thread.c:166)thread:92390740]: (thread:92390740)wait signal from event thread 0x559a23401158 end, ret=0
+1530135733.457733572,exit
+1530135968.593211181,init
+1530135968.593215298,[event_thread_msg_send_add(event_thread.c:188)thread:92390740]: add, subscriber->143!
+1530135968.593218071,[event_thread_msg_send(event_thread.c:161)thread:92390740]: (thread:92390740)wait signal from event thread , 0x559a23401158
+1530135968.593222458,[event_subscriber_data_new(event_thread.c:235)thread:9066e700]: add subscriber->143!
+1530135968.593224110,[event_if_add(event_if_select.c:103)thread:9066e700]: event_add [143]
+1530135968.593227687,[event_if_add(event_if_select.c:121)thread:9066e700]: maxfd [143]
+1530135968.593228376,[event_tpool_thread_call_msgs(event_thread.c:408)thread:9066e700]: cond signal from event thread to 0x559a23401158
+1530135968.593238260,[event_tpool_thread_call_msgs(event_thread.c:410)thread:9066e700]: cond signal from event thread to 0x559a23401158 end
+1530135968.593277283,[event_thread_msg_send(event_thread.c:166)thread:92390740]: (thread:92390740)wait signal from event thread 0x559a23401158 end, ret=0
+1530135968.593279778,exit
+1530135970.006231403,init
+1530135970.006234898,[event_thread_msg_send_add(event_thread.c:188)thread:92390740]: add, subscriber->143!
+1530135970.006239538,[event_thread_msg_send(event_thread.c:161)thread:92390740]: (thread:92390740)wait signal from event thread , 0x559a23401158
+1530135970.009657953,[event_subscriber_data_new(event_thread.c:235)thread:9066e700]: add subscriber->143!
+1530135970.009659491,[event_if_add(event_if_select.c:103)thread:9066e700]: event_add [143]
+1530135970.009660403,[event_if_add(event_if_select.c:121)thread:9066e700]: maxfd [143]
+1530135970.009661113,[event_tpool_thread_call_msgs(event_thread.c:408)thread:9066e700]: cond signal from event thread to 0x559a23401158
+1530135970.009668914,[event_tpool_thread_call_msgs(event_thread.c:410)thread:9066e700]: cond signal from event thread to 0x559a23401158 end
+1530135970.009698413,[event_thread_msg_send(event_thread.c:166)thread:92390740]: (thread:92390740)wait signal from event thread 0x559a23401158 end, ret=0
+1530135970.009699453,exit
+1530135970.906835728,init
+1530135970.906838687,[event_thread_msg_send_add(event_thread.c:188)thread:92390740]: add, subscriber->143!
+1530135970.906842613,[event_thread_msg_send(event_thread.c:161)thread:92390740]: (thread:92390740)wait signal from event thread , 0x559a23401158
+1530135970.917648918,[event_subscriber_data_new(event_thread.c:235)thread:9066e700]: add subscriber->143!
+1530135970.917650703,[event_if_add(event_if_select.c:103)thread:9066e700]: event_add [143]
+1530135970.917651362,[event_if_add(event_if_select.c:121)thread:9066e700]: maxfd [143]
+1530135970.917652052,[event_tpool_thread_call_msgs(event_thread.c:408)thread:9066e700]: cond signal from event thread to 0x559a23401158
+1530135970.917659261,[event_tpool_thread_call_msgs(event_thread.c:410)thread:9066e700]: cond signal from event thread to 0x559a23401158 end
+1530135970.917688367,[event_thread_msg_send(event_thread.c:166)thread:92390740]: (thread:92390740)wait signal from event thread 0x559a23401158 end, ret=0
+1530135970.917689349,exit
