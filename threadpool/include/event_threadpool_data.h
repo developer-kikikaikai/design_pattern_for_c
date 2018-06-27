@@ -34,13 +34,13 @@ typedef struct event_subscriber_t event_subscriber_t,  * EventSubscriber;
 /*! @struct event_tpool_fd_data_t
  * added event handler class instance definition
  */
-struct event_tpool_fd_data_t;
-typedef struct event_tpool_fd_data_t *EventTPoolFDData;
+struct event_tpool_thread_info_t;
+typedef struct event_tpool_thread_info_t * EventTPoolThreadInfo;
 
 /** add result definition */
 struct event_tpool_add_result_t {
 	int result;
-	EventTPoolFDData event_handle;
+	EventTPoolThreadInfo event_handle;
 };
 
 typedef struct event_tpool_add_result_t event_tpool_add_result_t;

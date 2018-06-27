@@ -65,7 +65,7 @@ event_tpool_add_result_t event_tpool_add_thread(EventTPoolManager this, int thre
  * @note this API doesn't remove other thread's same fd setting.
  * @note handle will update
  */
-event_tpool_add_result_t event_tpool_update(EventTPoolManager this, EventTPoolFDData event_handle, EventSubscriber subscriber, void * arg);
+event_tpool_add_result_t event_tpool_update(EventTPoolManager this, EventTPoolThreadInfo event_handle, EventSubscriber subscriber, void * arg);
 /**
  * delete EventSubscriber to threadapool.
  * @param[in] this EventTPoolManager instance returned at event_tpool_new.

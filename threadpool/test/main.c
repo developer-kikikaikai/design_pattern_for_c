@@ -7,9 +7,11 @@
 #include <event2/event-config.h>
 #include <event2/event.h>
 #include "event_threadpool.h"
-#define DBGFLAG
-#include "dp_debug.h"
 #include <sys/eventfd.h>
+
+#define DEBUG_ERRPRINT(...)  DEBUG_ERRPRINT_(__VA_ARGS__, "")
+#define DEBUG_ERRPRINT_(fmt, ...)  \
+        fprintf(stderr, "[%s(%s:%d)thread:%x]: "fmt"%s", __FUNCTION__,__FILE__,__LINE__,(unsigned int)pthread_self(), __VA_ARGS__)
 
 int test_tpoll_failsafe() {
 	event_tpool_manager_free(NULL);
@@ -40,12 +42,12 @@ int test_tpoll_failsafe() {
 		DEBUG_ERRPRINT("####Failed to check call before event_tpool_manager_new\n");
 		return -1;
 	}
-	result = event_tpool_update(NULL, (EventTPoolFDData)&subscriber, &subscriber, NULL);
+	result = event_tpool_update(NULL, (EventTPoolThreadInfo)&subscriber, &subscriber, NULL);
 	if(0<result.result) {
 		DEBUG_ERRPRINT("####Failed to check call before event_tpool_manager_new\n");
 		return -1;
 	}
-	result = event_tpool_update(tpool, (EventTPoolFDData)&subscriber, NULL, NULL);
+	result = event_tpool_update(tpool, (EventTPoolThreadInfo)&subscriber, NULL, NULL);
 	if(0<result.result) {
 		DEBUG_ERRPRINT("####Failed to check call before event_tpool_manager_new\n");
 		return -1;
