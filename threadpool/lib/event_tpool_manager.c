@@ -19,7 +19,7 @@
 /*Fix size of max fds 2048 (need to realloc size?*/
 #define EV_TPOLL_MAXFDS (64)
 #define EV_TPOLL_UINT64_BITSIZE (64)
-#define EV_TPOLL_USABLE_BITSIZE (32)
+#define EV_TPOLL_USABLE_BITSIZE (64)
 typedef struct event_tpool_thread_info_t {
 	EventTPoolThread tinstance;
 	size_t fdcnt;
