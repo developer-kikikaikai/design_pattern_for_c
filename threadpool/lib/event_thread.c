@@ -87,13 +87,13 @@ struct event_tpool_thread_t {
 #define EVMSG_LOCK(this) DPUTIL_LOCK(&this->msgdata.lock);
 #define EVMSG_UNLOCK DPUTIL_UNLOCK
 
-static inline void event_thread_msg_send(EventTPoolThread this, EventThreadMsg msg);
-static inline void event_thread_msg_send_without_lock(EventTPoolThread this, EventThreadMsg msg);
-static inline void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type);
-static inline void event_thread_msg_send_add(EventTPoolThread this, EventSubscriber subscriber, void *arg);
-static inline void event_thread_msg_send_update(EventTPoolThread this, EventSubscriber subscriber, void *arg);
-static inline void event_thread_msg_send_del(EventTPoolThread this, int fd);
-static inline int event_thread_msg_send_stop(EventTPoolThread this);
+static void event_thread_msg_send(EventTPoolThread this, EventThreadMsg msg);
+static void event_thread_msg_send_without_lock(EventTPoolThread this, EventThreadMsg msg);
+static void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type);
+static void event_thread_msg_send_add(EventTPoolThread this, EventSubscriber subscriber, void *arg);
+static void event_thread_msg_send_update(EventTPoolThread this, EventSubscriber subscriber, void *arg);
+static void event_thread_msg_send_del(EventTPoolThread this, int fd);
+static int event_thread_msg_send_stop(EventTPoolThread this);
 /*@}*/
 /*! @name API for EventSubscriberData.*/
 /*@{*/
@@ -102,7 +102,7 @@ static EventSubscriberData event_subscriber_data_new(EventTPoolThread this, Even
 /*! free instance */
 static void event_subscriber_data_free(EventTPoolThread this, EventSubscriberData data);
 /*! get fd */
-static inline int event_subscriber_data_get_fd(EventSubscriberData this);
+static int event_subscriber_data_get_fd(EventSubscriberData this);
 /*@}*/
 
 /*! @name private API for EventTPoolThread.*/
@@ -135,7 +135,7 @@ static event_tpool_thread_msg_cb event_tpool_thread_msg_cb_table[]={
 	event_tpool_thread_msg_cb_stop,/*!< for EVE_THREAD_MSG_TYPE_STOP*/
 };
 
-static inline void event_tpool_thread_msg_cb_call(EventTPoolThread this, event_thread_msg_t *msg);
+static void event_tpool_thread_msg_cb_call(EventTPoolThread this, event_thread_msg_t *msg);
 
 /*! main messages caller*/
 static void event_tpool_thread_call_msgs(EventTPoolThread this);
@@ -146,7 +146,7 @@ static void event_tpool_thread_cb(int, short, void *);
 /*************
  * for EventSubscriberData.
 *************/
-static inline void event_thread_msg_send(EventTPoolThread this, EventThreadMsg msg) {
+static void event_thread_msg_send(EventTPoolThread this, EventThreadMsg msg) {
 	int ret = 0;
 EVMSG_LOCK(this)
 	int ret = eventfd_write(this->eventfd, 1);
@@ -168,11 +168,11 @@ EVMSG_LOCK(this)
 EVMSG_UNLOCK
 }
 
-static inline void event_thread_msg_send_without_lock(EventTPoolThread this, EventThreadMsg msg) {
+static void event_thread_msg_send_without_lock(EventTPoolThread this, EventThreadMsg msg) {
 	eventfd_write(this->eventfd, 1);
 }
 
-static inline void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type) {
+static void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type) {
 	int is_ownthread = pthread_self() != this->tid;
 	EventThreadMsg msg;
 	if(is_ownthread) {
@@ -191,17 +191,17 @@ static inline void event_thread_msg_send_subscribe(EventTPoolThread this, EventS
 		event_tpool_thread_msg_cb_call(this, msg);
 	}
 }
-static inline void event_thread_msg_send_add(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
+static void event_thread_msg_send_add(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
 	DEBUG_ERRPRINT("add, subscriber->%d!\n", subscriber->fd);
 
 	event_thread_msg_send_subscribe(this, subscriber, arg, EVE_THREAD_MSG_TYPE_ADD);
 }
 
-static inline void event_thread_msg_send_update(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
+static void event_thread_msg_send_update(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
 	DEBUG_ERRPRINT("update, subscriber->%d!\n", subscriber->fd);
 	event_thread_msg_send_subscribe(this, subscriber, arg, EVE_THREAD_MSG_TYPE_UPDATE);
 }
-static inline void event_thread_msg_send_del(EventTPoolThread this, int fd) {
+static void event_thread_msg_send_del(EventTPoolThread this, int fd) {
 	int is_ownthread = pthread_self() != this->tid;
 	EventThreadMsg msg;
 	if(is_ownthread) {
@@ -222,7 +222,7 @@ static inline void event_thread_msg_send_del(EventTPoolThread this, int fd) {
 	}
 }
 
-static inline int event_thread_msg_send_stop(EventTPoolThread this) {
+static int event_thread_msg_send_stop(EventTPoolThread this) {
 	int is_ownthread = pthread_self() != this->tid;
 	EventThreadMsg msg;
 	if(is_ownthread) {
@@ -244,7 +244,7 @@ static inline int event_thread_msg_send_stop(EventTPoolThread this) {
 	return ret;
 }
 
-static inline void event_tpool_thread_msg_cb_call(EventTPoolThread this, event_thread_msg_t *msg) {
+static void event_tpool_thread_msg_cb_call(EventTPoolThread this, event_thread_msg_t *msg) {
 	event_tpool_thread_msg_cb_table[msg->type](this, msg);
 }
 
@@ -278,7 +278,7 @@ static void event_subscriber_data_free(EventTPoolThread this, EventSubscriberDat
 	free(data);
 }
 /*! get fd */
-static inline int event_subscriber_data_get_fd(EventSubscriberData this) {
+static int event_subscriber_data_get_fd(EventSubscriberData this) {
 	return (int)event_if_getfd(this->eventinfo);
 }
 /*************

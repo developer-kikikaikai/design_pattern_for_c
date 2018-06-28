@@ -26,11 +26,11 @@ typedef struct event_tpool_thread_info_t {
 	uint64_t *fds;
 } event_tpool_thread_info_t;
 
-static inline void event_tpool_thread_set_fds(uint64_t *fds, int fd);
-static inline void event_tpool_thread_unset_fds(uint64_t *fds, int fd);
-static inline int event_tpool_thread_is_set_fds(uint64_t *fds, int fd);
+static void event_tpool_thread_set_fds(uint64_t *fds, int fd);
+static void event_tpool_thread_unset_fds(uint64_t *fds, int fd);
+static int event_tpool_thread_is_set_fds(uint64_t *fds, int fd);
 
-static inline void event_tpool_thread_insert_fddata(EventTPoolThreadInfo this, int fd);
+static void event_tpool_thread_insert_fddata(EventTPoolThreadInfo this, int fd);
 
 /*@}*/
 /*! @name thread information list API definition.*/
@@ -68,7 +68,7 @@ struct event_tpool_manager_t {
 #define EVT_TPOOL_MNG_LOCK(this) DPUTIL_LOCK(this->lock);
 #define EVT_TPOOL_MNG_UNLOCK DPUTIL_UNLOCK;
 static void event_tpool_manager_free_without_lock(EventTPoolManager this);
-static inline int event_tpool_manager_get_default_thrednum(void);
+static int event_tpool_manager_get_default_thrednum(void);
 /*! search insert place, to use event_tpool_thread_insert_thread*/
 static int event_tpool_manager_search_insert_thread(EventTPoolManager this, int fd, int *has_fd);
 /*@}*/
@@ -84,20 +84,20 @@ static int event_tpoll_get_far_right_bit_index(uint64_t data) {
 	return index;
 }
 
-static inline void event_tpool_thread_set_fds(uint64_t *fds, int fd) {
+static void event_tpool_thread_set_fds(uint64_t *fds, int fd) {
 	int place = fd/EV_TPOLL_USABLE_BITSIZE;
 	fds[place] |= (0x1) << (fd - (place*EV_TPOLL_USABLE_BITSIZE) -1);
 }
-static inline void event_tpool_thread_unset_fds(uint64_t *fds, int fd) {
+static void event_tpool_thread_unset_fds(uint64_t *fds, int fd) {
 	int place = fd/EV_TPOLL_USABLE_BITSIZE;
 	fds[place] &= ~((0x1) << (fd - (place*EV_TPOLL_USABLE_BITSIZE) -1));
 }
-static inline int event_tpool_thread_is_set_fds(uint64_t *fds, int fd) {
+static int event_tpool_thread_is_set_fds(uint64_t *fds, int fd) {
 	int place = fd/EV_TPOLL_USABLE_BITSIZE;
 	return (fds[place] & ((0x1) << (fd - (place*EV_TPOLL_USABLE_BITSIZE) -1)));
 }
 
-static inline void event_tpool_thread_insert_fddata(EventTPoolThreadInfo this, int fd) {
+static void event_tpool_thread_insert_fddata(EventTPoolThreadInfo this, int fd) {
 	event_tpool_thread_set_fds(this->fds, fd);
 	this->fdcnt++;
 }
@@ -196,7 +196,7 @@ static void event_tpool_manager_free_without_lock(EventTPoolManager this) {
 	free(this);
 }
 
-static inline int event_tpool_manager_get_default_thrednum(void) {
+static int event_tpool_manager_get_default_thrednum(void) {
 	cpu_set_t child_set;
 	CPU_ZERO(&child_set);
 	sched_getaffinity(0, sizeof(child_set), &child_set);
