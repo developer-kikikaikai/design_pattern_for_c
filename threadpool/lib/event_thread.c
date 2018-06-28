@@ -173,7 +173,7 @@ static void event_thread_msg_send_without_lock(EventTPoolThread this, EventThrea
 }
 
 static void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type) {
-	int is_ownthread = pthread_self() != this->tid;
+	int is_ownthread = (pthread_self() != this->tid);
 	EventThreadMsg msg;
 	if(is_ownthread) {
 		msg = &this->msgdata.store_msg;
@@ -425,12 +425,12 @@ EVMSG_UNLOCK
 static void event_tpool_thread_cb(int fd, short flag, void * arg) {
 	EventTPoolThread this = (EventTPoolThread)arg;
 
+	event_tpool_thread_call_msgs(this);
 	eventfd_t cnt=0;
 	int ret = eventfd_read(this->eventfd, &cnt);
 	if(ret < 0) {
 		DEBUG_ERRPRINT("Failed to read event!\n" );
 	}
-	event_tpool_thread_call_msgs(this);
 }
 /*@}*/
 /*************

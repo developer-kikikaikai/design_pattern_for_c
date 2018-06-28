@@ -199,7 +199,7 @@ int event_if_loop(EventInstance this) {
 			continue;
 		}
 
-		handler = base->head;
+		handler = base->tail;
 		while(handler) {
 			subscriber = &handler->subscriber;
 			//DEBUG_ERRPRINT("check event [%d]\n" , subscriber->fd);
@@ -209,7 +209,7 @@ int event_if_loop(EventInstance this) {
 				subscriber->event_callback(subscriber->fd, eventflag, handler->arg);
 			//	DEBUG_ERRPRINT("call handler of [%d] end\n", subscriber->fd);
 			}
-			handler=handler->next;
+			handler=handler->prev;
 		}
 	}
 	DEBUG_ERRPRINT("###exit main loop\n");

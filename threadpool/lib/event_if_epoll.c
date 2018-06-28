@@ -131,7 +131,6 @@ void event_if_del(EventInstance this, EventHandler handler) {
 	if(epoll_ctl(base->epfd, EPOLL_CTL_DEL, instance->subscriber.fd, NULL)) {
 		DEBUG_ERRPRINT("Failed to delete event! %s\n", strerror(errno) );
 	}
-	sleep(1);
 	DEBUG_ERRPRINT("free handle %p!\n", handler );
 	free(handler);
 	base->curevent_cnt--;
