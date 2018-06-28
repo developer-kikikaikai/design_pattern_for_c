@@ -86,12 +86,8 @@ DPTimeLog dp_timelog_init(const char *delimiter, size_t maxloglen, unsigned long
 	void * current_p=NULL;
 	/*add buffer data size*/
 
-	/*add mutex size*/
-	if(is_threadsafe) size+= sizeof(pthread_mutex_t);
-
 	/*add dp_timelog_data_t size*/
 	size += sizeof(dp_timelog_data_t) * maxstoresize;
-	
 
 	/*add buffer size + tmp buffer size*/
 	size += (maxloglen + 1) * (maxstoresize + 1);
@@ -114,9 +110,8 @@ DPTimeLog dp_timelog_init(const char *delimiter, size_t maxloglen, unsigned long
 
 	/*set lock*/
 	if(is_threadsafe) {
-		mng->lock = (pthread_mutex_t *)current_p;
+		mng->lock = malloc(sizeof(pthread_mutex_t));
 		pthread_mutex_init(mng->lock, NULL);
-		current_p = mng->lock + 1;
 	}
 
 	mng->maxstoresize = maxstoresize;
@@ -168,10 +163,13 @@ void dp_timelog_exit(DPTimeLog mng) {
 		return ;
 	}
 
+	pthread_mutex_t *lock=NULL;
 DPTLOG_LOCK(mng)
 	//show log
 	dp_timelog_show(mng);
+	lock=mng->lock;
+	free(mng);
 DPTLOG_UNLOCK
-	free((void *)mng);
+	free(lock);
 }
 
