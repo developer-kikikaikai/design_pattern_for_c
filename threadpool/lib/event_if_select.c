@@ -39,6 +39,7 @@ struct event_select_t {
 	event_select_fds_t waitfds;
 	int maxfd;
 	struct timeval timeout;
+	struct timeval use_timeout;
 	int is_stop;
 };
 typedef struct event_select_t event_select_t, *EventSelect;
@@ -75,7 +76,8 @@ EventInstance event_if_new(void) {
 	if(!instance) return NULL;
 
 	//set member value
-	instance->timeout.tv_usec=EVENT_SELECT_TIMEOUT;
+	instance->timeout.tv_sec=EVENT_SELECT_TIMEOUT/1000000;
+	instance->timeout.tv_usec=EVENT_SELECT_TIMEOUT%1000000;
 	event_select_reset_fds(&instance->storefds);
 	event_select_reset_fds(&instance->waitfds);
 
@@ -183,14 +185,17 @@ int event_if_loop(EventInstance this) {
 	while(!base->is_stop) {
 		/*reset fds*/
 		memcpy(&base->waitfds, &base->storefds, sizeof(base->storefds));
+		memcpy(&base->use_timeout, &base->timeout, sizeof(base->use_timeout));
 
-		ret = select(base->maxfd + 1, &base->waitfds.readfds, &base->waitfds.writefds, &base->waitfds.exceptfds, &base->timeout);
+		DEBUG_ERRPRINT("Wait!\n" );
+		ret = select(base->maxfd + 1, &base->waitfds.readfds, &base->waitfds.writefds, &base->waitfds.exceptfds, &base->use_timeout);
 		if(ret<0) {
 			DEBUG_ERRPRINT("Exit loop! errno=%d\n", errno );
 			break;
 		}
 		/*timeout*/
 		if(ret==0) {
+			DEBUG_ERRPRINT("Timeout!\n" );
 			continue;
 		}
 
