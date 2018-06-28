@@ -188,6 +188,7 @@ MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, voi
 
 	instance = malloc(sizeof(*instance) + mutex_size + max_cnt * (sizeof(malloc_data_t) + max_size));
 	if(!instance) return NULL;
+	memset(instance, 0, sizeof(*instance) + mutex_size + max_cnt * (sizeof(malloc_data_t) + max_size));
 
 	instance->slide_bit = slide_bit;
 	instance->max_size = max_size;	
