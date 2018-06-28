@@ -234,13 +234,7 @@ static int event_tpool_manager_search_insert_thread(EventTPoolManager this, int 
 EventTPoolManager event_tpool_manager_new(int thread_num, int is_threadsafe) {
 	pthread_mutex_t *lock=NULL;
 //DEBUG_INIT
-	EventTPoolManager instance = NULL;
-	size_t size = sizeof(*instance);
-	if(is_threadsafe) {
-		size += sizeof(pthread_mutex_t);
-	}
-
-	instance = (EventTPoolManager)calloc(1, size);
+	EventTPoolManager instance = (EventTPoolManager)calloc(1, sizeof(*instance));
 	if(!instance) {
 		DEBUG_ERRPRINT("Failed to get instance!\n" );
 		return NULL;
@@ -248,7 +242,7 @@ EventTPoolManager event_tpool_manager_new(int thread_num, int is_threadsafe) {
 
 	//get lock instance
 	if(is_threadsafe) {
-		instance->lock = (pthread_mutex_t *)(instance + 1);
+		instance->lock = (pthread_mutex_t *)calloc(1, sizeof(pthread_mutex_t));
 		if(!instance->lock) {
 			DEBUG_ERRPRINT("Failed to get instance lock!\n" );
 			goto err;
@@ -284,8 +278,10 @@ void event_tpool_manager_free(EventTPoolManager this) {
 		return;
 	}
 EVT_TPOOL_MNG_LOCK(this);
-EVT_TPOOL_MNG_UNLOCK
+	lock = this->lock;
 	event_tpool_manager_free_without_lock(this);
+EVT_TPOOL_MNG_UNLOCK
+	free(lock);
 }
 
 size_t event_tpool_manager_get_threadnum(EventTPoolManager this) {
@@ -306,7 +302,6 @@ event_tpool_add_result_t event_tpool_add(EventTPoolManager this, EventSubscriber
 	if(!this || !subscriber) {
 		return result;
 	}
-//DEBUG_INIT
 EVT_TPOOL_MNG_LOCK(this);
 
 	int has_fd=0;
@@ -327,7 +322,6 @@ end:
 EVT_TPOOL_MNG_UNLOCK;
 	/*after unlock, call to add API on event_thread*/
 	if(result.event_handle) event_tpool_thread_add(result.event_handle->tinstance, subscriber, arg);
-//DEBUG_EXIT
 	return result;
 }
 
@@ -340,7 +334,6 @@ event_tpool_add_result_t event_tpool_add_thread(EventTPoolManager this, int thre
 		return result;
 	}
 
-DEBUG_INIT
 EVT_TPOOL_MNG_LOCK(this);
 	int id, has_fd=0;
 	id = event_tpool_manager_search_insert_thread(this, subscriber->fd, &has_fd);
@@ -359,7 +352,6 @@ end:
 EVT_TPOOL_MNG_UNLOCK;
 	/*after unlock, call to add API on event_thread*/
 	if(result.event_handle) event_tpool_thread_add(result.event_handle->tinstance, subscriber, arg);
-DEBUG_EXIT
 	return result;
 }
 
@@ -370,7 +362,6 @@ event_tpool_add_result_t event_tpool_update(EventTPoolManager this, EventTPoolTh
 		return result;
 	}
 
-//DEBUG_INIT
 EVT_TPOOL_MNG_LOCK(this);
 
 	/*Check is it deleted?*/
@@ -388,13 +379,11 @@ end:
 EVT_TPOOL_MNG_UNLOCK;
 	/*after unlock, call to add API on event_thread*/
 	if(result.event_handle) event_tpool_thread_update(result.event_handle->tinstance, subscriber, arg);
-//DEBUG_EXIT
 	return result;
 }
 
 void event_tpool_del(EventTPoolManager this, int fd) {
 	int id=0, has_fd=0;
-//DEBUG_INIT
 	if(!this) {
 		return;
 	}
@@ -410,7 +399,6 @@ EVT_TPOOL_MNG_LOCK(this);
 end:
 EVT_TPOOL_MNG_UNLOCK;
 
-//DEBUG_EXIT
 	/*after unlock, call to delete API on event_thread*/
 	if(has_fd) {
 		event_tpool_thread_del(this->threads[id].tinstance, fd);
