@@ -11,6 +11,8 @@
 #include "dp_debug.h"
 #include "dp_mutex.h"
 
+DPTimeLog timelog_g;
+
 /*************
  * public define
 *************/

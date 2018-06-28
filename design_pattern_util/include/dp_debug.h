@@ -57,7 +57,7 @@ void dp_timelog_exit(DPTimeLog handle);
 #include <errno.h>
 #define DEBUG_ERRPRINT(...)  DEBUG_ERRPRINT_(__VA_ARGS__, "")
 #include <pthread.h>
-DPTimeLog timelog_g;
+extern DPTimeLog timelog_g;
 #define DEBUG_INIT           timelog_g=dp_timelog_init(",", 2048, 8192, 0); dp_timelog_print(timelog_g,"init\n");
 #define DEBUG_INIT_THREDSAFE timelog_g=dp_timelog_init(",", 2048, 8192, 1); dp_timelog_print(timelog_g,"init\n");
 #define DEBUG_ERRPRINT_(fmt, ...)  \
