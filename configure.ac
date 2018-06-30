@@ -132,6 +132,17 @@ AC_ARG_WITH([memorypool],
 #check flag
 AM_CONDITIONAL([USE_MEMPOOL], [test "$with_memorypool" = yes])
 
+#without prototype
+AC_ARG_WITH([prototype],
+  [AC_HELP_STRING([--without-prototype],
+    [exclude prototype library]
+  )],
+  [with_prototype=$withval],
+  [with_prototype=yes]
+)
+#check flag
+AM_CONDITIONAL([USE_PROTOTYPE], [test "$with_prototype" = yes])
+
 #without sample
 AC_ARG_WITH([sample],
   [AC_HELP_STRING([--without-sample],
@@ -198,6 +209,10 @@ AC_CONFIG_FILES([Makefile
 		 memorypool/lib/Makefile
 		 memorypool/include/Makefile
 		 memorypool/test/Makefile
+		 prototype/Makefile
+		 prototype/lib/Makefile
+		 prototype/include/Makefile
+		 prototype/test/Makefile
 		 mediator/Makefile
 		 mediator/sample/Makefile
 		 proxy/Makefile

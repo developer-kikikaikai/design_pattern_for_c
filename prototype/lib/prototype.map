@@ -1,0 +1,10 @@
+{
+  global:
+    prototype_manager_new;
+    prototype_manager_free;
+    prototype_register;
+    prototype_unregister;
+    prototype_clone;
+    prototype_free;
+  local: *;
+};

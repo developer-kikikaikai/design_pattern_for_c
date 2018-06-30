@@ -636,6 +636,8 @@ LIBOBJS
 GCOV_OPT
 USE_SAMPLE_FALSE
 USE_SAMPLE_TRUE
+USE_PROTOTYPE_FALSE
+USE_PROTOTYPE_TRUE
 USE_MEMPOOL_FALSE
 USE_MEMPOOL_TRUE
 USE_COR_FALSE
@@ -791,6 +793,7 @@ with_state
 with_flyweight
 with_cor
 with_memorypool
+with_prototype
 with_sample
 enable_coverage
 '
@@ -1470,6 +1473,7 @@ Optional Packages:
   --without-cor           exclude chain of responsibility pattern library, if
                           flyweight is excluded, exclude it.
   --without-memorypool    exclude memorypool library
+  --without-prototype     exclude prototype library
   --without-sample        exclude only sample design pattern compile
 
 Some influential environment variables:
@@ -13380,6 +13384,26 @@ else
 fi
 
 
+#without prototype
+
+# Check whether --with-prototype was given.
+if test "${with_prototype+set}" = set; then :
+  withval=$with_prototype; with_prototype=$withval
+else
+  with_prototype=yes
+
+fi
+
+#check flag
+ if test "$with_prototype" = yes; then
+  USE_PROTOTYPE_TRUE=
+  USE_PROTOTYPE_FALSE='#'
+else
+  USE_PROTOTYPE_TRUE='#'
+  USE_PROTOTYPE_FALSE=
+fi
+
+
 #without sample
 
 # Check whether --with-sample was given.
@@ -13459,7 +13483,7 @@ fi
 
 fi
 
-ac_config_files="$ac_config_files Makefile design_pattern_util/Makefile design_pattern_util/lib/Makefile design_pattern_util/include/Makefile design_pattern_util/sample/Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile publisher/Makefile publisher/lib/Makefile publisher/include/Makefile publisher/test/Makefile publisher/sample/Makefile chain_of_responsibility/Makefile chain_of_responsibility/lib/Makefile chain_of_responsibility/include/Makefile chain_of_responsibility/test/Makefile threadpool/Makefile threadpool/lib/Makefile threadpool/include/Makefile threadpool/test/Makefile state/Makefile state/lib/Makefile state/include/Makefile state/test/Makefile memorypool/Makefile memorypool/lib/Makefile memorypool/include/Makefile memorypool/test/Makefile mediator/Makefile mediator/sample/Makefile proxy/Makefile proxy/sample1/Makefile proxy/sample2/Makefile"
+ac_config_files="$ac_config_files Makefile design_pattern_util/Makefile design_pattern_util/lib/Makefile design_pattern_util/include/Makefile design_pattern_util/sample/Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile publisher/Makefile publisher/lib/Makefile publisher/include/Makefile publisher/test/Makefile publisher/sample/Makefile chain_of_responsibility/Makefile chain_of_responsibility/lib/Makefile chain_of_responsibility/include/Makefile chain_of_responsibility/test/Makefile threadpool/Makefile threadpool/lib/Makefile threadpool/include/Makefile threadpool/test/Makefile state/Makefile state/lib/Makefile state/include/Makefile state/test/Makefile memorypool/Makefile memorypool/lib/Makefile memorypool/include/Makefile memorypool/test/Makefile prototype/Makefile prototype/lib/Makefile prototype/include/Makefile prototype/test/Makefile mediator/Makefile mediator/sample/Makefile proxy/Makefile proxy/sample1/Makefile proxy/sample2/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -13637,6 +13661,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_MEMPOOL_TRUE}" && test -z "${USE_MEMPOOL_FALSE}"; then
   as_fn_error $? "conditional \"USE_MEMPOOL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_PROTOTYPE_TRUE}" && test -z "${USE_PROTOTYPE_FALSE}"; then
+  as_fn_error $? "conditional \"USE_PROTOTYPE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_SAMPLE_TRUE}" && test -z "${USE_SAMPLE_FALSE}"; then
@@ -14556,6 +14584,10 @@ do
     "memorypool/lib/Makefile") CONFIG_FILES="$CONFIG_FILES memorypool/lib/Makefile" ;;
     "memorypool/include/Makefile") CONFIG_FILES="$CONFIG_FILES memorypool/include/Makefile" ;;
     "memorypool/test/Makefile") CONFIG_FILES="$CONFIG_FILES memorypool/test/Makefile" ;;
+    "prototype/Makefile") CONFIG_FILES="$CONFIG_FILES prototype/Makefile" ;;
+    "prototype/lib/Makefile") CONFIG_FILES="$CONFIG_FILES prototype/lib/Makefile" ;;
+    "prototype/include/Makefile") CONFIG_FILES="$CONFIG_FILES prototype/include/Makefile" ;;
+    "prototype/test/Makefile") CONFIG_FILES="$CONFIG_FILES prototype/test/Makefile" ;;
     "mediator/Makefile") CONFIG_FILES="$CONFIG_FILES mediator/Makefile" ;;
     "mediator/sample/Makefile") CONFIG_FILES="$CONFIG_FILES mediator/sample/Makefile" ;;
     "proxy/Makefile") CONFIG_FILES="$CONFIG_FILES proxy/Makefile" ;;

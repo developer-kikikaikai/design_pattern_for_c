@@ -27,6 +27,10 @@ if USE_MEMPOOL
 SUBDIRS+= memorypool
 endif
 
+if USE_PROTOTYPE
+SUBDIRS+= prototype
+endif
+
 if USE_SAMPLE
 SUBDIRS+= mediator proxy
 endif

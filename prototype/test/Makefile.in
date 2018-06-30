@@ -89,7 +89,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 noinst_PROGRAMS = test$(EXEEXT)
-subdir = mediator/sample
+subdir = prototype/test
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -100,12 +100,9 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
-am_test_OBJECTS = test-main.$(OBJEXT) test-colleague_warrior.$(OBJEXT) \
-	test-colleague_priest.$(OBJEXT) test-colleague_witch.$(OBJEXT) \
-	test-mediator.$(OBJEXT)
+am_test_OBJECTS = test-main.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
-test_DEPENDENCIES =  \
-	$(top_srcdir)/design_pattern_util/lib/libdputil.la
+test_LDADD = $(LDADD)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -174,7 +171,8 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/am.conf \
-	$(top_srcdir)/depcomp
+	$(top_srcdir)/depcomp \
+	$(top_srcdir)/prototype/prototype_am.conf
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -293,7 +291,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_LDFLAGS = 
+AM_LDFLAGS = $(PROTOTYPE_DIR)/lib/libprototype.la
 DPUTIL_DIR = $(top_srcdir)/design_pattern_util
 FLYWEIGHT_DIR = $(top_srcdir)/flyweight
 BUILDER_DIR = $(top_srcdir)/builder
@@ -303,17 +301,19 @@ STATE_DIR = $(top_srcdir)/state
 THREADPOOL_DIR = $(top_srcdir)/threadpool
 MEMPOOL_DIR = $(top_srcdir)/memorypool
 PROTOTYPE_DIR = $(top_srcdir)/prototype
-AM_CPPFLAGS = -I$(DPUTIL_DIR)/include/ $(GCOV_OPT)
-INCLUDES_PATH = $(DPUTIL_DIR)/include/
+
+#common header deifinition
+AM_CPPFLAGS = -I$(DPUTIL_DIR)/include/ $(GCOV_OPT) \
+	-I$(PROTOTYPE_DIR)/include
+INCLUDES_PATH = $(DPUTIL_DIR)/include/ $(PROTOTYPE_DIR)/include
 test_CXXFLAGS = -g -O0
 test_CFLAGS = -g -O0
-test_SOURCES = main.c colleague_warrior.c  colleague_priest.c colleague_witch.c mediator.c 
-test_LDADD = $(top_srcdir)/design_pattern_util/lib/libdputil.la
+test_SOURCES = main.c
 all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/am.conf $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/prototype/prototype_am.conf $(top_srcdir)/am.conf $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -322,9 +322,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/am.conf $(am__config
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign mediator/sample/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign prototype/test/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign mediator/sample/Makefile
+	  $(AUTOMAKE) --foreign prototype/test/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -333,7 +333,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
-$(top_srcdir)/am.conf $(am__empty):
+$(top_srcdir)/prototype/prototype_am.conf $(top_srcdir)/am.conf $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -363,11 +363,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-colleague_priest.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-colleague_warrior.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-colleague_witch.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-mediator.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -403,62 +399,6 @@ test-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='main.c' object='test-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
-
-test-colleague_warrior.o: colleague_warrior.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-colleague_warrior.o -MD -MP -MF $(DEPDIR)/test-colleague_warrior.Tpo -c -o test-colleague_warrior.o `test -f 'colleague_warrior.c' || echo '$(srcdir)/'`colleague_warrior.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-colleague_warrior.Tpo $(DEPDIR)/test-colleague_warrior.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='colleague_warrior.c' object='test-colleague_warrior.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-colleague_warrior.o `test -f 'colleague_warrior.c' || echo '$(srcdir)/'`colleague_warrior.c
-
-test-colleague_warrior.obj: colleague_warrior.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-colleague_warrior.obj -MD -MP -MF $(DEPDIR)/test-colleague_warrior.Tpo -c -o test-colleague_warrior.obj `if test -f 'colleague_warrior.c'; then $(CYGPATH_W) 'colleague_warrior.c'; else $(CYGPATH_W) '$(srcdir)/colleague_warrior.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-colleague_warrior.Tpo $(DEPDIR)/test-colleague_warrior.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='colleague_warrior.c' object='test-colleague_warrior.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-colleague_warrior.obj `if test -f 'colleague_warrior.c'; then $(CYGPATH_W) 'colleague_warrior.c'; else $(CYGPATH_W) '$(srcdir)/colleague_warrior.c'; fi`
-
-test-colleague_priest.o: colleague_priest.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-colleague_priest.o -MD -MP -MF $(DEPDIR)/test-colleague_priest.Tpo -c -o test-colleague_priest.o `test -f 'colleague_priest.c' || echo '$(srcdir)/'`colleague_priest.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-colleague_priest.Tpo $(DEPDIR)/test-colleague_priest.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='colleague_priest.c' object='test-colleague_priest.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-colleague_priest.o `test -f 'colleague_priest.c' || echo '$(srcdir)/'`colleague_priest.c
-
-test-colleague_priest.obj: colleague_priest.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-colleague_priest.obj -MD -MP -MF $(DEPDIR)/test-colleague_priest.Tpo -c -o test-colleague_priest.obj `if test -f 'colleague_priest.c'; then $(CYGPATH_W) 'colleague_priest.c'; else $(CYGPATH_W) '$(srcdir)/colleague_priest.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-colleague_priest.Tpo $(DEPDIR)/test-colleague_priest.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='colleague_priest.c' object='test-colleague_priest.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-colleague_priest.obj `if test -f 'colleague_priest.c'; then $(CYGPATH_W) 'colleague_priest.c'; else $(CYGPATH_W) '$(srcdir)/colleague_priest.c'; fi`
-
-test-colleague_witch.o: colleague_witch.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-colleague_witch.o -MD -MP -MF $(DEPDIR)/test-colleague_witch.Tpo -c -o test-colleague_witch.o `test -f 'colleague_witch.c' || echo '$(srcdir)/'`colleague_witch.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-colleague_witch.Tpo $(DEPDIR)/test-colleague_witch.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='colleague_witch.c' object='test-colleague_witch.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-colleague_witch.o `test -f 'colleague_witch.c' || echo '$(srcdir)/'`colleague_witch.c
-
-test-colleague_witch.obj: colleague_witch.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-colleague_witch.obj -MD -MP -MF $(DEPDIR)/test-colleague_witch.Tpo -c -o test-colleague_witch.obj `if test -f 'colleague_witch.c'; then $(CYGPATH_W) 'colleague_witch.c'; else $(CYGPATH_W) '$(srcdir)/colleague_witch.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-colleague_witch.Tpo $(DEPDIR)/test-colleague_witch.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='colleague_witch.c' object='test-colleague_witch.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-colleague_witch.obj `if test -f 'colleague_witch.c'; then $(CYGPATH_W) 'colleague_witch.c'; else $(CYGPATH_W) '$(srcdir)/colleague_witch.c'; fi`
-
-test-mediator.o: mediator.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-mediator.o -MD -MP -MF $(DEPDIR)/test-mediator.Tpo -c -o test-mediator.o `test -f 'mediator.c' || echo '$(srcdir)/'`mediator.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-mediator.Tpo $(DEPDIR)/test-mediator.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mediator.c' object='test-mediator.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-mediator.o `test -f 'mediator.c' || echo '$(srcdir)/'`mediator.c
-
-test-mediator.obj: mediator.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -MT test-mediator.obj -MD -MP -MF $(DEPDIR)/test-mediator.Tpo -c -o test-mediator.obj `if test -f 'mediator.c'; then $(CYGPATH_W) 'mediator.c'; else $(CYGPATH_W) '$(srcdir)/mediator.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-mediator.Tpo $(DEPDIR)/test-mediator.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mediator.c' object='test-mediator.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CFLAGS) $(CFLAGS) -c -o test-mediator.obj `if test -f 'mediator.c'; then $(CYGPATH_W) 'mediator.c'; else $(CYGPATH_W) '$(srcdir)/mediator.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
