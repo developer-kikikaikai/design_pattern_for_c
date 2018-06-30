@@ -36,7 +36,7 @@ static void * prototype_default_clone(void * base, size_t base_length) {
 	void * clone_data = malloc(base_length);
 	if(!clone_data) return NULL;
 
-	/*sallow copy*/
+	/*shallow copy*/
 	memcpy(clone_data, base, base_length);
 	return clone_data;
 }

@@ -139,55 +139,55 @@ static void test_msgdata_string_init(test_msgdata **data, const char* string) {
 
 static int test_prototype_base(PrototypeManager manager) {
 
-	/**sallow copy test **/
+	/**shallow copy test **/
 	test_msgdata *basedata_int, *basedata_string;
 	test_msgdata_int_init(&basedata_int, 10);
-	test_msgdata_string_init(&basedata_string, "sallow_copy_base");
-	prototype_factory_method_t sallow_method ={NULL, NULL, test_msgdata_deep_free};
+	test_msgdata_string_init(&basedata_string, "shallow_copy_base");
+	prototype_factory_method_t shallow_method ={NULL, NULL, test_msgdata_deep_free};
 
-	PrototypeFactory sallow_int_factory = prototype_register(manager, basedata_int, sizeof(test_msgdata), &sallow_method);
-	if(!sallow_int_factory) {
+	PrototypeFactory shallow_int_factory = prototype_register(manager, basedata_int, sizeof(test_msgdata), &shallow_method);
+	if(!shallow_int_factory) {
 		ERRORCASE
 	}
-	PrototypeFactory sallow_string_factory = prototype_register(manager, basedata_string, sizeof(test_msgdata), &sallow_method);
-	if(!sallow_string_factory) {
+	PrototypeFactory shallow_string_factory = prototype_register(manager, basedata_string, sizeof(test_msgdata), &shallow_method);
+	if(!shallow_string_factory) {
 		ERRORCASE
 	}
 
-	/*clone sallow copy int*/
+	/*clone shallow copy int*/
 	{
-	test_msgdata * clone_data = (test_msgdata *)prototype_clone(sallow_int_factory);
-	/*because sallow copy, pointer is same*/
+	test_msgdata * clone_data = (test_msgdata *)prototype_clone(shallow_int_factory);
+	/*because shallow copy, pointer is same*/
 	if(!clone_data || memcmp(clone_data, basedata_int, sizeof(test_msgdata)) != 0) {
 		ERRORCASE
 	}
-	printf("sallow copy value:%d, change base value\n", *clone_data->data.value);
+	printf("shallow copy value:%d, change base value\n", *clone_data->data.value);
 	*basedata_int->data.value = 5;
-	printf("after change base value, sallow copy value:%d\n",  *clone_data->data.value);
+	printf("after change base value, shallow copy value:%d\n",  *clone_data->data.value);
 	if(*clone_data->data.value != 5) {
 		ERRORCASE
 	}
-	prototype_free(sallow_int_factory, clone_data);
+	prototype_free(shallow_int_factory, clone_data);
 	*basedata_int->data.value = 10;
 	}
-	prototype_unregister(manager, sallow_int_factory);
+	prototype_unregister(manager, shallow_int_factory);
 
-	/*clone sallow copy string*/
+	/*clone shallow copy string*/
 	{
-	test_msgdata * clone_data = (test_msgdata *)prototype_clone(sallow_string_factory);
-	/*because sallow copy, pointer is same*/
+	test_msgdata * clone_data = (test_msgdata *)prototype_clone(shallow_string_factory);
+	/*because shallow copy, pointer is same*/
 	if(!clone_data || memcmp(clone_data, basedata_string, sizeof(test_msgdata)) != 0) {
 		ERRORCASE
 	}
-	printf("sallow copy value:%s, change base value\n", clone_data->data.string);
+	printf("shallow copy value:%s, change base value\n", clone_data->data.string);
 	snprintf(basedata_string->data.string, strlen(basedata_string->data.string), "change!");
-	printf("after change base value, sallow copy value:%s\n", clone_data->data.string);
+	printf("after change base value, shallow copy value:%s\n", clone_data->data.string);
 	if(strcmp(clone_data->data.string, "change!") != 0) {
 		ERRORCASE
 	}
-	prototype_free(sallow_string_factory, clone_data);
+	prototype_free(shallow_string_factory, clone_data);
 	}
-	prototype_unregister(manager, sallow_string_factory);
+	prototype_unregister(manager, shallow_string_factory);
 
 
 	/**deep copy test **/
@@ -221,10 +221,10 @@ static int test_prototype_base(PrototypeManager manager) {
 	}
 	prototype_unregister(manager, deep_int_factory);
 
-	/*clone sallow copy string*/
+	/*clone shallow copy string*/
 	{
 	test_msgdata * clone_data = (test_msgdata *)prototype_clone(deep_string_factory);
-	/*because sallow copy, pointer is same*/
+	/*because shallow copy, pointer is same*/
 	if(!clone_data || memcmp(clone_data, basedata_string, sizeof(test_msgdata)) == 0 || (clone_data->type != basedata_string->type || strcmp(clone_data->data.string, basedata_string->data.string) != 0) ) {
 		ERRORCASE
 	}
