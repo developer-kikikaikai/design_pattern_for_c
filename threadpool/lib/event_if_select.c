@@ -76,8 +76,7 @@ EventInstance event_if_new(void) {
 	if(!instance) return NULL;
 
 	//set member value
-	instance->timeout.tv_sec=EVENT_SELECT_TIMEOUT/1000000;
-	instance->timeout.tv_usec=EVENT_SELECT_TIMEOUT%1000000;
+	instance->timeout.tv_usec=EVENT_SELECT_TIMEOUT;
 	event_select_reset_fds(&instance->storefds);
 	event_select_reset_fds(&instance->waitfds);
 

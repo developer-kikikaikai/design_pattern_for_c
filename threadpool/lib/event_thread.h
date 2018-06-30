@@ -16,7 +16,7 @@ typedef struct event_tpool_thread_t event_tpool_thread_t,  * EventTPoolThread;
 /*! @name API for thread */
 /*@{*/
 /** create and thread instance */
-EventTPoolThread event_tpool_thread_new(void);
+EventTPoolThread event_tpool_thread_new(size_t thread_size);
 /** start thread */
 void event_tpool_thread_start(EventTPoolThread this);
 /** stop thread, and remove resource*/

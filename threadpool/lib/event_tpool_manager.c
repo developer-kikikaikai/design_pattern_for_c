@@ -168,7 +168,7 @@ static EventTPoolThreadInfo event_tpool_thread_info_new(size_t thread_size) {
 		current_p = info[i].fds + EV_TPOLL_MAXFDS;
 
 		/*create thread instance*/
-		info[i].tinstance = event_tpool_thread_new();
+		info[i].tinstance = event_tpool_thread_new(thread_size);
 		if(!info[i].tinstance) {
 			DEBUG_ERRPRINT("Failed to create thread new!\n" );
 			return NULL;

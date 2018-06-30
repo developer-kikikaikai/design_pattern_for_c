@@ -51,7 +51,8 @@ struct event_thread_msg_t {
 
 typedef struct event_thread_msg_info_t {
 	event_thread_msg_t msg;
-	event_thread_msg_t store_msg;
+	size_t store_msg_cnt;
+	event_thread_msg_t *store_msgs;
 	pthread_mutex_t lock;
 	pthread_cond_t  cond;
 } event_thread_msg_info_t;
@@ -138,7 +139,7 @@ static event_tpool_thread_msg_cb event_tpool_thread_msg_cb_table[]={
 static void event_tpool_thread_msg_cb_call(EventTPoolThread this, event_thread_msg_t *msg);
 
 /*! main messages caller*/
-static void event_tpool_thread_call_msgs(EventTPoolThread this);
+static void event_tpool_thread_call_msgs(EventTPoolThread this, eventfd_t cnt);
 /*! callback main*/
 static void event_tpool_thread_cb(int, short, void *);
 /*@}*/
@@ -175,8 +176,8 @@ static void event_thread_msg_send_without_lock(EventTPoolThread this, EventThrea
 static void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type) {
 	int is_ownthread = (pthread_self() != this->tid);
 	EventThreadMsg msg;
-	if(is_ownthread) {
-		msg = &this->msgdata.store_msg;
+	if(!is_ownthread) {
+		msg = &this->msgdata.store_msgs[this->msgdata.store_msg_cnt++];
 	} else {
 		msg = &this->msgdata.msg;
 	}
@@ -185,7 +186,7 @@ static void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscrib
 	msg->type = type;
 	memcpy(&msg->data.add.subscriber, subscriber, sizeof(*subscriber));
 	msg->data.add.arg = arg;
-	if(is_ownthread) {
+	if(!is_ownthread) {
 		event_thread_msg_send(this, msg);
 	} else {
 		event_tpool_thread_msg_cb_call(this, msg);
@@ -205,7 +206,7 @@ static void event_thread_msg_send_del(EventTPoolThread this, int fd) {
 	int is_ownthread = pthread_self() != this->tid;
 	EventThreadMsg msg;
 	if(is_ownthread) {
-		msg = &this->msgdata.store_msg;
+		msg = &this->msgdata.store_msgs[this->msgdata.store_msg_cnt++];
 	} else {
 		msg = &this->msgdata.msg;
 	}
@@ -226,7 +227,7 @@ static int event_thread_msg_send_stop(EventTPoolThread this) {
 	int is_ownthread = pthread_self() != this->tid;
 	EventThreadMsg msg;
 	if(is_ownthread) {
-		msg = &this->msgdata.store_msg;
+		msg = &this->msgdata.store_msgs[this->msgdata.store_msg_cnt++];
 	} else {
 		msg = &this->msgdata.msg;
 	}
@@ -410,14 +411,17 @@ static void event_tpool_thread_msg_cb_stop(EventTPoolThread this, event_thread_m
 	event_if_loopbreak(this->event_base);
 }
 
-static void event_tpool_thread_call_msgs(EventTPoolThread this) {
+static void event_tpool_thread_call_msgs(EventTPoolThread this, eventfd_t cnt) {
 EVMSG_LOCK(this)
 	/* call */
-	event_tpool_thread_msg_cb_call(this, &this->msgdata.store_msg);
-	/*notify event message to called API thread*/
-	DEBUG_ERRPRINT("cond signal from event thread to %p\n", &this->msgdata.cond );
-	pthread_cond_signal(&this->msgdata.cond);
-	DEBUG_ERRPRINT("cond signal from event thread to %p end\n", &this->msgdata.cond );
+	while(this->msgdata.store_msg_cnt && cnt) {
+		cnt--;
+		event_tpool_thread_msg_cb_call(this, &this->msgdata.store_msgs[--this->msgdata.store_msg_cnt]);
+		/*notify event message to called API thread*/
+		DEBUG_ERRPRINT("cond signal from event thread to %p\n", &this->msgdata.cond );
+		pthread_cond_signal(&this->msgdata.cond);
+		DEBUG_ERRPRINT("cond signal from event thread to %p end\n", &this->msgdata.cond );
+	}
 EVMSG_UNLOCK
 }
 
@@ -425,23 +429,26 @@ EVMSG_UNLOCK
 static void event_tpool_thread_cb(int fd, short flag, void * arg) {
 	EventTPoolThread this = (EventTPoolThread)arg;
 
-	event_tpool_thread_call_msgs(this);
 	eventfd_t cnt=0;
 	int ret = eventfd_read(this->eventfd, &cnt);
 	if(ret < 0) {
 		DEBUG_ERRPRINT("Failed to read event!\n" );
 	}
+
+	event_tpool_thread_call_msgs(this, cnt);
 }
 /*@}*/
 /*************
  * for public API
 *************/
 /** create and thread instance */
-EventTPoolThread event_tpool_thread_new(void) {
-	EventTPoolThread instance = calloc(1, sizeof(*instance));
+EventTPoolThread event_tpool_thread_new(size_t thread_size) {
+	EventTPoolThread instance = calloc(1, sizeof(*instance) + sizeof(event_thread_msg_t)*thread_size);
 	if(!instance) {
 		DEBUG_ERRPRINT("Failed to get instance!\n" );
 	}
+
+	instance->msgdata.store_msgs = (EventThreadMsg)(instance + 1);
 
 	instance->eventfd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC );
 	if(instance->eventfd == -1) {

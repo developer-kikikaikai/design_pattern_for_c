@@ -140,21 +140,21 @@ static void test_1(evutil_socket_t fd, short eventflag, void * arg) {
 	testdata_t * testdata = (testdata_t *)arg;
 	common(fd, eventflag, testdata);
 	testdata->funcname = __FUNCTION__;
-	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
+	DEBUG_ERRPRINT("exit, %d, %x, %d, %s\n", testdata->callcnt, (unsigned int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
 static void test_2(evutil_socket_t fd, short eventflag, void * arg) {
 	DEBUG_ERRPRINT("enter\n");
 	testdata_t * testdata = (testdata_t *)arg;
 	common(fd, eventflag, testdata);
 	testdata->funcname = __FUNCTION__;
-	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
+	DEBUG_ERRPRINT("exit, %d, %x, %d, %s\n", testdata->callcnt, (unsigned int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
 static void test_3(evutil_socket_t fd, short eventflag, void * arg) {
 	DEBUG_ERRPRINT("enter\n");
 	testdata_t * testdata = (testdata_t *)arg;
 	common(fd, eventflag, testdata);
 	testdata->funcname = __FUNCTION__;
-	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
+	DEBUG_ERRPRINT("exit, %d, %x, %d, %s\n", testdata->callcnt, (unsigned int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
 
 static void test_4(evutil_socket_t fd, short eventflag, void * arg) {
@@ -162,7 +162,7 @@ static void test_4(evutil_socket_t fd, short eventflag, void * arg) {
 	testdata_t * testdata = (testdata_t *)arg;
 	common(fd, eventflag, testdata);
 	testdata->funcname = __FUNCTION__;
-	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
+	DEBUG_ERRPRINT("exit, %d, %x, %d, %s\n", testdata->callcnt, (unsigned int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
 
 int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
@@ -224,7 +224,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 		tmp=write(testdata[i].sockpair[TEST_FD], &tmp, sizeof(tmp));
 	}
 
-	sleep(3);
+	sleep(2);
 	//check 0
 	if(testdata[0].callcnt != 1 || testdata[0].checkresult == -1 || strcmp(testdata[0].funcname, "test_1") != 0) {
 		DEBUG_ERRPRINT("####Failed to call testdata[0]\n");
@@ -293,7 +293,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 		tmp=write(testdata[i].sockpair[TEST_FD], &tmp, sizeof(tmp));
 	}
 
-	sleep(3);
+	sleep(2);
 	//check 0
 	if(testdata[0].callcnt != 2 || testdata[0].checkresult == -1 || strcmp(testdata[0].funcname, "test_1") != 0) {
 		DEBUG_ERRPRINT("####Failed to call testdata[0]\n");
@@ -372,7 +372,6 @@ int test_tpoll_thread_safe() {
 			return -1;
 		}
 	}
-
 	event_tpool_manager_free(tpool);
 	return 0;
 }
