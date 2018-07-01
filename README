@@ -1,40 +1,67 @@
-# design_pattern_for_c
-  Libraries for Linux C language to show some design patterns.
+# What's design_pattern_for_c?
+  Libraries package for Linux C language to show some design patterns.
 
-# abstract
-  Some C system uses class design as them, but sometimes this code is different of an image of object-oriented programming.
-  I think "C system shows design patterns with Goodness of C language". 
-  This package is libraries to use some design patterns with Goodness of C language.
+  Some C systems uses class design as them. And sometimes, this code is different from an image of object-oriented programming.
 
-# License
-  This software is released under the MIT License, see LICENSE.txt.
+  Because "*C system shows efficient design patterns with Goodness of C language*".
+
+  In other words, *C system mix a strong point of design patterns and C language (not just an imitation of patterns)*. 
+
+  This package may helps you to use some design patterns with Goodness of C language.
 
 # How to use
+  Download:
+  Please download from [here](https://github.com/developer-kikikaikai/design_pattern_for_c/releases).
+
   Build:
   1. ./configure
   2. make
   3. sudo make install
 
-  Headers and libraries are installed in prefix dir (default: /usr/local/lib)
+  Headers and libraries are installed in prefix dir (default: /usr/local/)
 
-# Version 
- 0.0.1 : first release
+  To use Threadpool, please install libevent (event2).
+   apt install libevent or compile by github code https://github.com/libevent/libevent/tree/master/
 
-# Support design pattern libraries (Not yet means planning now)
+# Latest Version 
+ v0.0.1 pre-release.
+ Please see [here](https://github.com/developer-kikikaikai/design_pattern_for_c/releases).
 
-Please see detail in wiki(https://github.com/developer-kikikaikai/design_pattern_for_c/wiki) or
-the page of this package base (https://qiita.com/developer-kikikaikai/items/8e7858c130c8ae8df488) * (Japanese website)
+# Support libraries
+
+latest version
+
+- Builder
+- Singleton (contained in Flyweight)
+- Flyweight
+- Chain of Responsibility 
+- Observer(Publish-Subscribe) 
+- State 
+
+Next version
+
+- Threadpool (with File disctriptor)  (add in master)
+- Memorypool (add in master)
+- Prototype (add in master)
+
+Almost of other pattern will create sample.
+
+# Detail: all design pattern libraries
+
+*Not yet* means planning now
 
 Related to Create:
+
   |name            |support| exist sample  |  other             |
   |:---------------|:-----:|:-------------:|:------------------:|
   |Builder         |  Yes  | see builder   |                    |
-  |Singleton       |  Yes  | see flyweight | wrapp in Flyweight |
-  |Prototype       |Not yet| create future |                    |
+  |Singleton       |  Yes  | see flyweight | wrap in Flyweight  |
+  |Prototype       |  Yes  | see prototype |                    |
   |Abstract Factory|  No   | create future |                    |
   |Factory Method  |  No   | create future |                    |
 
 Related to Construct:
+
   |name            |support| exist sample  |  other                                     |
   |:---------------|:-----:|:-------------:|:------------------------------------------:|
   |Flyweight       |  Yes  | see flyweight |                                            |
@@ -45,7 +72,8 @@ Related to Construct:
   |Facade          |  No   | create future |                                            |
   |Proxy           |  No   | see proxy     | Please switch by library/dlopen/LD_PRELOAD |
 
-Related to Construct:
+Related to Behavior:
+
   |name                        |support| exist sample              |  other                        |
   |:---------------------------|:-----:|:-------------------------:|:-----------------------------:|
   |Chain of Responsibility     |  Yes  | see ChainOfResponsibility |                               |
@@ -59,3 +87,26 @@ Related to Construct:
   |Strategy                    |  No   | create future             |                               |
   |Template Method             |  No   | Not yet                   |                               |
   |Visitor                     |  No   | create future             |                               |
+
+Related to Multi thread:
+
+  |name                        |support| exist sample              |  other                        |
+  |:---------------------------|:-----:|:-------------------------:|:-----------------------------:|
+  |Threadpool                  |  Yes  | see threadpool            |                               |
+
+Other:
+
+  |name                        |support| exist sample              |  other                        |
+  |:---------------------------|:-----:|:-------------------------:|:-----------------------------:|
+  |Memorypool                  |  Yes  | see memorypool            | Also it can use as Prototype  |
+
+  If you want to see detail, please see [here](https://qiita.com/developer-kikikaikai/items/8e7858c130c8ae8df488) (Japanese website) 
+
+# Detail of libraries code
+
+If you want to see detail of code, please see [doxgen file in here](https://developer-kikikaikai.github.io/design_pattern_for_c_doc/docs/)
+
+# License
+  This software is released under the MIT License, see [LICENSE file in this package](https://github.com/developer-kikikaikai/design_pattern_for_c/blob/master/LICENSE).
+
+
