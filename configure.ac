@@ -218,6 +218,8 @@ AC_CONFIG_FILES([Makefile
 		 proxy/Makefile
 		 proxy/sample1/Makefile
 		 proxy/sample2/Makefile
+		 combination_sample/Makefile
+		 combination_sample/publisher_with_fd/Makefile
 		 ])
 
 AC_OUTPUT
