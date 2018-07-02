@@ -11,25 +11,36 @@ typedef struct testdata {
 
 #define NTYPE(slide) (0x01)<<(slide)
 
-static void test_notify1(int publish_type, void * detail);
-static void test_notify2(int publish_type, void * detail);
-static void test_notify3(int publish_type, void * detail);
+static void test_notify1(int publish_type, void * detail, void *ctx);
+static void test_notify2(int publish_type, void * detail, void *ctx);
+static void test_notify3(int publish_type, void * detail, void *ctx);
 
-static void test_notify1(int publish_type, void * detail) {
+static void test_notify_with_ctx(int publish_type, void * detail, void *ctx);
+
+static void test_notify1(int publish_type, void * detail, void *ctx) {
 	printf("%s, %d\n", __FUNCTION__, publish_type);
 	TestData testdata = (TestData) detail;
 	testdata->notify1_cnt++;
 }
-static void test_notify2(int publish_type, void * detail) {
+static void test_notify2(int publish_type, void * detail, void *ctx) {
 	printf("%s, %d\n", __FUNCTION__, publish_type);
 	TestData testdata = (TestData) detail;
 	testdata->notify2_cnt++;
 }
 
-static void test_notify3(int publish_type, void * detail) {
+static void test_notify3(int publish_type, void * detail, void *ctx) {
 	printf("%s, %d\n", __FUNCTION__, publish_type);
 	TestData testdata = (TestData) detail;
 	testdata->notify3_cnt++;
+}
+
+static void test_notify_with_ctx(int publish_type, void * detail, void *ctx) {
+	printf("%s, %d\n", __FUNCTION__, publish_type);
+	TestData testdata = (TestData) detail;
+	int * ctxdata = (int *)ctx;
+	testdata->notify1_cnt = ++(*ctxdata);
+	testdata->notify2_cnt = ++(*ctxdata);
+	testdata->notify3_cnt = ++(*ctxdata);
 }
 
 static int test_failsate() {
@@ -42,7 +53,7 @@ static int test_failsate() {
 		return -1;
 	}
 
-	if(publisher_subscribe(1, 1, test_notify1) != NULL) {
+	if(publisher_subscribe(1, 1, test_notify1, NULL) != NULL) {
 		printf("####unfaied to call subscribe before new publisher\n");
 		return -1;
 	}
@@ -83,17 +94,17 @@ printf("%s enter\n", __FUNCTION__);
 
 static int test_normally_subscribe() {
 printf("%s enter\n", __FUNCTION__);
-	if(publisher_subscribe(PULISH_CONTENT_FOR_NORMAL, NTYPE(1), test_notify1) == NULL) {
+	if(publisher_subscribe(PULISH_CONTENT_FOR_NORMAL, NTYPE(1), test_notify1, NULL) == NULL) {
 		printf("####failed to add test_notify1 subscribe\n");
 		return -1;
 	}
 
-	if(publisher_subscribe(PULISH_CONTENT_FOR_NORMAL, NTYPE(2), test_notify2) == NULL) {
+	if(publisher_subscribe(PULISH_CONTENT_FOR_NORMAL, NTYPE(2), test_notify2, NULL) == NULL) {
 		printf("####failed to add test_notify2 subscribe\n");
 		return -1;
 	}
 
-	if(publisher_subscribe(PULISH_CONTENT_FOR_NORMAL, NTYPE(3), test_notify3) == NULL) {
+	if(publisher_subscribe(PULISH_CONTENT_FOR_NORMAL, NTYPE(3), test_notify3, NULL) == NULL) {
 		printf("####failed to add test_notify3 subscribe\n");
 		return -1;
 	}
@@ -167,19 +178,19 @@ printf("%s enter\n", __FUNCTION__);
 	}
 
 	//even slide bit
-	if(publisher_subscribe(PULISH_CONTENT_FOR_MULTI_TYPE, ntype1, test_notify1) == NULL) {
+	if(publisher_subscribe(PULISH_CONTENT_FOR_MULTI_TYPE, ntype1, test_notify1, NULL) == NULL) {
 		printf("####failed to add test_notify1 subscribe\n");
 		return -1;
 	}
 
 	//odd slide bit
-	if(publisher_subscribe(PULISH_CONTENT_FOR_MULTI_TYPE, ntype2, test_notify2) == NULL) {
+	if(publisher_subscribe(PULISH_CONTENT_FOR_MULTI_TYPE, ntype2, test_notify2, NULL) == NULL) {
 		printf("####failed to add test_notify2 subscribe\n");
 		return -1;
 	}
 
 	//all bit
-	if(publisher_subscribe(PULISH_CONTENT_FOR_MULTI_TYPE, ntype3, test_notify3) == NULL) {
+	if(publisher_subscribe(PULISH_CONTENT_FOR_MULTI_TYPE, ntype3, test_notify3, NULL) == NULL) {
 		printf("####failed to add test_notify3 subscribe\n");
 		return -1;
 	}
@@ -203,21 +214,21 @@ printf("%s enter\n", __FUNCTION__);
 	}
 
 	//even bit
-	account1 = publisher_subscribe(PULISH_CONTENT_FOR_UNSUBSCRIBE, ntype1, test_notify1);
+	account1 = publisher_subscribe(PULISH_CONTENT_FOR_UNSUBSCRIBE, ntype1, test_notify1, NULL);
 	if(account1 == NULL) {
 		printf("####failed to add test_notify1 subscribe\n");
 		return -1;
 	}
 
 	//odd bit
-	account2 = publisher_subscribe(PULISH_CONTENT_FOR_UNSUBSCRIBE, ntype2, test_notify2);
+	account2 = publisher_subscribe(PULISH_CONTENT_FOR_UNSUBSCRIBE, ntype2, test_notify2, NULL);
 	if(account2 == NULL) {
 		printf("####failed to add test_notify2 subscribe\n");
 		return -1;
 	}
 
 	//all bit
-	account3 = publisher_subscribe(PULISH_CONTENT_FOR_UNSUBSCRIBE, ntype3, test_notify3);
+	account3 = publisher_subscribe(PULISH_CONTENT_FOR_UNSUBSCRIBE, ntype3, test_notify3, NULL);
 	if(account3 == NULL) {
 		printf("####failed to add test_notify3 subscribe\n");
 		return -1;
@@ -239,13 +250,13 @@ printf("%s enter\n", __FUNCTION__);
 
 	//readd
 	//odd bit
-	account2 = publisher_subscribe(PULISH_CONTENT_FOR_UNSUBSCRIBE, ntype2, test_notify2);
+	account2 = publisher_subscribe(PULISH_CONTENT_FOR_UNSUBSCRIBE, ntype2, test_notify2, NULL);
 	if(account2 == NULL) {
 		printf("####failed to add test_notify2 subscribe\n");
 		return -1;
 	}
 	//all bit
-	account3 = publisher_subscribe(PULISH_CONTENT_FOR_UNSUBSCRIBE, ntype3, test_notify3);
+	account3 = publisher_subscribe(PULISH_CONTENT_FOR_UNSUBSCRIBE, ntype3, test_notify3, NULL);
 	if(account3 == NULL) {
 		printf("####failed to add test_notify3 subscribe\n");
 		return -1;
@@ -266,6 +277,24 @@ printf("%s enter\n", __FUNCTION__);
 		return -1;
 	}
 	
+	return 0;
+}
+
+int test_subscribe_with_context() {
+	int ctxdata=0;
+	testdata_t current_data;
+	memset(&current_data, 0, sizeof(current_data));
+
+	if(publisher_subscribe(PULISH_CONTENT_FOR_NORMAL, NTYPE(1), test_notify_with_ctx, &ctxdata) == NULL) {
+		printf("####failed to add test_notify1 subscribe\n");
+		return -1;
+	}
+
+	publisher_publish(PULISH_CONTENT_FOR_NORMAL, NTYPE(1), &current_data);
+	if(current_data.notify1_cnt != 1 || current_data.notify2_cnt != 2 || current_data.notify3_cnt != 3 || ctxdata != 3 ) {
+		printf("####failed to update context\n");
+		return -1;
+	}
 	return 0;
 }
 
@@ -292,6 +321,11 @@ int main() {
 
 	if(test_unsubscribe()) {
 		printf("####test_unsubscribe test case failed!!!\n");
+		return -1;
+	}
+
+	if(test_subscribe_with_context()) {
+		printf("####test_normally_subscribe test case failed!!!\n");
 		return -1;
 	}
 

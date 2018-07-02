@@ -37,10 +37,11 @@ void publisher_free(void);
  * @param[in] content_id id of publish content you want to receive
  * @param[in] publish_type type of pushlish related to publish. this ID use bitwise operation "OR". So if you want to receive notification from some publish type, please use "OR". So, if you set 0, send notify to all
  * @param[in] notify notification interface. If subscriber set this IF and type, publisher notify when publish.
+ * @param[in] ctx user definition ctx information
  * @retval !=NULL SubscriberAccount account of this subscribe, if you want to manage unscribe/subscribe many time, please keep this accout information
  * @retval NULL failed to subscribe
  */
-SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*notify)(int publish_type, void * detail) );
+SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*notify)(int publish_type, void * detail, void * ctx), void * ctx );
 
 /**
  * @brief unsubscribe, if you want to stop subscribe, please call it

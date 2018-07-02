@@ -106,7 +106,7 @@ static void create_socket() {
 	}
 
 }
-void notification(int publish_type, void * defail) {
+void notification(int publish_type, void * defail, void *ctx) {
 	publish_msg_detail_t *msgdetail = (publish_msg_detail_t *) defail;
 	subscriber_msg_t msg;
 	memset(&msg, 0, sizeof(msg));
@@ -120,7 +120,7 @@ void notification(int publish_type, void * defail) {
 
 void subscriber_init() {
 
-	account = publisher_subscribe(PUBLISH_ID, PUB_MSG_PUBLISH_NEW_BOOK|PUB_MSG_PUBLISH_STOP_PRODUCTION|PUB_MSG_PUBLISH_DISCOUNT_BOOK, notification);
+	account = publisher_subscribe(PUBLISH_ID, PUB_MSG_PUBLISH_NEW_BOOK|PUB_MSG_PUBLISH_STOP_PRODUCTION|PUB_MSG_PUBLISH_DISCOUNT_BOOK, notification, NULL);
 
 	sprintf(writer_list_g[0].writer.writername, "Jeffrey_Deaver");
 	writer_list_g[0].type = PUB_MSG_PUBLISH_NEW_BOOK | PUB_MSG_PUBLISH_STOP_PRODUCTION;
@@ -144,7 +144,7 @@ void subscriber_exit() {
 	//stop thread
 	stop_running();
 	publish_msg_detail_t msg;
-	notification((0x01<<10), &msg);
+	notification((0x01<<10), &msg, NULL);
 	pthread_join(tid, NULL);
 
 	//close socket

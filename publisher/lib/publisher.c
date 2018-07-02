@@ -88,7 +88,7 @@ void publisher_free(void) {
 	return;
 }
 
-SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*notify)(int publish_type, void * detail) ) {
+SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*notify)(int publish_type, void * detail, void * ctx), void * ctx ) {
 	if(!notify || publish_type == 0) {
 		DEBUG_ERRPRINT("There is no notification information, please set it!\n");
 		return NULL;
@@ -100,7 +100,7 @@ SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*n
 		return NULL;
 	}
 
-	SubscriberAccount account= publish_content_subscribe(content, publish_type, notify);
+	SubscriberAccount account= publish_content_subscribe(content, publish_type, notify, ctx);
 	return account;
 }
 

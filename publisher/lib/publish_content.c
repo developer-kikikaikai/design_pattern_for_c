@@ -10,7 +10,8 @@ struct subscriber_account_t {
 	SubscriberAccount next;
 	SubscriberAccount prev;
 	int publish_type;
-	void (*notify)(int publish_type, void * detail);
+	void (*notify)(int publish_type, void * detail, void * ctx);
+	void * ctx;
 };
 
 struct publish_content_t {
@@ -50,7 +51,7 @@ PublishContent publish_content_new(void) {
 	return content;
 }
 
-SubscriberAccount publish_content_subscribe(PublishContent this, int publish_type, void (*notify)(int publish_type, void * detail)) {
+SubscriberAccount publish_content_subscribe(PublishContent this, int publish_type, void (*notify)(int publish_type, void * detail, void * ctx), void * ctx) {
 	SubscriberAccount account=NULL;
 
 PUBLISH_CONTENT_LOCK(this)
@@ -58,6 +59,7 @@ PUBLISH_CONTENT_LOCK(this)
 	if(account) {
 		account->publish_type = publish_type;
 		account->notify = notify;
+		account->ctx = ctx;
 		publish_content_push_subscriber(this, account);
 	}
 PUBLISH_CONTENT_UNLOCK
@@ -78,7 +80,7 @@ PUBLISH_CONTENT_LOCK(this)
 		/* check type */
 		if((account->publish_type & publish_type) == publish_type) {
 			/* notify message, notify is not null because publisher check it */
-			account->notify(publish_type, detail);
+			account->notify(publish_type, detail, account->ctx);
 		}
 	}
 

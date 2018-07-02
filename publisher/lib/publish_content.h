@@ -25,10 +25,11 @@ PublishContent publish_content_new(void);
  * @brief subscribe.
  * @param[in] publish_type type of pushlish related to publish. this ID use bitwise operation "OR". So if you want to receive notification from some publish type, please use "OR".
  * @param[in] notify notification interface. If subscriber set this IF and type, publisher notify when publish.
+ * @param[in] ctx user definition ctx information
  * @retval !=NULL : SubscriberAccount account of this subscribe, if you want to manage unscribe/subscribe many time, please keep this accout information
  * @retval NULL : failed to subscribe
  */
-SubscriberAccount publish_content_subscribe(PublishContent this, int publish_type, void (*notify)(int publish_type, void * detail));
+SubscriberAccount publish_content_subscribe(PublishContent this, int publish_type, void (*notify)(int publish_type, void * detail, void * ctx), void * ctx);
 
 /*
  * @brief unsubscribe. If you want to stop subscribe, please call it
