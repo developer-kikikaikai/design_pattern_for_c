@@ -16,11 +16,11 @@ typedef struct chain_element_part * ChainElementPart;
 struct chain_element_part {
 	ChainElementPart next;
 	ChainElementPart prev;
-	chain_func func;/*! fnction pointer */
+	chain_element_data_t data;
 };
 
 /*! @brief new ChainElementPart */
-static ChainElementPart chain_element_part_new(chain_func func);
+static ChainElementPart chain_element_part_new(chain_element_data_t * element_data);
 /*! @brief free ChainElementPart */
 static void chain_element_part_free(ChainElementPart this);
 /* @} */
@@ -31,22 +31,22 @@ static void chain_element_part_free(ChainElementPart this);
 struct chain_element_t {
 	ChainElementPart head;/*! list of ChainElementPart*/
 	ChainElementPart tail;
-	pthread_mutex_t lock;/*! lock */
+	pthread_mutex_t *lock;/*! lock */
 };
 
-#define CHAIN_ELEMENT_LOCK(instance) DPUTIL_LOCK(&instance->lock)
+#define CHAIN_ELEMENT_LOCK(instance) DPUTIL_LOCK(instance->lock)
 #define CHAIN_ELEMENT_UNLOCK DPUTIL_UNLOCK
 
 /*************
  * for ChainElementPart class API definition
 *************/
-static ChainElementPart chain_element_part_new(chain_func func) {
+static ChainElementPart chain_element_part_new(chain_element_data_t * element_data) {
 	ChainElementPart element = calloc(1, sizeof(*element));
 	if(!element) {
 		return NULL;
 	}
 
-	element->func = func;
+	memcpy(&element->data, element_data, sizeof(element->data));
 	return element;
 }
 
@@ -54,23 +54,26 @@ static void chain_element_part_free(ChainElementPart this) {
 	free(this);
 }
 
-ChainElement chain_element_new(void) {
-	ChainElement element = calloc(1, sizeof(*element));
+ChainElement chain_element_new(int is_threadsafe) {
+	ChainElement element = calloc(1, sizeof(*element) + (is_threadsafe * sizeof(pthread_mutex_t)));
 	if(!element) {
 		return NULL;
 	}
 
-	pthread_mutex_init(&element->lock, NULL);
+	if(is_threadsafe) {
+		element->lock = (pthread_mutex_t *)(element + 1);
+		pthread_mutex_init(element->lock, NULL);
+	}
 	return element;
 }
 
 /*************
  * public API definition
 *************/
-int chain_element_add_function(ChainElement this, chain_func func) {
+int chain_element_add_function(ChainElement this, chain_element_data_t * elemnt_data) {
 	int ret = COR_FAILED;
 CHAIN_ELEMENT_LOCK(this)
-	ChainElementPart part=chain_element_part_new(func);
+	ChainElementPart part=chain_element_part_new(elemnt_data);
 	if(part) {
 		dputil_list_push((DPUtilList)this, (DPUtilListData)part);
 		ret = COR_SUCCESS;
@@ -83,7 +86,7 @@ void chain_element_remove_function(ChainElement this, chain_func func) {
 CHAIN_ELEMENT_LOCK(this)
 	ChainElementPart part = this->head;
 	while(part) {
-		if(part->func == func) {
+		if(part->data.func == func) {
 			//free ChainElementPart
 			ChainElementPart free_part = part;
 			part=part->next;
@@ -100,7 +103,7 @@ void chain_element_call(ChainElement this, void *arg) {
 CHAIN_ELEMENT_LOCK(this)
 	ChainElementPart part = this->head;
 	while(part) {
-		if((part->func) && (part->func(arg) == CoR_RETURN)) {
+		if((part->data.func) && (part->data.func(arg, part->data.ctx) == CoR_RETURN)) {
 			/*exit*/
 			break;
 		}

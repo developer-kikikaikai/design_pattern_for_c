@@ -5,6 +5,14 @@
 
 #define ERRLOG(...) printf("####<%s:%d>", __FUNCTION__, __LINE__);printf(__VA_ARGS__);
 
+enum {
+	ID_TEST1,
+	ID_TEST2,
+	ID_TEST3
+};
+
+int ctx_g;
+
 #define MAX (4)
 static int all_cnt(int *values) {
 	int i=0;
@@ -15,33 +23,43 @@ static int all_cnt(int *values) {
 	return ret;
 }
 
-cor_result_e function_1st(void *arg) {
+cor_result_e function_1st(void *arg, void *ctx) {
 	int *values = (int *)arg;
 	values[0]+=all_cnt(values)+1;
+	int *ctx_val = (int *)ctx;
+	(*ctx_val)++;
 	return CoR_GONEXT;
 }
 
-cor_result_e function_2nd(void *arg) {
+cor_result_e function_2nd(void *arg, void *ctx) {
 	int *values = (int *)arg;
 	values[1]+=all_cnt(values)+1;
+	int *ctx_val = (int *)ctx;
+	(*ctx_val)++;
 	return CoR_GONEXT;
 }
 
-cor_result_e function_3rd(void *arg) {
+cor_result_e function_3rd(void *arg, void *ctx) {
 	int *values = (int *)arg;
 	values[2]+=all_cnt(values)+1;
+	int *ctx_val = (int *)ctx;
+	(*ctx_val)++;
 	return CoR_GONEXT;
 }
 
-cor_result_e function_3rd_stop(void *arg) {
+cor_result_e function_3rd_stop(void *arg, void *ctx) {
 	int *values = (int *)arg;
 	values[2]+=all_cnt(values)+1;
+	int *ctx_val = (int *)ctx;
+	(*ctx_val)++;
 	return CoR_RETURN;
 }
 
-cor_result_e function_4rt(void *arg) {
+cor_result_e function_4th(void *arg, void *ctx) {
 	int *values = (int *)arg;
 	values[3]+=all_cnt(values)+1;
+	int *ctx_val = (int *)ctx;
+	(*ctx_val)++;
 	return CoR_GONEXT;
 }
 
@@ -50,40 +68,28 @@ static int test_failsate() {
 	cor_clear();
 
 	//check add function
-	if(cor_add_function("test", NULL) != COR_FAILED) {
+	if(cor_add_function(ID_TEST1, NULL, NULL) != COR_FAILED) {
 		ERRLOG("can't escape NULL\n");
 		return -1;
 	}
 
-	if(cor_add_function(NULL, function_1st) != COR_FAILED) {
-		ERRLOG("can't escape NULL string\n");
-		return -1;
-	}
-
-	if(cor_add_function("", function_1st) != COR_FAILED) {
-		ERRLOG("can't escape empty\n");
-		return -1;
-	}
+	///only check not dead
+	cor_call(ID_TEST1, NULL);
 
 	///only check not dead
-	cor_call(NULL, NULL);
-	cor_call("", NULL);
-
-	///only check not dead
-	cor_remove_function("test", NULL);
-	cor_remove_function(NULL, function_1st);
-	cor_remove_function("", function_1st);
+	cor_remove_function(ID_TEST1, NULL);
 	return 0;
 }
 
 int test_add_call_onename() {
 	int values[MAX];
-	char *name ="test1";
-	chain_func funcs[MAX]={function_1st, function_2nd, function_3rd, function_4rt};
+	int name =ID_TEST1;
+	chain_func funcs[MAX]={function_1st, function_2nd, function_3rd, function_4th};
 
 	int i=0;
+	ctx_g=0;
 	for(i=0;i<MAX;i++) {
-		if(cor_add_function(name, funcs[i]) == COR_FAILED) {
+		if(cor_add_function(name, funcs[i], &ctx_g) == COR_FAILED) {
 			ERRLOG("add %d func failed\n", i);
 			return -1;
 		}
@@ -93,7 +99,7 @@ int test_add_call_onename() {
 
 	//try call!
 	cor_call(name, values);
-	if(values[0] != 1 || values[1] != 2 || values[2] != 4 || values[3] != 8 ) {
+	if(values[0] != 1 || values[1] != 2 || values[2] != 4 || values[3] != 8 || ctx_g != 4) {
 		ERRLOG("failed to 4 function order, [%d,%d,%d,%d]\n", values[0],values[1], values[2], values[3]);
 		return -1;
 	}
@@ -103,12 +109,12 @@ int test_add_call_onename() {
 
 int test_add_call_with_stop() {
 	int values[MAX];
-	char *name ="test2";
-	chain_func funcs[MAX]={function_1st, function_2nd, function_3rd_stop, function_4rt};
+	int name = ID_TEST2;
+	chain_func funcs[MAX]={function_1st, function_2nd, function_3rd_stop, function_4th};
 
 	int i=0;
 	for(i=0;i<MAX;i++) {
-		if(cor_add_function(name, funcs[i]) == COR_FAILED) {
+		if(cor_add_function(name, funcs[i], &ctx_g) == COR_FAILED) {
 			ERRLOG("add %d func failed\n", i);
 			return -1;
 		}
@@ -117,9 +123,10 @@ int test_add_call_with_stop() {
 	memset(values, 0, sizeof(values));
 
 	//try call!
+	ctx_g=0;
 	cor_call(name, values);
-	if(values[0] != 1 || values[1] != 2 || values[2] != 4 || values[3] != 0 ) {
-		ERRLOG("failed to 4 function order, [%d,%d,%d,%d]\n", values[0],values[1], values[2], values[3]);
+	if(values[0] != 1 || values[1] != 2 || values[2] != 4 || values[3] != 0 || ctx_g != 3) {
+		ERRLOG("failed to 4 function order, [%d,%d,%d,%d(cnt=%d)]\n", values[0],values[1], values[2], values[3], ctx_g);
 		return -1;
 	}
 
@@ -128,12 +135,12 @@ int test_add_call_with_stop() {
 
 int test_remove() {
 	int values[MAX];
-	char *name ="test3";
+	int name = ID_TEST3;
 
-	chain_func funcs[]={function_1st, function_2nd, function_1st, function_3rd, function_1st, function_4rt};
+	chain_func funcs[]={function_1st, function_2nd, function_1st, function_3rd, function_1st, function_4th};
 	int i=0;
 	for(i=0;i<sizeof(funcs)/sizeof(funcs[0]);i++) {
-		if(cor_add_function(name, funcs[i]) == COR_FAILED) {
+		if(cor_add_function(name, funcs[i], &ctx_g) == COR_FAILED) {
 			ERRLOG("add %d func failed\n", i);
 			return -1;
 		}
@@ -142,8 +149,9 @@ int test_remove() {
 	memset(values, 0, sizeof(values));
 
 	//try call!
+	ctx_g=0;
 	cor_call(name, values);
-	if(values[0] != 21 || values[1] != 2 || values[2] != 8 || values[3] != 32 ) {
+	if(values[0] != 21 || values[1] != 2 || values[2] != 8 || values[3] != 32 || ctx_g != 6) {
 		ERRLOG("failed to 4 function order, [%d,%d,%d,%d]\n", values[0],values[1], values[2], values[3]);
 		return -1;
 	}
@@ -151,10 +159,11 @@ int test_remove() {
 	//remove function_1st
 	cor_remove_function(name, function_1st);
 
-	//only function_2nd, function_3rd, function_4rt
+	//only function_2nd, function_3rd, function_4th
 	memset(values, 0, sizeof(values));
+	ctx_g = 0;
 	cor_call(name, values);
-	if(values[0] != 0 || values[1] != 1 || values[2] != 2 || values[3] != 4 ) {
+	if(values[0] != 0 || values[1] != 1 || values[2] != 2 || values[3] != 4 || ctx_g != 3) {
 		ERRLOG("failed to 4 function order, [%d,%d,%d,%d]\n", values[0],values[1], values[2], values[3]);
 		return -1;
 	}
@@ -165,32 +174,34 @@ int test_clear() {
 	cor_clear();
 	int values[MAX];
 	int values_ok[MAX];
-	char *name1 ="test1";
-	char *name2 ="test2";
-	char *name3 ="test3";
+	int name1 =ID_TEST1;
+	int name2 =ID_TEST2;
+	int name3 =ID_TEST3;
 	memset(values, 0, sizeof(values));
 	memset(values_ok, 0, sizeof(values_ok));
 	cor_call(name1, values);
 	if(memcmp(values, values_ok, sizeof(values)) != 0) {
-		ERRLOG("failed to clear %s\n", name1);
+		ERRLOG("failed to clear %d\n", name1);
 		return -1;
 	}
 
 	cor_call(name2, values);
 	if(memcmp(values, values_ok, sizeof(values)) != 0) {
-		ERRLOG("failed to clear %s\n", name2);
+		ERRLOG("failed to clear %d\n", name2);
 		return -1;
 	}
 
 	cor_call(name3, values);
 	if(memcmp(values, values_ok, sizeof(values)) != 0) {
-		ERRLOG("failed to clear %s\n", name3);
+		ERRLOG("failed to clear %d\n", name3);
 		return -1;
 	}
 	return 0;
 }
 
 int main() {
+	cor_set_threadsafe(1);
+
 	if(test_failsate()) {
 		ERRLOG("test_failsate test case failed!!!\n");
 		return -1;

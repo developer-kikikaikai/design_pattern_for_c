@@ -23,38 +23,48 @@ typedef enum {
  * @brief chain func
  *
  * @param[in] arg input parameter pointer, related to function
+ * @param[in] ctx context information registered at cor_add_function
  * @retval CoR_GONEXT -> call next chain_api
  * @retval CoR_RETURN -> exit to call chain_api
  */
-typedef cor_result_e (*chain_func)(void *arg);
+typedef cor_result_e (*chain_func)(void *arg, void *ctx);
+
+/**
+ * @brief set thredsafe
+ *
+ * @param [in] is_threadsafe 1 if you want to use threadsafe.
+ * @return none
+ */
+void cor_set_threadsafe(int is_threadsafe);
 
 /**
  * @brief add to chain api
  *
- * @param[in] name key name related to chain api
+ * @param[in] id key id related to chain api
  * @param[in] func chain func
+ * @param[in] ctx user defined context information
  * @retval COR_SUCCESS -> Success to add
  * @retval COR_FAILED -> Faled to add
  */
-int cor_add_function(const char *name, chain_func func);
+int cor_add_function(const int id, chain_func func, void *ctx);
 
 /**
  * @brief call chain api
  *
- * @param[in] name key name related to chain api
+ * @param[in] id key id related to chain api
  * @param[in] arg input parameter pointer, related to function
  * @return none. If you want to get result, please define input parameter to know result
  */
-void cor_call(const char *name, void *arg);
+void cor_call(const int id, void *arg);
 
 /**
  * @brief remove to chain api
  *
- * @param[in] name key name related to chain api
+ * @param[in] id key id related to chain api
  * @param[in] func chain api func
  * @return none
  */
-void cor_remove_function(const char *name, chain_func func);
+void cor_remove_function(const int id, chain_func func);
 
 /**
  * @brief clear all list

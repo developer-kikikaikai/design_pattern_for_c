@@ -14,7 +14,7 @@
 */
 typedef struct chain_of_resp_t * ChainOfResponsibility;
 struct chain_of_resp_t {
-	char *name;
+	int id;
 	ChainElement element;
 };
 
@@ -34,6 +34,7 @@ static void chain_of_resp_free(void *this);
 struct chain_of_resp_mng_t {
 	flyweight_methods_t method;
 	FlyweightFactory handle;
+	int is_threadsafe;
 } cor_mng_g = {
 	.method ={
 		.constructor=chain_of_resp_new,
@@ -42,6 +43,7 @@ struct chain_of_resp_mng_t {
 		.destructor=chain_of_resp_free,
 	},
 	.handle = NULL,
+	.is_threadsafe = 0,
 };
 
 /*************
@@ -51,73 +53,76 @@ struct chain_of_resp_mng_t {
 /*input is name*/
 static void chain_of_resp_new(void *this, size_t size, void *input_parameter) {
 	ChainOfResponsibility instance = (ChainOfResponsibility)this;
-	char * name = (char *)input_parameter;
-	instance->name = calloc(1, strlen(name)+ 1);
-	if(!instance->name) {
-		return;
-	}
-
-	strcpy(instance->name, name);
-	instance->element = chain_element_new();
+	int * id = (int *)input_parameter;
+	instance->id = *id;
+	instance->element = chain_element_new(cor_mng_g.is_threadsafe);
 }
 
 /*! equall operand, check name */
 static int chain_of_resp_equall_operand(void *this, size_t size, void *input_parameter) {
 	ChainOfResponsibility instance = (ChainOfResponsibility)this;
-	char * name = (char *)input_parameter;
+	int * id = (int *)input_parameter;
 
 	//check name is same
-	return (strcmp(instance->name, name)==0);
+	return instance->id == *id;
 }
 
 /*! setter, add function to ChainElement */
 static int chain_of_resp_setter(void *this, size_t size, void *input_parameter) {
 	ChainOfResponsibility instance = (ChainOfResponsibility)this;
-	chain_func func = (chain_func) input_parameter;
-	return chain_element_add_function(instance->element, func);
+	chain_element_data_t * data = input_parameter;
+	return chain_element_add_function(instance->element, data);
 }
 
 /*! free member resource */
 static void chain_of_resp_free(void *this) {
 	ChainOfResponsibility instance = (ChainOfResponsibility)this;
-	free(instance->name);
 	chain_element_delete(instance->element);
 }
 
 /*************
  * public interface API implement
 *************/
-int cor_add_function(const char *name, chain_func func) {
-	if(name==NULL || strlen(name)==0 || func == NULL) {
+void cor_set_threadsafe(int is_threadsafe) {
+	cor_mng_g.is_threadsafe = is_threadsafe;
+}
+
+int cor_add_function(const int id, chain_func func, void *ctx) {
+	if(!func) {
 		return COR_FAILED;
 	}
 
 	if(!cor_mng_g.handle) {
 		/* get handle with thread safe */
-		cor_mng_g.handle = flyweight_factory_new(sizeof(struct chain_of_resp_t), 1, &cor_mng_g.method);
+		cor_mng_g.handle = flyweight_factory_new(sizeof(struct chain_of_resp_t), cor_mng_g.is_threadsafe, &cor_mng_g.method);
 		if(!cor_mng_g.handle) {
 			return COR_FAILED;
 		}
 	}
 
-	return flyweight_set(cor_mng_g.handle, (void *)name, func, NULL);
+	chain_element_data_t data={func, ctx};
+	return flyweight_set(cor_mng_g.handle, (void *)&id, &data, NULL);
 }
 
-void cor_call(const char *name, void *arg) {
-	if(!cor_mng_g.handle || name==NULL || strlen(name)==0) {
+void cor_call(const int id, void *arg) {
+	if(!cor_mng_g.handle) {
 		return;
 	}
-	ChainOfResponsibility cor_instance = flyweight_get(cor_mng_g.handle, (void *)name);
-	chain_element_call(cor_instance->element, arg);
+	ChainOfResponsibility cor_instance = flyweight_get(cor_mng_g.handle, (void *)&id);
+	if(cor_instance) {
+		chain_element_call(cor_instance->element, arg);
+	}
 }
 
-void cor_remove_function(const char *name, chain_func func) {
-	if(!cor_mng_g.handle || name==NULL || strlen(name)==0 || func==NULL) {
+void cor_remove_function(const int id, chain_func func) {
+	if(!cor_mng_g.handle || func==NULL) {
 		return;
 	}
 
-	ChainOfResponsibility cor_instance = flyweight_get(cor_mng_g.handle, (void *)name);
-	chain_element_remove_function(cor_instance->element, func);
+	ChainOfResponsibility cor_instance = flyweight_get(cor_mng_g.handle, (void *)&id);
+	if(cor_instance) {
+		chain_element_remove_function(cor_instance->element, func);
+	}
 }
 
 void cor_clear(void) {
