@@ -404,4 +404,12 @@ EVT_TPOOL_MNG_UNLOCK;
 		event_tpool_thread_del(this->threads[id].tinstance, fd);
 	}
 }
-/*@}*/
+
+void event_tpool_atfork_child(EventTPoolManager this) {
+	if(this->lock) pthread_mutex_init(this->lock, NULL);
+
+	size_t i=0;
+	for(i = 0; i < this->thread_size; i++ ) {
+		event_thread_atfork_child(this->threads[i].tinstance);
+	}
+}

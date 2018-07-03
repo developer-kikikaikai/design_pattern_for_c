@@ -174,7 +174,7 @@ static void event_thread_msg_send_without_lock(EventTPoolThread this, EventThrea
 }
 
 static void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type) {
-	int is_ownthread = (pthread_self() != this->tid);
+	int is_ownthread = ((this->tid==0) || (pthread_self() == this->tid));
 	EventThreadMsg msg;
 	if(!is_ownthread) {
 		msg = &this->msgdata.store_msgs[this->msgdata.store_msg_cnt++];
@@ -203,9 +203,9 @@ static void event_thread_msg_send_update(EventTPoolThread this, EventSubscriber 
 	event_thread_msg_send_subscribe(this, subscriber, arg, EVE_THREAD_MSG_TYPE_UPDATE);
 }
 static void event_thread_msg_send_del(EventTPoolThread this, int fd) {
-	int is_ownthread = pthread_self() != this->tid;
+	int is_ownthread = ((this->tid==0) || (pthread_self() == this->tid));
 	EventThreadMsg msg;
-	if(is_ownthread) {
+	if(!is_ownthread) {
 		msg = &this->msgdata.store_msgs[this->msgdata.store_msg_cnt++];
 	} else {
 		msg = &this->msgdata.msg;
@@ -216,7 +216,7 @@ static void event_thread_msg_send_del(EventTPoolThread this, int fd) {
 	msg->data.del.fd = fd;
 	DEBUG_ERRPRINT("del, subscriber->%d!\n", fd);
 
-	if(is_ownthread) {
+	if(!is_ownthread) {
 		event_thread_msg_send(this, msg);
 	} else {
 		event_tpool_thread_msg_cb_call(this, msg);
@@ -224,9 +224,9 @@ static void event_thread_msg_send_del(EventTPoolThread this, int fd) {
 }
 
 static int event_thread_msg_send_stop(EventTPoolThread this) {
-	int is_ownthread = pthread_self() != this->tid;
+	int is_ownthread = ((this->tid==0) || (pthread_self() == this->tid));
 	EventThreadMsg msg;
-	if(is_ownthread) {
+	if(!is_ownthread) {
 		msg = &this->msgdata.store_msgs[this->msgdata.store_msg_cnt++];
 	} else {
 		msg = &this->msgdata.msg;
@@ -235,7 +235,7 @@ static int event_thread_msg_send_stop(EventTPoolThread this) {
 	memset(msg, 0, sizeof(*msg));
 	msg->type=EVE_THREAD_MSG_TYPE_STOP;
 	int ret = 0;
-	if (is_ownthread) {
+	if (!is_ownthread) {
 		event_thread_msg_send_without_lock(this, msg);
 		ret=1;
 	} else {
@@ -341,9 +341,11 @@ static EventSubscriberData event_tpool_thread_get_subscriber(EventTPoolThread th
 	}
 	return subscriber;
 }
+
 /*! main thread */
 static void * event_tpool_thread_main(void *arg) {
 	EventTPoolThread this = (EventTPoolThread)arg;
+	/*add atfork handler*/
 	while(!this->is_stop) {
 		if(event_if_loop(this->event_base) < 0) {
 			break;
@@ -499,4 +501,10 @@ void event_tpool_thread_update(EventTPoolThread this, EventSubscriber subscriber
 /** delete subscriber */
 void event_tpool_thread_del(EventTPoolThread this, int fd) {
 	event_thread_msg_send_del(this, fd);
+}
+void event_thread_atfork_child(EventTPoolThread this) {
+	/*because there is no other thread, so always work like on pooled thread */
+	this->tid = 0;
+	pthread_mutex_init(&this->msgdata.lock, NULL);
+	pthread_cond_init(&this->msgdata.cond, NULL);
 }

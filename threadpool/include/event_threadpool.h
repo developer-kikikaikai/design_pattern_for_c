@@ -74,5 +74,13 @@ event_tpool_add_result_t event_tpool_update(EventTPoolManager this, EventTPoolTh
  * @note this API doesn't close fd, please close ownself.
  */
 void event_tpool_del(EventTPoolManager this, int fd);
+
+/**
+ * Update member at fork, please call this API if you use fork
+ * @param[in] this EventTPoolManager instance returned at event_tpool_new.
+ * @note Please care "The child process is created with a single thread--the one that called fork()."
+ *       at the child process, all of pooled threads don't copy.
+ */
+void event_tpool_atfork_child(EventTPoolManager this);
 /*@}*/
 #endif

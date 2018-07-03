@@ -27,5 +27,7 @@ void event_tpool_thread_add(EventTPoolThread this, EventSubscriber subscriber, v
 void event_tpool_thread_update(EventTPoolThread this, EventSubscriber subscriber, void * arg);
 /** delete subscriber */
 void event_tpool_thread_del(EventTPoolThread this, int fd);
+
+void event_thread_atfork_child(EventTPoolThread this);
 /*@}*/
 #endif

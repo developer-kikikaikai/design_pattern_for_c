@@ -7,5 +7,6 @@
     event_tpool_add_thread;
     event_tpool_update;
     event_tpool_del;
+    event_tpool_atfork_child;
   local: *;
 };

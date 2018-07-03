@@ -186,7 +186,7 @@ int event_if_loop(EventInstance this) {
 		memcpy(&base->waitfds, &base->storefds, sizeof(base->storefds));
 		memcpy(&base->use_timeout, &base->timeout, sizeof(base->use_timeout));
 
-		DEBUG_ERRPRINT("Wait!\n" );
+//		DEBUG_ERRPRINT("Wait!\n" );
 		ret = select(base->maxfd + 1, &base->waitfds.readfds, &base->waitfds.writefds, &base->waitfds.exceptfds, &base->use_timeout);
 		if(ret<0) {
 			DEBUG_ERRPRINT("Exit loop! errno=%d\n", errno );
@@ -194,7 +194,7 @@ int event_if_loop(EventInstance this) {
 		}
 		/*timeout*/
 		if(ret==0) {
-			DEBUG_ERRPRINT("Timeout!\n" );
+//			DEBUG_ERRPRINT("Timeout!\n" );
 			continue;
 		}
 
