@@ -15,6 +15,8 @@
 
 #define EVENT_THREAD_WAIT_TIMEOUT (2)/*sec*/
 
+#define EVENT_THREAD_STACKSIZE (128 * 1024)/*suitable stack size*/
+
 /*************
  * public define
 *************/
@@ -478,7 +480,12 @@ err:
 /** start thread */
 void event_tpool_thread_start(EventTPoolThread this) {
 	this->tid=0;
-	pthread_create(&this->tid, NULL, event_tpool_thread_main, this);
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setstacksize(&attr, EVENT_THREAD_STACKSIZE);
+
+	pthread_create(&this->tid, &attr, event_tpool_thread_main, this);
+	pthread_attr_destroy(&attr);
 }
 
 /** stop thread */
