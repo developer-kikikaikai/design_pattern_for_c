@@ -4,6 +4,7 @@
     mpool_delete;
     mpool_get;
     mpool_get_next_usedmem;
+    mpool_get_usedcnt;
     mpool_release;
   local: *;
 };

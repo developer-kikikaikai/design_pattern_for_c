@@ -47,6 +47,7 @@ typedef struct memorypool_t {
 	malloc_data_t * tail;
 	size_t max_size;
 	size_t max_cnt;
+	size_t cur_cnt;
 	size_t slide_bit;/*!< keep slide bit size related to max_size, to search buffer fast*/
 	uint8_t * buf;/*!< list of buffer for user + list of malloc_data_t*/
 	uint8_t * user_buf;/*!< list of buffer for user */
@@ -59,7 +60,6 @@ static inline void mpool_list_head(MemoryPool this, malloc_data_t * data);
 static inline void * mpool_get_memory(MemoryPool this);
 static inline void * mpool_get_next_memory(MemoryPool this, void * ptr);
 static inline void mpool_unuse_memory(MemoryPool this, void *ptr);
-static inline void mpool_unset_memory(malloc_data_t * memory, int is_used);
 static inline uint64_t mpool_get_buffer_place(MemoryPool this, uint8_t * buffer_list, void * ptr);
 static inline int mpool_is_not_ptr_in_buf(MemoryPool this, void * ptr);
 
@@ -82,6 +82,7 @@ static inline void pthread_mutex_lock_(MemoryPool this) {
 static inline void mpool_list_push(MemoryPool this, malloc_data_t * data) {
 	/* add to tail */
 	data->prev = this->tail;
+	data->next = NULL;
 	//slide tail
 	if(this->tail) this->tail->next = data;
 
@@ -117,7 +118,7 @@ static inline void * mpool_get_memory(MemoryPool this) {
 	if(!this->head->used) {
 		memory = this->head;
 		mpool_list_pull(this,  memory);
-		mpool_unset_memory(memory, 1);
+		memory->used=1;
 		mpool_list_push(this, memory);
 		return memory->mem;
 	} else {
@@ -148,14 +149,8 @@ static inline void mpool_unuse_memory(MemoryPool this, void *ptr) {
 	malloc_data_t * memory = (malloc_data_t *)(this->buf + (sizeof(malloc_data_t) * place));
 
 	mpool_list_pull(this, memory);
-	mpool_unset_memory(memory, 0);
+	memory->used=0;
 	mpool_list_head(this, memory);
-}
-
-static inline void mpool_unset_memory(malloc_data_t * memory, int is_used) {
-	memory->used=is_used;
-	memory->prev=NULL;
-	memory->next=NULL;
 }
 
 static inline uint64_t mpool_get_buffer_place(MemoryPool this, uint8_t * buffer_list, void * ptr) {
@@ -171,7 +166,7 @@ static inline int mpool_is_not_ptr_in_buf(MemoryPool this, void * ptr) {
 
 /*! @name public API*/
 /* @{ */
-MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, void (*constructor)(void *)) {
+MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, void (*constructor)(void *this, void *parameter), void * constructor_parameter) {
 	//create magic hash table first
 	int ret=-1;
 	size_t slide_bit;
@@ -216,7 +211,7 @@ MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, voi
 		memory = (malloc_data_t *)(instance->buf + (sizeof(malloc_data_t) * i));
 		memory->mem = correut;
 		correut = memory->mem + max_size;
-		if(constructor) constructor(memory->mem);
+		if(constructor) constructor(memory->mem, constructor_parameter);
 		mpool_list_push(instance, memory);
 	}
 
@@ -240,6 +235,7 @@ void * mpool_get(MemoryPool this) {
 	void * mem=NULL;
 MPOOL_LOCK(this)
 	mem = mpool_get_memory(this);
+	if(mem) this->cur_cnt++;
 MPOOL_UNLOCK
 	return mem;
 }
@@ -251,10 +247,18 @@ void * mpool_get_next_usedmem(MemoryPool this, void * ptr) {
 
 	void * mem=NULL;
 MPOOL_LOCK(this)
-	
 	mem = mpool_get_next_memory(this, ptr);
 MPOOL_UNLOCK
 	return mem;
+}
+
+size_t mpool_get_usedcnt(MemoryPool this) {
+	if(!this) return 0;
+	size_t retval=0;
+MPOOL_LOCK(this)
+	retval = this->cur_cnt;
+MPOOL_UNLOCK
+	return retval;
 }
 
 void mpool_release(MemoryPool this, void * ptr) {
@@ -266,6 +270,17 @@ void mpool_release(MemoryPool this, void * ptr) {
 	}
 MPOOL_LOCK(this)
 	mpool_unuse_memory(this, ptr);
+	this->cur_cnt--;
+MPOOL_UNLOCK
+}
+
+void mpool_show(MemoryPool this) {
+MPOOL_LOCK(this)
+	malloc_data_t *memory=this->head;
+	while(memory) {
+		fprintf(stderr, "used:%d\n", memory->used);
+		memory = memory->next;
+	}
 MPOOL_UNLOCK
 }
 /* @} */

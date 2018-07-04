@@ -18,10 +18,11 @@ typedef struct memorypool_t * MemoryPool;
  * @param[in] max_cnt number of allocated memory
  * @param[in] is_multithread  threadsafe flag. If you want to use it on multi thread, please set 1.
  * @param[in] constructor if you want to initialize memory first.
+ * @param[in] constructor_parameter constructor parameter if you want to initialize memory first.
  * @retval !=NULL  this class handle
  * @retval NULL error
  */
-MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, void (*constructor)(void *));
+MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, void (*constructor)(void * this, void *constructor_parameter), void *constructor_parameter);
 /**
  * free MemoryPool class
  *
@@ -53,6 +54,13 @@ void * mpool_get_next_usedmem(MemoryPool this, void * ptr);
 /*! define for used loop */
 #define FOR_ALL_USEDMEM(this,ptr) for(ptr=mpool_get_next_usedmem(this, NULL); ptr!=NULL; ptr = mpool_get_next_usedmem(this, ptr ))
 
+/**
+ * get used cnt
+ *
+ * @param[in] this MemoryPool instance return,
+ * @return used count
+ */
+size_t mpool_get_usedcnt(MemoryPool this);
 /**
  * release memory to pool
  *

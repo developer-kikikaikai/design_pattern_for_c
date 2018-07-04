@@ -36,6 +36,10 @@ void * test_mpool_get_thread(void *arg) {
 			goto end;
 		}
 	}
+	if(mpool_get_usedcnt(data->this) != MAXNUM) {
+		printf( "###(%d)failed\n", __LINE__);
+		goto end;
+	}
 	}
 	printf("finish!\n");
 
@@ -75,6 +79,31 @@ void * test_mpool_get_thread(void *arg) {
 
 	for(i=0;i<MAXNUM;i++) {
 		mpool_release(data->this, mem_list[i]);
+		if(!data->is_multithread) {
+			if(mpool_get_usedcnt(data->this) != MAXNUM-(i+1)) {
+				printf( "###(%d)failed\n", __LINE__);
+				goto end;
+			}
+		}
+	}
+
+	sleep(2);
+	/*try to get/release many times*/
+	for(i=0;i<MAXNUM;i++) {
+		mem_list[i] = mpool_get(data->this);
+	}
+	int index1, index2;
+	for(i=0;i<MAXNUM*MAXNUM;i++) {
+		index1 = i%10;
+		index2 = i%50+50;
+		mpool_release(data->this, mem_list[index1]);
+		mpool_release(data->this, mem_list[index2]);
+		mem_list[index1]=mpool_get(data->this);
+		mem_list[index2]=mpool_get(data->this);
+		if(!mem_list[index1] || !mem_list[index2]) {
+			printf( "###(%d)failed\n", __LINE__);
+			goto end;
+		}
 	}
 
 	//exit
@@ -87,7 +116,7 @@ end:
 
 int test_mpool_get_single_thread() {
 	mpool_result_t result={NULL, 0, MAXSIZE_LEN, -1};
-	result.this = mpool_create(MAXSIZE, MAXNUM, result.is_multithread, NULL);
+	result.this = mpool_create(MAXSIZE, MAXNUM, result.is_multithread, NULL, NULL);
 
 	test_mpool_get_thread(&result);
 	mpool_delete(result.this, NULL);
@@ -103,7 +132,7 @@ int test_mpool_get_multi_thread() {
 	mpool_result_t result2;
 	result.maxsize = MAXSIZE_LEN;
 	result.is_multithread = 1;
-	result.this = mpool_create(MAXSIZE, MAXNUM*2, result.is_multithread, NULL);
+	result.this = mpool_create(MAXSIZE, MAXNUM*2, result.is_multithread, NULL, NULL);
 	memcpy(&result2, &result, sizeof(result));
 
 	pthread_t tid1, tid2;
@@ -138,7 +167,7 @@ void * get_thread(void *arg) {
 }
 
 int test_mpool_get_getnext_check() {
-	MemoryPool mpool = mpool_create(MAXSIZE, MAXNUM, 1, NULL);
+	MemoryPool mpool = mpool_create(MAXSIZE, MAXNUM, 1, NULL, NULL);
 	void *mem_list[MAXNUM];
 	void *ptr;
 
@@ -246,8 +275,9 @@ int test_mpool_get_getnext_check() {
 }
 
 static int constructor_call=0;
-void test_constructor(void *ptr) {
-	constructor_call++;
+void test_constructor(void *ptr, void *param) {
+	int * data = (int *)param;
+	(*data)++;
 	memset(ptr, 1, MAXSIZE);
 }
 
@@ -257,7 +287,7 @@ void test_destructor(void *ptr) {
 }
 
 int test_mpool_get_initialize_chech() {
-	MemoryPool mpool = mpool_create(MAXSIZE, MAXNUM, 1, test_constructor);
+	MemoryPool mpool = mpool_create(MAXSIZE, MAXNUM, 1, test_constructor, &constructor_call);
 	if(constructor_call != MAXNUM) {
 		printf( "###(%d)failed\n", __LINE__);
 		return -1;
