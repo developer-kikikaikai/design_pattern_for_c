@@ -41,6 +41,7 @@ struct event_select_t {
 	struct timeval timeout;
 	struct timeval use_timeout;
 	int is_stop;
+	int is_updated;
 };
 typedef struct event_select_t event_select_t, *EventSelect;
 
@@ -51,15 +52,17 @@ static inline void event_select_set_fds(EventSelect this , EventSubscriber subsc
 	if(subscriber->eventflag&EV_TPOOL_READ  ) FD_SET(subscriber->fd, &this->storefds.readfds);
 	if(subscriber->eventflag&EV_TPOOL_WRITE ) FD_SET(subscriber->fd, &this->storefds.writefds);
 	if(subscriber->eventflag&EV_TPOOL_HUNGUP) FD_SET(subscriber->fd, &this->storefds.exceptfds);
+	this->is_updated=1;
 }
 
 static inline void event_select_unset_fds(EventSelect this , EventSubscriber subscriber) {
 	if(subscriber->eventflag&EV_TPOOL_READ  ) FD_CLR(subscriber->fd, &this->storefds.readfds);
 	if(subscriber->eventflag&EV_TPOOL_WRITE ) FD_CLR(subscriber->fd, &this->storefds.writefds);
 	if(subscriber->eventflag&EV_TPOOL_HUNGUP) FD_CLR(subscriber->fd, &this->storefds.exceptfds);
+	this->is_updated=1;
 }
 
-static inline int event_select_get_eventflag_from_fds(EventSelect this, int fd) {
+static int event_select_get_eventflag_from_fds(EventSelect this, int fd) {
 	int eventflag=0;
 	if(FD_ISSET(fd, &(this->waitfds.readfds))  ) eventflag |= EV_TPOOL_READ;
 	if(FD_ISSET(fd, &(this->waitfds.writefds)) ) eventflag |= EV_TPOOL_WRITE;
@@ -176,7 +179,7 @@ int event_if_getfd(EventHandler handler) {
 int event_if_loop(EventInstance this) {
 	EventSelect base = (EventSelect)this;
 	int i=0, ret=0;
-	short eventflag;
+	int eventflag;
 	EventSelectHandler handler;
 	EventSubscriber subscriber;
 	fd_set readfds, writefds, exceptfds;
@@ -207,6 +210,11 @@ int event_if_loop(EventInstance this) {
 			//	DEBUG_ERRPRINT("call handler of [%d]\n", subscriber->fd);
 				subscriber->event_callback(subscriber->fd, eventflag, handler->arg);
 			//	DEBUG_ERRPRINT("call handler of [%d] end\n", subscriber->fd);
+			}
+			/*if updated, skip current event to cross waiting event and update/delete event fdset*/
+			if(base->is_updated) {
+				base->is_updated=0;
+				break;
 			}
 			handler=handler->prev;
 		}
