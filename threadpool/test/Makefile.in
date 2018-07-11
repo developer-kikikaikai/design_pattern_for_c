@@ -109,7 +109,7 @@ am__v_lt_0 = --silent
 am__v_lt_1 = 
 test_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(test_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -308,6 +308,7 @@ AM_CPPFLAGS = -I$(DPUTIL_DIR)/include/ $(GCOV_OPT) \
 INCLUDES_PATH = $(DPUTIL_DIR)/include/ $(THREADPOOL_DIR)/include
 test_CFLAGS = -g -O0 
 test_SOURCES = main.c
+test_LDFLAGS = ${AM_LDFLAGS}  $(DPUTIL_DIR)/lib/libdputil.la -Xlinker -rpath -Xlinker $(libdir)
 all: all-am
 
 .SUFFIXES:

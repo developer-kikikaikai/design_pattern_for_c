@@ -16,10 +16,11 @@
 /*! @name thread information list definition.*/
 /*@{*/
 /*! thread instance and fd list */
-/*Fix size of max fds 2048 (need to realloc size?*/
+/*Fix size of max fds 2048 (to care sign */
 #define EV_TPOLL_MAXFDS (64)
 #define EV_TPOLL_UINT64_BITSIZE (64)
-#define EV_TPOLL_USABLE_BITSIZE (64)
+#define EV_TPOLL_USABLE_BITSIZE (32)
+/*TODO: use full bit place, care over 2048 fd*/
 typedef struct event_tpool_thread_info_t {
 	EventTPoolThread tinstance;
 	size_t fdcnt;
@@ -79,22 +80,28 @@ static int event_tpool_manager_search_insert_thread(EventTPoolManager this, int 
 static int event_tpoll_get_far_right_bit_index(uint64_t data) {
 	int index=0;
 	for(index=0;index< EV_TPOLL_UINT64_BITSIZE;index++) {
-		if((data)&(0x01<<index))break;
+		if((data)&(0x1<<index))break;
 	}
 	return index;
 }
 
+#define EV_TPOLL_FDSPLACE(fd) ((((uint64_t)fd)-1)/EV_TPOLL_USABLE_BITSIZE)
+#define EV_TPOLL_FDINDEX(fd, place) (((uint64_t)fd) - (place*EV_TPOLL_USABLE_BITSIZE) - 1)
+
 static void event_tpool_thread_set_fds(uint64_t *fds, int fd) {
-	int place = fd/EV_TPOLL_USABLE_BITSIZE;
-	fds[place] |= (0x1) << (fd - (place*EV_TPOLL_USABLE_BITSIZE) -1);
+	uint64_t place = EV_TPOLL_FDSPLACE(fd);
+	fds[place] |= (0x1) << EV_TPOLL_FDINDEX(fd,place);
 }
 static void event_tpool_thread_unset_fds(uint64_t *fds, int fd) {
-	int place = fd/EV_TPOLL_USABLE_BITSIZE;
-	fds[place] &= ~((0x1) << (fd - (place*EV_TPOLL_USABLE_BITSIZE) -1));
+	uint64_t place = EV_TPOLL_FDSPLACE(fd);
+	fds[place] &= ~((0x1) << EV_TPOLL_FDINDEX(fd,place));
 }
 static int event_tpool_thread_is_set_fds(uint64_t *fds, int fd) {
-	int place = fd/EV_TPOLL_USABLE_BITSIZE;
-	return (fds[place] & ((0x1) << (fd - (place*EV_TPOLL_USABLE_BITSIZE) -1)));
+	DEBUG_ERRPRINT("%s:fd=%d\n", __func__, fd);
+	uint64_t place = EV_TPOLL_FDSPLACE(fd);
+	DEBUG_ERRPRINT( "%s:place=%d\n", __func__, place);
+	DEBUG_ERRPRINT( "%s:fds=%x\n", __func__, fds[place]);
+	return (fds[place] & ((0x1) << EV_TPOLL_FDINDEX(fd,place)) );
 }
 
 static void event_tpool_thread_insert_fddata(EventTPoolThreadInfo this, int fd) {
@@ -117,10 +124,10 @@ static void event_tpool_free_fddata_list(EventTPoolThreadInfo this) {
 			fd = event_tpoll_get_far_right_bit_index(this->fds[i]) + fd_base;
 
 			/*delete event*/
-			event_tpool_thread_del(this->tinstance, fd);
+			event_tpool_thread_del(this->tinstance, fd-1);
 
 			/*unset*/
-			this->fds[i] &= ~((0x01) << (fd - fd_base));
+			this->fds[i] &= ~((0x1) << (fd-1 - fd_base));
 			this->fdcnt--;
 		}
 	}

@@ -5,3 +5,4 @@ noinst_PROGRAMS = test
 
 test_CFLAGS = -g -O0 
 test_SOURCES = main.c
+test_LDFLAGS=${AM_LDFLAGS}  $(DPUTIL_DIR)/lib/libdputil.la -Xlinker -rpath -Xlinker $(libdir)

@@ -42,16 +42,18 @@ int test_tpoll_failsafe() {
 		DEBUG_ERRPRINT("####Failed to check call before event_tpool_manager_new\n");
 		return -1;
 	}
-	result = event_tpool_update(NULL, (EventTPoolThreadInfo)&subscriber, &subscriber, NULL);
+	EventTPoolThreadInfo instance = calloc(1, 1024);
+	result = event_tpool_update(NULL, (EventTPoolThreadInfo)instance, &subscriber, NULL);
 	if(0<result.result) {
 		DEBUG_ERRPRINT("####Failed to check call before event_tpool_manager_new\n");
 		return -1;
 	}
-	result = event_tpool_update(tpool, (EventTPoolThreadInfo)&subscriber, NULL, NULL);
+	result = event_tpool_update(tpool, (EventTPoolThreadInfo)instance, NULL, NULL);
 	if(0<result.result) {
 		DEBUG_ERRPRINT("####Failed to check call before event_tpool_manager_new\n");
 		return -1;
 	}
+	free(instance);
 	result = event_tpool_update(NULL, NULL, &subscriber, NULL);
 	if(0<result.result) {
 		DEBUG_ERRPRINT("####Failed to check call before event_tpool_manager_new\n");
@@ -125,9 +127,11 @@ static void common(evutil_socket_t fd, short eventflag, testdata_t * testdata) {
 		testdata->checkresult=-1;
 	}
 }
-static void common2(evutil_socket_t fd, short eventflag, testdata_t * testdata) {
+static void common2(evutil_socket_t fd, int eventflag, testdata_t * testdata) {
 	uint64_t tmp;
+	if(!(eventflag&EV_TPOOL_READ)) return;
 	eventfd_read(fd, &tmp);
+	DEBUG_ERRPRINT("read %d", tmp);
 	testdata->tid = pthread_self();
 	testdata->callcnt++;
 	if(fd != testdata->sockpair[SUBSCRIBER_FD]) {
@@ -502,6 +506,122 @@ int test_tpoll_fo_ownthread() {
 	return 0;
 }
 
+#define TESTDATA_MAX (1000)
+pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond=PTHREAD_COND_INITIALIZER;
+static void testfunc(evutil_socket_t fd, short eventflag, void * arg) {
+	if(!(eventflag&EV_TPOOL_READ)) return;
+	pthread_mutex_lock(&lock);
+	testdata_t * testdata = (testdata_t *)arg;
+	common2(fd, eventflag, testdata);
+	testdata->funcname = __FUNCTION__;
+	pthread_mutex_unlock(&lock);
+	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
+}
+
+static void testfunc_end(evutil_socket_t fd, short eventflag, void * arg) {
+	if(!(eventflag&EV_TPOOL_READ)) return;
+	pthread_mutex_lock(&lock);
+	testdata_t * testdata = (testdata_t *)arg;
+	common2(fd, eventflag, testdata);
+	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
+	pthread_cond_signal(&cond);
+	pthread_mutex_unlock(&lock);
+}
+
+int test_tpoll_maxfd() {
+	testdata_t testdata={0};
+	int fd = 0;
+	event_subscriber_t subscriber[TESTDATA_MAX];
+	EventTPoolManager tpool = event_tpool_manager_new(4, 1);
+	testdata.tpool = tpool;
+
+	for(int i=0;i<TESTDATA_MAX;i++) {
+		subscriber[i].fd = eventfd(0,0);;
+		if(subscriber[i].fd < 0) {
+			DEBUG_ERRPRINT("####Failed to call event_tpool_add[%d]\n", i);
+			return -1;
+		}
+		subscriber[i].eventflag=EV_TPOOL_READ;
+		subscriber[i].event_callback = testfunc;
+	}
+	subscriber[TESTDATA_MAX-1].event_callback = testfunc_end;
+
+	//add all event
+	event_tpool_add_result_t result[TESTDATA_MAX];
+	for(int i=0;i<TESTDATA_MAX-1;i++) {
+		result[i] = event_tpool_add(tpool, &subscriber[i], &testdata);
+		if(result[i].result < 0) {
+			DEBUG_ERRPRINT("####Failed to call event_tpool_add[%d]\n", i);
+			return -1;
+		}
+//		usleep(10000);
+		eventfd_write(subscriber[i].fd, 1);
+	}
+
+	result[TESTDATA_MAX-1] = event_tpool_add(tpool, &subscriber[TESTDATA_MAX-1], &testdata);
+	pthread_mutex_lock(&lock);
+	eventfd_write(subscriber[TESTDATA_MAX-1].fd, 1);
+
+	struct timespec timeout;
+	clock_gettime(CLOCK_REALTIME, &timeout);
+	timeout.tv_sec += 10;
+	int ret = pthread_cond_timedwait(&cond, &lock, &timeout);
+	pthread_mutex_unlock(&lock);
+	if(ret == ETIMEDOUT) {
+		DEBUG_ERRPRINT("####Failed to call end\n");
+		return -1;
+	}
+	
+	if(testdata.callcnt != TESTDATA_MAX || strcmp(testdata.funcname, "testfunc") != 0) {
+		DEBUG_ERRPRINT("####Failed to call event_tpool_add callback event, cnt=%d\n",testdata.callcnt);
+		return -1;
+	}
+
+	//update check
+	for(int i=0;i<TESTDATA_MAX;i++) {
+		subscriber[i].eventflag=EV_TPOOL_HUNGUP;
+		result[i] = event_tpool_update(tpool, result[i].event_handle, &subscriber[i], &testdata);
+		if(result[i].result < 0) {
+			DEBUG_ERRPRINT("####Failed to call event_tpool_update[%d]\n", i);
+			return -1;
+		}
+		eventfd_write(subscriber[i].fd, 1);
+	}
+	if(testdata.callcnt != TESTDATA_MAX || strcmp(testdata.funcname, "testfunc") != 0) {
+		DEBUG_ERRPRINT("####Failed to call event_tpool_udate callback event, cnt=%d\n",testdata.callcnt);
+		return -1;
+	}
+
+	//clean
+	for(int i=0;i<TESTDATA_MAX;i++) {
+		subscriber[i].eventflag=0;
+		result[i] = event_tpool_update(tpool, result[i].event_handle, &subscriber[i], &testdata);
+		eventfd_write(subscriber[i].fd, 1);
+	}
+	if(testdata.callcnt != TESTDATA_MAX || strcmp(testdata.funcname, "testfunc") != 0) {
+		DEBUG_ERRPRINT("####Failed to call event_tpool_update(re-read) callback event, cnt=%d\n",testdata.callcnt);
+		return -1;
+	}
+
+	//delete
+	for(int i=0;i<TESTDATA_MAX;i++) {
+		event_tpool_del(tpool, subscriber[i].fd);
+		eventfd_write(subscriber[i].fd, 1);
+	}
+	if(testdata.callcnt != TESTDATA_MAX || strcmp(testdata.funcname, "testfunc") != 0) {
+		DEBUG_ERRPRINT("####Failed to call event_tpool_delete callback event, cnt=%d\n",testdata.callcnt);
+		return -1;
+	}
+
+	//end
+	event_tpool_manager_free(tpool);
+	for(int i=0;i<TESTDATA_MAX;i++) {
+		close(subscriber[i].fd);
+	}
+	return 0;
+}
+
 int test_tpoll_free() {
 	EventTPoolManager tpool = event_tpool_manager_new(3, 1);
 	testdata_t testdata[TESTDATA];
@@ -541,6 +661,7 @@ int test_tpoll_free() {
 }
 
 int main() {
+
 	if(test_tpoll_failsafe()) {
 		DEBUG_ERRPRINT("Failed to check fail safe\n");
 		return -1;
@@ -558,6 +679,11 @@ int main() {
 
 	if(test_tpoll_fo_ownthread()) {
 		DEBUG_ERRPRINT("Failed to check do own thread\n");
+		return -1;
+	}
+
+	if(test_tpoll_maxfd()) {
+		DEBUG_ERRPRINT("Failed to check maxfd usage\n");
 		return -1;
 	}
 
