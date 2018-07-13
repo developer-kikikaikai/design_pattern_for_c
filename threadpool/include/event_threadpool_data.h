@@ -25,7 +25,7 @@ typedef struct event_tpool_manager_t * EventTPoolManager;
 struct event_subscriber_t {
 	int fd;/*!< file descripter of this subscriber */
 	int eventflag;/**< OR value of  EV_TPOOL_XXX definition*/
-	void (*event_callback)(int socketfd, short eventflag, void * event_arg);
+	void (*event_callback)(int socketfd, int eventflag, void * event_arg);
 };
 
 /** EventSubscriber class definition  */

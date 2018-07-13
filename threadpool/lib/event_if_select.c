@@ -104,7 +104,6 @@ EventHandler event_if_add(EventInstance this, EventSubscriber subscriber, void *
 	memcpy(&instance->subscriber, subscriber, sizeof(instance->subscriber));
 	instance->arg = arg;
 
-	DEBUG_ERRPRINT("event_add [%d]\n" , instance->subscriber.fd);
 	EventSelectHandler prev=NULL;
 	EventSelectHandler current = base->head;
 	while(current) {
@@ -182,7 +181,6 @@ int event_if_loop(EventInstance this) {
 	int eventflag;
 	EventSelectHandler handler;
 	EventSubscriber subscriber;
-	fd_set readfds, writefds, exceptfds;
 	base->is_stop=0;
 	while(!base->is_stop) {
 		/*reset fds*/
