@@ -108,5 +108,4 @@ If you want to see detail of code, please see [doxgen file in here](https://deve
 
 # License
   This software is released under the MIT License, see [LICENSE file in this package](https://github.com/developer-kikikaikai/design_pattern_for_c/blob/master/LICENSE).
-
-
+  If you use this package with "--with-threadpool-event=libev", the LICENSE of threadpool library (libevent_threadpool.so) is GPL (see LICENSE_WITH_LIBEV file).
