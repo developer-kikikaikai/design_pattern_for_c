@@ -18,18 +18,24 @@
 /*! thread instance and fd list */
 /*Fix size of max fds 2048 (to care sign */
 #define EV_TPOLL_MAXFDS (64)
-#define EV_TPOLL_UINT64_BITSIZE (64)
-#define EV_TPOLL_USABLE_BITSIZE (32)
+#define EV_TPOLL_U64_BITSIZE (64)
+#define EV_TPOLL_U8_BITSIZE (8)
+#define EV_TPOLL_USABLE_BITSIZE (64)
 /*TODO: use full bit place, care over 2048 fd*/
 typedef struct event_tpool_thread_info_t {
 	EventTPoolThread tinstance;
 	size_t fdcnt;
-	uint64_t *fds;
+	union data_fds_u{
+		uint64_t u64;
+		uint8_t u8[8];/*u8*8 byte*/
+	} *fds;
 } event_tpool_thread_info_t;
 
-static void event_tpool_thread_set_fds(uint64_t *fds, int fd);
-static void event_tpool_thread_unset_fds(uint64_t *fds, int fd);
-static int event_tpool_thread_is_set_fds(uint64_t *fds, int fd);
+typedef union data_fds_u data_fds_u;
+
+static void event_tpool_thread_set_fds(EventTPoolThreadInfo this, int fd);
+static void event_tpool_thread_unset_fds(EventTPoolThreadInfo this, int fd);
+static int event_tpool_thread_is_set_fds(EventTPoolThreadInfo this, int fd);
 
 static void event_tpool_thread_insert_fddata(EventTPoolThreadInfo this, int fd);
 
@@ -79,38 +85,48 @@ static int event_tpool_manager_search_insert_thread(EventTPoolManager this, int 
 *************/;
 static int event_tpoll_get_far_right_bit_index(uint64_t data) {
 	int index=0;
-	for(index=0;index< EV_TPOLL_UINT64_BITSIZE;index++) {
+	for(index=0;index< EV_TPOLL_U64_BITSIZE;index++) {
 		if((data)&(0x1<<index))break;
 	}
 	return index;
 }
 
-#define EV_TPOLL_FDSPLACE(fd) ((((uint64_t)fd)-1)/EV_TPOLL_USABLE_BITSIZE)
-#define EV_TPOLL_FDINDEX(fd, place) (((uint64_t)fd) - (place*EV_TPOLL_USABLE_BITSIZE) - 1)
+#define EV_TPOLL_FDSU64PLACE(fd) (((fd)-1)/EV_TPOLL_U64_BITSIZE)
+#define EV_TPOLL_FDINDEX(fd, place) ((fd) - ((place)*EV_TPOLL_USABLE_BITSIZE) - 1)
+#define EV_TPOLL_FDINDEX_U8(fd, place, place_u8) (EV_TPOLL_FDINDEX(fd,place) - ((place_u8) * EV_TPOLL_U8_BITSIZE))
 
-static void event_tpool_thread_set_fds(uint64_t *fds, int fd) {
-	uint64_t place = EV_TPOLL_FDSPLACE(fd);
-	fds[place] |= (0x1) << EV_TPOLL_FDINDEX(fd,place);
+static void event_tpool_thread_set_fds(EventTPoolThreadInfo this, int fd) {
+	uint64_t place = EV_TPOLL_FDSU64PLACE(fd);
+	uint16_t place_u8 = EV_TPOLL_FDINDEX(fd,place)/EV_TPOLL_U8_BITSIZE;
+	DEBUG_ERRPRINT( "%s:place=%lu\n", __func__, place);
+	DEBUG_ERRPRINT( "%s:fds=%lx\n", __func__, this->fds[place].u64);
+	this->fds[place].u8[place_u8] |= (0x1) << EV_TPOLL_FDINDEX_U8(fd,place, place_u8);
 }
-static void event_tpool_thread_unset_fds(uint64_t *fds, int fd) {
-	uint64_t place = EV_TPOLL_FDSPLACE(fd);
-	fds[place] &= ~((0x1) << EV_TPOLL_FDINDEX(fd,place));
-}
-static int event_tpool_thread_is_set_fds(uint64_t *fds, int fd) {
+static void event_tpool_thread_unset_fds(EventTPoolThreadInfo this, int fd) {
 	DEBUG_ERRPRINT("%s:fd=%d\n", __func__, fd);
-	uint64_t place = EV_TPOLL_FDSPLACE(fd);
-	DEBUG_ERRPRINT( "%s:place=%d\n", __func__, place);
-	DEBUG_ERRPRINT( "%s:fds=%x\n", __func__, fds[place]);
-	return (fds[place] & ((0x1) << EV_TPOLL_FDINDEX(fd,place)) );
+	uint64_t place = EV_TPOLL_FDSU64PLACE(fd);
+	uint16_t place_u8 = EV_TPOLL_FDINDEX(fd,place)/EV_TPOLL_U8_BITSIZE;
+	DEBUG_ERRPRINT( "%s:place=%lu\n", __func__, place);
+	DEBUG_ERRPRINT( "%s:fds=%lx\n", __func__, this->fds[place].u64);
+	this->fds[place].u8[place_u8] &= ~((0x1) << EV_TPOLL_FDINDEX_U8(fd,place,place_u8));
+}
+static int event_tpool_thread_is_set_fds(EventTPoolThreadInfo this, int fd) {
+	DEBUG_ERRPRINT("%s:fd=%d\n", __func__, fd);
+	uint64_t place = EV_TPOLL_FDSU64PLACE(fd);
+	uint16_t place_u8 = EV_TPOLL_FDINDEX(fd,place)/EV_TPOLL_U8_BITSIZE;
+	DEBUG_ERRPRINT( "%s:place=%lu\n", __func__, place);
+	DEBUG_ERRPRINT( "%s:fds=%lx\n", __func__, this->fds[place].u64);
+	int ret = (this->fds[place].u8[place_u8] & ((0x1) << EV_TPOLL_FDINDEX_U8(fd,place,place_u8)) );
+	return ret;
 }
 
 static void event_tpool_thread_insert_fddata(EventTPoolThreadInfo this, int fd) {
-	event_tpool_thread_set_fds(this->fds, fd);
+	event_tpool_thread_set_fds(this, fd);
 	this->fdcnt++;
 }
 
 static int event_tpool_thread_has_fd(EventTPoolThreadInfo this, int fd) {
-	return event_tpool_thread_is_set_fds(this->fds, fd);
+	return event_tpool_thread_is_set_fds(this, fd);
 }
 
 /*! free fddata */
@@ -119,15 +135,15 @@ static void event_tpool_free_fddata_list(EventTPoolThreadInfo this) {
 	int fd=0;
 	int fd_base=0;
 	for(i = 0; this->fdcnt && i < EV_TPOLL_MAXFDS; i ++, fd_base += EV_TPOLL_USABLE_BITSIZE) {
-		while(this->fdcnt && this->fds[i] != 0) {
+		while(this->fdcnt && this->fds[i].u64 != 0) {
 			/*get fd place*/
-			fd = event_tpoll_get_far_right_bit_index(this->fds[i]) + fd_base;
+			fd = event_tpoll_get_far_right_bit_index(this->fds[i].u64) + fd_base;
 
 			/*delete event*/
 			event_tpool_thread_del(this->tinstance, fd-1);
 
 			/*unset*/
-			this->fds[i] &= ~((0x1) << (fd-1 - fd_base));
+			event_tpool_thread_unset_fds(this, fd-1);
 			this->fdcnt--;
 		}
 	}
@@ -146,7 +162,7 @@ static void event_tpool_thread_info_stop_thread(EventTPoolThreadInfo this) {
 
 /*! delete thread */
 static void event_tpool_thread_delete_thread(EventTPoolThreadInfo this, int fd) {
-	event_tpool_thread_unset_fds(this->fds, fd);
+	event_tpool_thread_unset_fds(this, fd);
 	this->fdcnt--;
 }
 
@@ -156,7 +172,7 @@ static void event_tpool_thread_delete_thread(EventTPoolThreadInfo this, int fd) 
 static EventTPoolThreadInfo event_tpool_thread_info_new(size_t thread_size) {
 	EventTPoolThreadInfo info = NULL;
 	size_t size = sizeof(*info) * thread_size;/*sizeof EventTPoolThreadInfo*/
-	size += (sizeof(uint64_t)*EV_TPOLL_MAXFDS*thread_size+10000);/*sizeof fds in EventTPoolThreadInfo*/
+	size += (sizeof(uint64_t)*EV_TPOLL_MAXFDS*thread_size);/*sizeof fds in EventTPoolThreadInfo*/
 	info = malloc(size);
 	if(!info) {
 		DEBUG_ERRPRINT("Failed to get instance threads!\n" );
@@ -171,7 +187,7 @@ static EventTPoolThreadInfo event_tpool_thread_info_new(size_t thread_size) {
 	for( i = 0; i < thread_size; i ++ ) {
 		//keep 64bit * EV_TPOLL_MAXFDS => 4096 fds place
 		DEBUG_ERRPRINT("info[%d]=%p!\n", i, current_p );
-		info[i].fds = (uint64_t *)current_p;
+		info[i].fds = (data_fds_u *)current_p;
 		current_p = info[i].fds + EV_TPOLL_MAXFDS;
 
 		/*create thread instance*/
@@ -329,6 +345,7 @@ end:
 EVT_TPOOL_MNG_UNLOCK;
 	/*after unlock, call to add API on event_thread*/
 	if(result.event_handle) event_tpool_thread_add(result.event_handle->tinstance, subscriber, arg);
+
 	return result;
 }
 

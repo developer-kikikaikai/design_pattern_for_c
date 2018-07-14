@@ -507,7 +507,7 @@ int test_tpoll_fo_ownthread() {
 	return 0;
 }
 
-#define TESTDATA_MAX (1000)
+#define TESTDATA_MAX (4096)
 pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond=PTHREAD_COND_INITIALIZER;
 static void testfunc(evutil_socket_t fd, int eventflag, void * arg) {
@@ -556,10 +556,10 @@ int test_tpoll_maxfd() {
 			DEBUG_ERRPRINT("####Failed to call event_tpool_add[%d]\n", i);
 			return -1;
 		}
-//		usleep(10000);
 		eventfd_write(subscriber[i].fd, 1);
 	}
 
+	usleep(10000);
 	result[TESTDATA_MAX-1] = event_tpool_add(tpool, &subscriber[TESTDATA_MAX-1], &testdata);
 	pthread_mutex_lock(&lock);
 	eventfd_write(subscriber[TESTDATA_MAX-1].fd, 1);
