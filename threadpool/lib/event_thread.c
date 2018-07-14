@@ -15,7 +15,7 @@
 
 #define EVENT_THREAD_WAIT_TIMEOUT (2)/*sec*/
 
-#define EVENT_THREAD_STACKSIZE (40 * 1024)/*suitable stack size*/
+#define EVENT_THREAD_STACKSIZE (512 * 1024)/*suitable stack size*/
 
 /*************
  * public define
