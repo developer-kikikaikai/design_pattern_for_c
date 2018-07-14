@@ -420,3 +420,7 @@ void event_tpool_atfork_child(EventTPoolManager this) {
 		event_thread_atfork_child(this->threads[i].tinstance);
 	}
 }
+
+void event_tpool_set_stack_size(size_t stack_size) {
+	event_thread_set_stack_size(stack_size);
+}

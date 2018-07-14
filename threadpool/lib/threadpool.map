@@ -8,5 +8,6 @@
     event_tpool_update;
     event_tpool_del;
     event_tpool_atfork_child;
+    event_tpool_set_stack_size;
   local: *;
 };

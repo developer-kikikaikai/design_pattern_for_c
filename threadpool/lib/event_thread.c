@@ -15,13 +15,17 @@
 
 #define EVENT_THREAD_WAIT_TIMEOUT (2)/*sec*/
 
-#define EVENT_THREAD_STACKSIZE (512 * 1024)/*suitable stack size*/
+#define EVENT_THREAD_STACKSIZE (256 * 1024)/*suitable stack size*/
 
 /*************
  * public define
 *************/
 /*! @name event_tpool_thread_t definition.*/
 /*@{*/
+
+/*! thread stack size, user can change it by using event_tpool_set_stack_size*/
+static size_t event_thread_stack_size_g = EVENT_THREAD_STACKSIZE;
+
 /*! message definition for manage subscriber*/
 typedef struct event_thread_msg_body_add_t {
 	event_subscriber_t subscriber;
@@ -490,7 +494,7 @@ void event_tpool_thread_start(EventTPoolThread this) {
 	this->tid=0;
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
-	pthread_attr_setstacksize(&attr, EVENT_THREAD_STACKSIZE);
+	pthread_attr_setstacksize(&attr, event_thread_stack_size_g);
 
 #ifdef CHECK_STACKSIZE
 	this->stack_adr = (char *) malloc(EVENT_THREAD_STACKSIZE);
@@ -534,4 +538,8 @@ void event_thread_atfork_child(EventTPoolThread this) {
 	this->tid = 0;
 	pthread_mutex_init(&this->msgdata.lock, NULL);
 	pthread_cond_init(&this->msgdata.cond, NULL);
+}
+
+void event_thread_set_stack_size(size_t stack_size) {
+	event_thread_stack_size_g = stack_size;
 }

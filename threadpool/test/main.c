@@ -62,6 +62,7 @@ int test_tpoll_failsafe() {
 
 	free(tpool);
 
+	event_tpool_set_stack_size(25*1024);
 	tpool = event_tpool_manager_new(-1, 0);
 	if(!tpool) {
 		DEBUG_ERRPRINT("####Failed to create tpoll manager\n");

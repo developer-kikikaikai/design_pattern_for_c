@@ -29,5 +29,7 @@ void event_tpool_thread_update(EventTPoolThread this, EventSubscriber subscriber
 void event_tpool_thread_del(EventTPoolThread this, int fd);
 
 void event_thread_atfork_child(EventTPoolThread this);
+
+void event_thread_set_stack_size(size_t stack_size);
 /*@}*/
 #endif

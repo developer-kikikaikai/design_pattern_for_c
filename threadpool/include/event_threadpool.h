@@ -82,5 +82,12 @@ void event_tpool_del(EventTPoolManager this, int fd);
  *       at the child process, all of pooled threads don't copy.
  */
 void event_tpool_atfork_child(EventTPoolManager this);
+
+/**
+ * Set thread stack size. Default is 256 KByte.
+ * @param[in] stack_size stack size.
+ * @note Please call it before calling event_tpool_manager_new.
+ */
+void event_tpool_set_stack_size(size_t stack_size);
 /*@}*/
 #endif
