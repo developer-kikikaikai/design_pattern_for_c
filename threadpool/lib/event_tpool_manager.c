@@ -6,6 +6,7 @@
 #include <elf.h>
 #include <stdio.h>
 #include <sched.h>
+#include "config.h"
 #include "event_threadpool.h"
 #include "event_thread.h"
 #include "dp_util.h"
@@ -17,7 +18,7 @@
 /*@{*/
 /*! thread instance and fd list */
 /*Fix size of max fds 2048 (to care sign */
-#define EV_TPOLL_MAXFDS (64)
+//#define EV_TPOLL_MAXFDS (64)
 #define EV_TPOLL_U64_BITSIZE (64)
 #define EV_TPOLL_U8_BITSIZE (8)
 #define EV_TPOLL_USABLE_BITSIZE (64)

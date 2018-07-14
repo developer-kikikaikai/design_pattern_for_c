@@ -56,26 +56,33 @@ AM_CONDITIONAL([USE_THREADPOOL], [test "$with_threadpool" = yes])
 #without threadpool event
 AC_ARG_WITH([threadpool-event],
   [AC_HELP_STRING([--with-threadpool-event],
-    [choose threadpool event from select, epoll and libevent "[default: select]"]
+    [choose threadpool event from select, epoll and libevent "[default: epoll]"]
   )],
   [with_threadpool_event=$withval],
-  [with_threadpool_event="select"]
+  [with_threadpool_event="epoll"]
 )
 
-TPOOLEVENT_LIBEVENT=
-TPOOLEVENT_EPOLL=
 #check flag
+tpool_event_select="no"
 case "$with_threadpool_event" in
-  "epoll")
-    TPOOLEVENT_EPOLL="yes";;
-  "libevent") 
+  "select")   AC_MSG_NOTICE([======threadpool event:select==============])
+    tpool_event_select="yes";;
+  "epoll")    AC_MSG_NOTICE([======threadpool event:epoll================])
+    tpool_event_epoll="yes";;
+  "libevent") AC_MSG_NOTICE([======threadpool event:libevent============])
      AC_CHECK_LIB([event], [main])
-     TPOOLEVENT_LIBEVENT="yes";;
-  *) TPOOLEVENT_SELECT="yes";;
+     tpool_event_libevent="yes";;
+  *)          AC_MSG_NOTICE([======threadpool event:default(epoll)======])
+     tpool_event_epoll="yes";;
 esac
-AM_CONDITIONAL([TPOOLEVENT_LIBEVENT], [test "$TPOOLEVENT_LIBEVENT" = yes])
-AM_CONDITIONAL([TPOOLEVENT_EPOLL], [test "$TPOOLEVENT_EPOLL" = yes])
-AM_CONDITIONAL([TPOOLEVENT_SELECT], [test "$TPOOLEVENT_SELECT" = yes])
+AM_CONDITIONAL([TPOOLEVENT_LIBEVENT], [test "$tpool_event_libevent" = "yes"])
+AM_CONDITIONAL([TPOOLEVENT_EPOLL], [test "$tpool_event_epoll" = "yes"])
+AM_CONDITIONAL([TPOOLEVENT_SELECT], [test "$tpool_event_select" = "yes"])
+if [ test "$tpool_event_select" = "yes" ]; then
+	AC_DEFINE([EV_TPOLL_MAXFDS], [15], ["Define Threadpool MAX FD SIZE (this value * 64)"])
+else
+	AC_DEFINE([EV_TPOLL_MAXFDS], [64], ["Define Threadpool MAX FD SIZE (this value * 64)"])
+fi
 
 #without publisher
 AC_ARG_WITH([publisher],

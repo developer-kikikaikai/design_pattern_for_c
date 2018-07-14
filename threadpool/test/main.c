@@ -7,6 +7,7 @@
 #include <event2/event-config.h>
 #include <event2/event.h>
 #include "event_threadpool.h"
+#include "config.h"
 #include <sys/eventfd.h>
 
 #define DEBUG_ERRPRINT(...)  DEBUG_ERRPRINT_(__VA_ARGS__, "")
@@ -507,7 +508,8 @@ int test_tpoll_fo_ownthread() {
 	return 0;
 }
 
-#define TESTDATA_MAX (4096)
+#define TESTDATA_MAX (EV_TPOLL_MAXFDS * 64)
+
 pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond=PTHREAD_COND_INITIALIZER;
 static void testfunc(evutil_socket_t fd, int eventflag, void * arg) {

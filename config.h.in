@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* "Define Threadpool MAX FD SIZE (this value * 64)" */
+#undef EV_TPOLL_MAXFDS
+
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
