@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define EVENT_EPOLL_DEFMAX (512)
+#define EVENT_EPOLL_DEFMAX (4096)
 //loop to add event
 #define EVENT_EPOLL_TIMEOUT (50)
 
