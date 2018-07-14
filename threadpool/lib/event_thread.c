@@ -15,7 +15,7 @@
 
 #define EVENT_THREAD_WAIT_TIMEOUT (2)/*sec*/
 
-#define EVENT_THREAD_STACKSIZE (128 * 1024)/*suitable stack size*/
+#define EVENT_THREAD_STACKSIZE (40 * 1024)/*suitable stack size*/
 
 /*************
  * public define
@@ -59,6 +59,11 @@ typedef struct event_thread_msg_info_t {
 	pthread_cond_t  cond;
 } event_thread_msg_info_t;
 
+//#define CHECK_STACKSIZE
+#ifdef CHECK_STACKSIZE
+#define MAGIC_NUMBER 'Z'
+#endif
+
 /*! subscriber information define */
 typedef struct event_subscriber_data_t *EventSubscriberData;
 /*! subscriber information define */
@@ -83,6 +88,9 @@ struct event_tpool_thread_t {
 	EventHandler msg_evinfo;/*<! msg event info*/
 	pthread_t tid;/*<! thread id*/
 	int is_stop;/*<! stop flag*/
+#ifdef CHECK_STACKSIZE
+	char * stack_adr;
+#endif
 };
 /*@}*/
 /*! @name API for message.*/
@@ -143,7 +151,7 @@ static void event_tpool_thread_msg_cb_call(EventTPoolThread this, event_thread_m
 /*! main messages caller*/
 static void event_tpool_thread_call_msgs(EventTPoolThread this, eventfd_t cnt);
 /*! callback main*/
-static void event_tpool_thread_cb(int, short, void *);
+static void event_tpool_thread_cb(int, int, void *);
 /*@}*/
 
 /*************
@@ -430,7 +438,7 @@ EVMSG_UNLOCK
 }
 
 /*! callback main*/
-static void event_tpool_thread_cb(int fd, short flag, void * arg) {
+static void event_tpool_thread_cb(int fd, int flag, void * arg) {
 	EventTPoolThread this = (EventTPoolThread)arg;
 
 	eventfd_t cnt=0;
@@ -484,6 +492,11 @@ void event_tpool_thread_start(EventTPoolThread this) {
 	pthread_attr_init(&attr);
 	pthread_attr_setstacksize(&attr, EVENT_THREAD_STACKSIZE);
 
+#ifdef CHECK_STACKSIZE
+	this->stack_adr = (char *) malloc(EVENT_THREAD_STACKSIZE);
+	memset(this->stack_adr, MAGIC_NUMBER, EVENT_THREAD_STACKSIZE);
+	pthread_attr_setstack(&attr, (void *) this->stack_adr, EVENT_THREAD_STACKSIZE);
+#endif
 	pthread_create(&this->tid, &attr, event_tpool_thread_main, this);
 	pthread_attr_destroy(&attr);
 }
@@ -495,6 +508,13 @@ void event_tpool_thread_stop(EventTPoolThread this) {
 	if(0<ret) {
 		pthread_join(tid, NULL);
 	}
+#ifdef CHECK_STACKSIZE
+	int i=0;
+	for(i=0;i<EVENT_THREAD_STACKSIZE;i++) {
+		if (this->stack_adr[i] != MAGIC_NUMBER) break;
+	}
+	fprintf(stderr, "Used %d byte\n", EVENT_THREAD_STACKSIZE - i);
+#endif
 }
 
 /** add new subscriber */
