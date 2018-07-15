@@ -22,7 +22,7 @@
 #define EV_TPOLL_U64_BITSIZE (64)
 #define EV_TPOLL_U8_BITSIZE (8)
 #define EV_TPOLL_USABLE_BITSIZE (64)
-/*TODO: use full bit place, care over 4096 fd?*/
+/*TODO: care over 4096 fd?*/
 typedef struct event_tpool_thread_info_t {
 	EventTPoolThread tinstance;
 	size_t fdcnt;
@@ -92,8 +92,10 @@ static int event_tpoll_get_far_right_bit_index(uint64_t data) {
 	return index;
 }
 
-#define EV_TPOLL_FDSU64PLACE(fd) (((fd)-3)/EV_TPOLL_U64_BITSIZE)
-#define EV_TPOLL_FDINDEX(fd, place) ((fd) - ((place)*EV_TPOLL_USABLE_BITSIZE) - 3)
+#define EV_TPOLL_FD_START (3)
+
+#define EV_TPOLL_FDSU64PLACE(fd) (((fd)-EV_TPOLL_FD_START)/EV_TPOLL_U64_BITSIZE)
+#define EV_TPOLL_FDINDEX(fd, place) ((fd) - ((place)*EV_TPOLL_USABLE_BITSIZE) - EV_TPOLL_FD_START)
 #define EV_TPOLL_FDINDEX_U8(fd, place, place_u8) (EV_TPOLL_FDINDEX(fd,place) - ((place_u8) * EV_TPOLL_U8_BITSIZE))
 
 static void event_tpool_thread_set_fds(EventTPoolThreadInfo this, int fd) {
@@ -141,10 +143,10 @@ static void event_tpool_free_fddata_list(EventTPoolThreadInfo this) {
 			fd = event_tpoll_get_far_right_bit_index(this->fds[i].u64) + fd_base;
 
 			/*delete event*/
-			event_tpool_thread_del(this->tinstance, fd-1);
+			event_tpool_thread_del(this->tinstance, fd-EV_TPOLL_FD_START);
 
 			/*unset*/
-			event_tpool_thread_unset_fds(this, fd-1);
+			event_tpool_thread_unset_fds(this, fd-EV_TPOLL_FD_START);
 			this->fdcnt--;
 		}
 	}

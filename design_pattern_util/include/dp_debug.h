@@ -58,15 +58,15 @@ void dp_timelog_exit(DPTimeLog handle);
 #define DEBUG_ERRPRINT(...)  DEBUG_ERRPRINT_(__VA_ARGS__, "")
 #include <pthread.h>
 extern DPTimeLog timelog_g;
-#define DEBUG_INIT           timelog_g=dp_timelog_init(",", 2048, 8192, 0); dp_timelog_print(timelog_g,"init\n");
-#define DEBUG_INIT_THREDSAFE timelog_g=dp_timelog_init(",", 2048, 8192, 1); dp_timelog_print(timelog_g,"init\n");
+#define DPDEBUG_INIT           timelog_g=dp_timelog_init(",", 2048, 8192, 0); dp_timelog_print(timelog_g,"init\n");
+#define DPDEBUG_INIT_THREADSAFE timelog_g=dp_timelog_init(",", 2048, 8192, 1); dp_timelog_print(timelog_g,"init\n");
 #define DEBUG_ERRPRINT_(fmt, ...)  \
         dp_timelog_print(timelog_g, "[%s(%s:%d)thread:%x]: "fmt"%s", __FUNCTION__,__FILE__,__LINE__,(unsigned int)pthread_self(), __VA_ARGS__)
-#define DEBUG_EXIT           dp_timelog_print(timelog_g,"exit\n");dp_timelog_exit(timelog_g);timelog_g=NULL;
+#define DPDEBUG_EXIT           dp_timelog_print(timelog_g,"exit\n");dp_timelog_exit(timelog_g);timelog_g=NULL;
 #else
-#define DEBUG_INIT
-#define DEBUG_INIT_THREDSAFE
+#define DPDEBUG_INIT
+#define DPDEBUG_INIT_THREDSAFE
 #define DEBUG_ERRPRINT(...) 
-#define DEBUG_EXIT
+#define DPDEBUG_EXIT
 #endif
 #endif
