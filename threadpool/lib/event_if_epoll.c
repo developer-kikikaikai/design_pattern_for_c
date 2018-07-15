@@ -147,7 +147,7 @@ int event_if_loop(EventInstance this) {
 	int ret=0;
 	struct epoll_event *events = malloc(base->maxevents * sizeof(struct epoll_event));
 	if(!events) {
-		return;
+		return -1;
 	}
 	memset(events, 0, base->maxevents * sizeof(struct epoll_event));
 
