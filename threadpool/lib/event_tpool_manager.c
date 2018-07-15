@@ -84,19 +84,21 @@ static int event_tpool_manager_search_insert_thread(EventTPoolManager this, int 
 /*************
  * for thread information list API
 *************/;
-static int event_tpoll_get_far_right_bit_index(uint64_t data) {
+static int event_tpoll_get_far_right_bit_index(uint8_t data) {
 	int index=0;
-	for(index=0;index< EV_TPOLL_U64_BITSIZE;index++) {
+	for(index=0;index< EV_TPOLL_U8_BITSIZE;index++) {
 		if((data)&(0x1<<index))break;
 	}
 	return index;
 }
 
+//STDIN, STDOUT, STDERR 0, 1, 2
 #define EV_TPOLL_FD_START (3)
 
 #define EV_TPOLL_FDSU64PLACE(fd) (((fd)-EV_TPOLL_FD_START)/EV_TPOLL_U64_BITSIZE)
 #define EV_TPOLL_FDINDEX(fd, place) ((fd) - ((place)*EV_TPOLL_USABLE_BITSIZE) - EV_TPOLL_FD_START)
 #define EV_TPOLL_FDINDEX_U8(fd, place, place_u8) (EV_TPOLL_FDINDEX(fd,place) - ((place_u8) * EV_TPOLL_U8_BITSIZE))
+#define EV_TPOLL_FD(place, place_u8, index) (index + ((place)*EV_TPOLL_USABLE_BITSIZE) + ((place_u8) * EV_TPOLL_U8_BITSIZE) + EV_TPOLL_FD_START)
 
 static void event_tpool_thread_set_fds(EventTPoolThreadInfo this, int fd) {
 	uint64_t place = EV_TPOLL_FDSU64PLACE(fd);
@@ -132,25 +134,32 @@ static int event_tpool_thread_has_fd(EventTPoolThreadInfo this, int fd) {
 	return event_tpool_thread_is_set_fds(this, fd);
 }
 
+static void event_tpool_free_fddata(EventTPoolThreadInfo this, int place) {
+	int i=0, fd=0;
+	for(i = 0; i < EV_TPOLL_U8_BITSIZE && this->fdcnt; i ++) {
+		while(this->fdcnt && this->fds[place].u8[i]) {
+			/*get fd place*/
+			fd = EV_TPOLL_FD(place, i, event_tpoll_get_far_right_bit_index(this->fds[place].u8[i]));
+
+			/*delete event*/
+			event_tpool_thread_del(this->tinstance, fd);
+
+			/*unset*/event_tpool_thread_unset_fds(this, fd);
+			this->fdcnt--;
+		}
+	}
+}
+
 /*! free fddata */
 static void event_tpool_free_fddata_list(EventTPoolThreadInfo this) {
 	size_t i = 0;
 	int fd=0;
 	int fd_base=0;
 	for(i = 0; this->fdcnt && i < EV_TPOLL_MAXFDS; i ++, fd_base += EV_TPOLL_USABLE_BITSIZE) {
-		while(this->fdcnt && this->fds[i].u64 != 0) {
-			/*get fd place*/
-			fd = event_tpoll_get_far_right_bit_index(this->fds[i].u64) + fd_base;
-
-			/*delete event*/
-			event_tpool_thread_del(this->tinstance, fd-EV_TPOLL_FD_START);
-
-			/*unset*/
-			event_tpool_thread_unset_fds(this, fd-EV_TPOLL_FD_START);
-			this->fdcnt--;
-		}
+		event_tpool_free_fddata(this, i);
 	}
 }
+
 static void event_tpool_thread_info_start_thread(EventTPoolThreadInfo instance) {
 	event_tpool_thread_start(instance->tinstance);
 }
