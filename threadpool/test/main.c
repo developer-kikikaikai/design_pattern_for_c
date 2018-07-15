@@ -539,6 +539,7 @@ int test_tpoll_maxfd() {
 	EventTPoolManager tpool = event_tpool_manager_new(4, 1);
 	testdata.tpool = tpool;
 
+	int max=0;
 	for(int i=0;i<TESTDATA_MAX;i++) {
 		subscriber[i].fd = eventfd(0,0);;
 		if(subscriber[i].fd < 0) {
@@ -547,12 +548,16 @@ int test_tpoll_maxfd() {
 		}
 		subscriber[i].eventflag=EV_TPOOL_READ;
 		subscriber[i].event_callback = testfunc;
+		if(TESTDATA_MAX <= subscriber[i].fd) {
+			max=i;
+			break;
+		}
 	}
-	subscriber[TESTDATA_MAX-1].event_callback = testfunc_end;
+	subscriber[max].event_callback = testfunc_end;
 
 	//add all event
 	event_tpool_add_result_t result[TESTDATA_MAX];
-	for(int i=0;i<TESTDATA_MAX-1;i++) {
+	for(int i=0;i<max;i++) {
 		result[i] = event_tpool_add(tpool, &subscriber[i], &testdata);
 		if(result[i].result < 0) {
 			DEBUG_ERRPRINT("####Failed to call event_tpool_add[%d]\n", i);
@@ -562,9 +567,9 @@ int test_tpoll_maxfd() {
 	}
 
 	usleep(10000);
-	result[TESTDATA_MAX-1] = event_tpool_add(tpool, &subscriber[TESTDATA_MAX-1], &testdata);
+	result[max] = event_tpool_add(tpool, &subscriber[max], &testdata);
 	pthread_mutex_lock(&lock);
-	eventfd_write(subscriber[TESTDATA_MAX-1].fd, 1);
+	eventfd_write(subscriber[max].fd, 1);
 
 	struct timespec timeout;
 	clock_gettime(CLOCK_REALTIME, &timeout);
@@ -576,13 +581,13 @@ int test_tpoll_maxfd() {
 		return -1;
 	}
 	
-	if(testdata.callcnt != TESTDATA_MAX || strcmp(testdata.funcname, "testfunc") != 0) {
+	if(testdata.callcnt != max+1 || strcmp(testdata.funcname, "testfunc") != 0) {
 		DEBUG_ERRPRINT("####Failed to call event_tpool_add callback event, cnt=%d\n",testdata.callcnt);
 		return -1;
 	}
 
 	//update check
-	for(int i=0;i<TESTDATA_MAX;i++) {
+	for(int i=0;i<=max;i++) {
 		subscriber[i].eventflag=EV_TPOOL_HUNGUP;
 		result[i] = event_tpool_update(tpool, result[i].event_handle, &subscriber[i], &testdata);
 		if(result[i].result < 0) {
@@ -591,35 +596,35 @@ int test_tpoll_maxfd() {
 		}
 		eventfd_write(subscriber[i].fd, 1);
 	}
-	if(testdata.callcnt != TESTDATA_MAX || strcmp(testdata.funcname, "testfunc") != 0) {
+	if(testdata.callcnt != max+1 || strcmp(testdata.funcname, "testfunc") != 0) {
 		DEBUG_ERRPRINT("####Failed to call event_tpool_udate callback event, cnt=%d\n",testdata.callcnt);
 		return -1;
 	}
 
 	//clean
-	for(int i=0;i<TESTDATA_MAX;i++) {
+	for(int i=0;i<=max;i++) {
 		subscriber[i].eventflag=0;
 		result[i] = event_tpool_update(tpool, result[i].event_handle, &subscriber[i], &testdata);
 		eventfd_write(subscriber[i].fd, 1);
 	}
-	if(testdata.callcnt != TESTDATA_MAX || strcmp(testdata.funcname, "testfunc") != 0) {
+	if(testdata.callcnt != max+1 || strcmp(testdata.funcname, "testfunc") != 0) {
 		DEBUG_ERRPRINT("####Failed to call event_tpool_update(re-read) callback event, cnt=%d\n",testdata.callcnt);
 		return -1;
 	}
 
 	//delete
-	for(int i=0;i<TESTDATA_MAX;i++) {
+	for(int i=0;i<=max;i++) {
 		event_tpool_del(tpool, subscriber[i].fd);
 		eventfd_write(subscriber[i].fd, 1);
 	}
-	if(testdata.callcnt != TESTDATA_MAX || strcmp(testdata.funcname, "testfunc") != 0) {
+	if(testdata.callcnt != max+1 || strcmp(testdata.funcname, "testfunc") != 0) {
 		DEBUG_ERRPRINT("####Failed to call event_tpool_delete callback event, cnt=%d\n",testdata.callcnt);
 		return -1;
 	}
 
 	//end
 	event_tpool_manager_free(tpool);
-	for(int i=0;i<TESTDATA_MAX;i++) {
+	for(int i=0;i<=max;i++) {
 		close(subscriber[i].fd);
 	}
 	return 0;

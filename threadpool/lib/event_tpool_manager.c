@@ -17,18 +17,18 @@
 /*! @name thread information list definition.*/
 /*@{*/
 /*! thread instance and fd list */
-/*Fix size of max fds 2048 (to care sign */
+/*Fix size of max fds 4096 value FD (to care sign */
 //#define EV_TPOLL_MAXFDS (64)
 #define EV_TPOLL_U64_BITSIZE (64)
 #define EV_TPOLL_U8_BITSIZE (8)
 #define EV_TPOLL_USABLE_BITSIZE (64)
-/*TODO: use full bit place, care over 2048 fd*/
+/*TODO: use full bit place, care over 4096 fd?*/
 typedef struct event_tpool_thread_info_t {
 	EventTPoolThread tinstance;
 	size_t fdcnt;
 	union data_fds_u{
 		uint64_t u64;
-		uint8_t u8[8];/*u8*8 byte*/
+		uint8_t u8[EV_TPOLL_U8_BITSIZE];/*u8*8 byte*/
 	} *fds;
 } event_tpool_thread_info_t;
 
@@ -92,8 +92,8 @@ static int event_tpoll_get_far_right_bit_index(uint64_t data) {
 	return index;
 }
 
-#define EV_TPOLL_FDSU64PLACE(fd) (((fd)-1)/EV_TPOLL_U64_BITSIZE)
-#define EV_TPOLL_FDINDEX(fd, place) ((fd) - ((place)*EV_TPOLL_USABLE_BITSIZE) - 1)
+#define EV_TPOLL_FDSU64PLACE(fd) (((fd)-3)/EV_TPOLL_U64_BITSIZE)
+#define EV_TPOLL_FDINDEX(fd, place) ((fd) - ((place)*EV_TPOLL_USABLE_BITSIZE) - 3)
 #define EV_TPOLL_FDINDEX_U8(fd, place, place_u8) (EV_TPOLL_FDINDEX(fd,place) - ((place_u8) * EV_TPOLL_U8_BITSIZE))
 
 static void event_tpool_thread_set_fds(EventTPoolThreadInfo this, int fd) {
