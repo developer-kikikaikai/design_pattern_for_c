@@ -38,7 +38,7 @@ size_t event_tpool_manager_get_threadnum(EventTPoolManager this);
  * @param[in] arg argument for event_callback
  * @retval result: thread number (0-thread_num-1) which subscriber added, event_handle is used for update
  * @retval result: <0 error (no resource, or if a same fd's subscriber was already registred)
- * @note if there already exist same fd's subscriber, it will override
+ * @note if there already exist same fd's subscriber, it occur error
  */
 event_tpool_add_result_t event_tpool_add(EventTPoolManager this, EventSubscriber subscriber, void * arg);
 /**
@@ -49,8 +49,7 @@ event_tpool_add_result_t event_tpool_add(EventTPoolManager this, EventSubscriber
  * @param[in] arg argument for event_callback
  * @retval result: thread number (0-thread_num-1) which subscriber added, event_handle is used for update
  * @retval result: <0 error (no resource, or if a same fd's subscriber was already registred)
- * @note if there already exist same fd's subscriber, it will override
- * @note this API doesn't remove other thread's same fd setting.
+ * @note if there already exist same fd's subscriber, it occur error
  */
 event_tpool_add_result_t event_tpool_add_thread(EventTPoolManager this, int threadid, EventSubscriber subscriber, void * arg);
 /**
@@ -76,7 +75,7 @@ event_tpool_add_result_t event_tpool_update(EventTPoolManager this, EventTPoolTh
 void event_tpool_del(EventTPoolManager this, int fd);
 
 /**
- * Update member at fork, please call this API if you use fork
+ * Update member at fork, please call this API on child process if you use fork
  * @param[in] this EventTPoolManager instance returned at event_tpool_new.
  * @note Please care "The child process is created with a single thread--the one that called fork()."
  *       at the child process, all of pooled threads don't copy.

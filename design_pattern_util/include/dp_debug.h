@@ -57,11 +57,15 @@ void dp_timelog_exit(DPTimeLog handle);
 #include <errno.h>
 #define DEBUG_ERRPRINT(...)  DEBUG_ERRPRINT_(__VA_ARGS__, "")
 #include <pthread.h>
+/*! global timelog handle to show debug log*/
 extern DPTimeLog timelog_g;
+/*! If you want to show deail log, please set DPDEBUG_INIT or DPDEBUG_INIT_THREADSAFE at start, and set DPDEBUG_EXIT at end*/
 #define DPDEBUG_INIT           timelog_g=dp_timelog_init(",", 2048, 8192, 0); dp_timelog_print(timelog_g,"init\n");
+/*! If you want to show deail log, please set DPDEBUG_INIT or DPDEBUG_INIT_THREADSAFE at start, and set DPDEBUG_EXIT at end*/
 #define DPDEBUG_INIT_THREADSAFE timelog_g=dp_timelog_init(",", 2048, 8192, 1); dp_timelog_print(timelog_g,"init\n");
 #define DEBUG_ERRPRINT_(fmt, ...)  \
         dp_timelog_print(timelog_g, "[%s(%s:%d)thread:%x]: "fmt"%s", __FUNCTION__,__FILE__,__LINE__,(unsigned int)pthread_self(), __VA_ARGS__)
+/*! If you want to show deail log, please set DPDEBUG_INIT or DPDEBUG_INIT_THREADSAFE at start, and set DPDEBUG_EXIT at end*/
 #define DPDEBUG_EXIT           dp_timelog_print(timelog_g,"exit\n");dp_timelog_exit(timelog_g);timelog_g=NULL;
 #else
 #define DPDEBUG_INIT
