@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-static void event_publish(int socketfd, short eventflag, void * event_arg) {
+static void event_publish(int socketfd, int eventflag, void * event_arg) {
 	char buf[256]={0};
 	if(eventflag|EV_TPOOL_READ)
 		read(socketfd, buf, sizeof(buf));
