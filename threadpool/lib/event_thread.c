@@ -102,8 +102,8 @@ struct event_tpool_thread_t {
 #define EVMSG_LOCK(this) DPUTIL_LOCK(&this->msgdata.lock);
 #define EVMSG_UNLOCK DPUTIL_UNLOCK
 
-static void event_thread_msg_send(EventTPoolThread this, EventThreadMsg msg);
-static void event_thread_msg_send_without_lock(EventTPoolThread this, EventThreadMsg msg);
+static int event_thread_msg_send(EventTPoolThread this, EventThreadMsg msg);
+static int event_thread_msg_send_without_lock(EventTPoolThread this, EventThreadMsg msg);
 static void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type);
 static void event_thread_msg_send_add(EventTPoolThread this, EventSubscriber subscriber, void *arg);
 static void event_thread_msg_send_update(EventTPoolThread this, EventSubscriber subscriber, void *arg);
@@ -161,13 +161,12 @@ static void event_tpool_thread_cb(int, int, void *);
 /*************
  * for EventSubscriberData.
 *************/
-static void event_thread_msg_send(EventTPoolThread this, EventThreadMsg msg) {
+static int event_thread_msg_send(EventTPoolThread this, EventThreadMsg msg) {
 	int ret = 0;
 EVMSG_LOCK(this)
-	int ret = eventfd_write(this->eventfd, 1);
+	ret = eventfd_write(this->eventfd, 1);
 	if(ret < 0) {
 		DEBUG_ERRPRINT("################Failed to send event\n");
-		ret = ETIMEDOUT;
 	} else {
 		/*wait receive message notification from event thread main*/
 		DEBUG_ERRPRINT("(thread:%x)wait signal from event thread , %p\n", (unsigned int)pthread_self(), &this->msgdata.cond );
@@ -178,13 +177,15 @@ EVMSG_LOCK(this)
 		DEBUG_ERRPRINT("(thread:%x)wait signal from event thread %p end, ret=%d\n", (unsigned int)pthread_self(),&this->msgdata.cond , ret);
 		if(ret == ETIMEDOUT) {
 			DEBUG_ERRPRINT("#####################timeout!!!!!!\n");
+			ret = -1;
 		}
 	}
 EVMSG_UNLOCK
+	return ret;
 }
 
-static void event_thread_msg_send_without_lock(EventTPoolThread this, EventThreadMsg msg) {
-	eventfd_write(this->eventfd, 1);
+static int event_thread_msg_send_without_lock(EventTPoolThread this, EventThreadMsg msg) {
+	return eventfd_write(this->eventfd, 1);
 }
 
 static void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscriber subscriber, void *arg, int type) {
@@ -201,7 +202,9 @@ static void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscrib
 	memcpy(&msg->data.add.subscriber, subscriber, sizeof(*subscriber));
 	msg->data.add.arg = arg;
 	if(!is_ownthread) {
-		event_thread_msg_send(this, msg);
+		int ret = event_thread_msg_send(this, msg);
+		/*to care stop thread */
+		if(ret < 0) this->msgdata.store_msg_cnt--;
 	} else {
 		event_tpool_thread_msg_cb_call(this, msg);
 	}
@@ -231,7 +234,9 @@ static void event_thread_msg_send_del(EventTPoolThread this, int fd) {
 	DEBUG_ERRPRINT("del, subscriber->%d!\n", fd);
 
 	if(!is_ownthread) {
-		event_thread_msg_send(this, msg);
+		int ret = event_thread_msg_send(this, msg);
+		/*to care stop thread */
+		if(ret < 0) this->msgdata.store_msg_cnt--;
 	} else {
 		event_tpool_thread_msg_cb_call(this, msg);
 	}
@@ -250,7 +255,9 @@ static int event_thread_msg_send_stop(EventTPoolThread this) {
 	msg->type=EVE_THREAD_MSG_TYPE_STOP;
 	int ret = 0;
 	if (!is_ownthread) {
-		event_thread_msg_send_without_lock(this, msg);
+		ret = event_thread_msg_send_without_lock(this, msg);
+		/*to care stop thread */
+		if(ret < 0) this->msgdata.store_msg_cnt--;
 		ret=1;
 	} else {
 		event_tpool_thread_msg_cb_call(this, msg);
@@ -497,9 +504,9 @@ void event_tpool_thread_start(EventTPoolThread this) {
 	pthread_attr_setstacksize(&attr, event_thread_stack_size_g);
 
 #ifdef CHECK_STACKSIZE
-	this->stack_adr = (char *) malloc(EVENT_THREAD_STACKSIZE);
-	memset(this->stack_adr, MAGIC_NUMBER, EVENT_THREAD_STACKSIZE);
-	pthread_attr_setstack(&attr, (void *) this->stack_adr, EVENT_THREAD_STACKSIZE);
+	this->stack_adr = (char *) malloc(event_thread_stack_size_g);
+	memset(this->stack_adr, MAGIC_NUMBER, event_thread_stack_size_g);
+	pthread_attr_setstack(&attr, (void *) this->stack_adr, event_thread_stack_size_g);
 #endif
 	pthread_create(&this->tid, &attr, event_tpool_thread_main, this);
 	pthread_attr_destroy(&attr);
@@ -514,10 +521,10 @@ void event_tpool_thread_stop(EventTPoolThread this) {
 	}
 #ifdef CHECK_STACKSIZE
 	int i=0;
-	for(i=0;i<EVENT_THREAD_STACKSIZE;i++) {
+	for(i=0;i<event_thread_stack_size_g;i++) {
 		if (this->stack_adr[i] != MAGIC_NUMBER) break;
 	}
-	fprintf(stderr, "Used %d byte\n", EVENT_THREAD_STACKSIZE - i);
+	fprintf(stderr, "Used %d byte\n", event_thread_stack_size_g - i);
 #endif
 }
 

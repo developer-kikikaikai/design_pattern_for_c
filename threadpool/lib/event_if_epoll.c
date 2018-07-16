@@ -170,7 +170,6 @@ int event_if_loop(EventInstance this) {
 			DEBUG_ERRPRINT("check event [%d]\n" , i);
 			if(!events[i].data.ptr) continue;
 			eventflag = convert_etpoll_ownid2eve(events[i].events);
-			DEBUG_ERRPRINT("handler %p\n" , events[i].data.ptr);
 			handler = (EventEpollHandler)events[i].data.ptr;
 			handler->subscriber.event_callback(handler->subscriber.fd, eventflag, handler->arg);
 		}
