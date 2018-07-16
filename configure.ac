@@ -72,10 +72,18 @@ case "$with_threadpool_event" in
   "libevent") AC_MSG_NOTICE([======threadpool event:libevent============])
      AC_CHECK_LIB([event], [main])
      tpool_event_libevent="yes";;
+  "libev")    AC_MSG_NOTICE([======threadpool event:libev===============])
+     AC_CHECK_LIB([ev], [main])
+     tpool_event_libev="yes";;
   *)          AC_MSG_NOTICE([======threadpool event:default(epoll)======])
      tpool_event_epoll="yes";;
 esac
 AM_CONDITIONAL([TPOOLEVENT_LIBEVENT], [test "$tpool_event_libevent" = "yes"])
+AM_CONDITIONAL([TPOOLEVENT_LIBEV], [test "$tpool_event_libev" = "yes"])
+if [ test "$tpool_event_libev" = "yes"] ; then
+	AC_DEFINE([USE_LIBEV], [1], [when use libev])
+fi
+
 AM_CONDITIONAL([TPOOLEVENT_EPOLL], [test "$tpool_event_epoll" = "yes"])
 AM_CONDITIONAL([TPOOLEVENT_SELECT], [test "$tpool_event_select" = "yes"])
 if [ test "$tpool_event_select" = "yes" ]; then

@@ -11,6 +11,9 @@ endif
 if TPOOLEVENT_LIBEVENT
 libevent_threadpool_la_SOURCES += event_if_libevent.c
 endif
+if TPOOLEVENT_LIBEV
+libevent_threadpool_la_SOURCES += event_if_libev.c
+endif
 if TPOOLEVENT_EPOLL
 libevent_threadpool_la_SOURCES += event_if_epoll.c
 endif
