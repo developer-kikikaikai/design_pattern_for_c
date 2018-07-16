@@ -5,12 +5,6 @@
 #ifndef CHAIN_OF_RESPONSIBILITY_H_
 #define CHAIN_OF_RESPONSIBILITY_H_
 
-/*! @name CoR result */
-/* @{ */
-#define COR_SUCCESS (0)
-#define COR_FAILED (-1)
-/* @} */
-
 /*! 
  * @brief chain_api result type
 */
@@ -18,6 +12,13 @@ typedef enum {
 	CoR_GONEXT,/*!< go to next */
 	CoR_RETURN,/*!< exit to call chain_api*/
 } cor_result_e;
+
+/*! @struct chain_of_resp_t
+ * ChainElementPart class instance definition, which is a part of chain. This member is defined in chain_element.c.
+*/
+struct chain_element_part;
+/** ChainElementPart class definition  */
+typedef struct chain_element_part * ChainElementPart;
 
 /**
  * @brief chain func
@@ -43,10 +44,10 @@ void cor_set_threadsafe(int is_threadsafe);
  * @param[in] id key id related to chain api
  * @param[in] func chain func
  * @param[in] ctx user defined context information
- * @retval COR_SUCCESS -> Success to add
- * @retval COR_FAILED -> Faled to add
+ * @retval !=NULL -> Success to add, if you want to remove element, please keep it.
+ * @retval NULL -> Faled to add
  */
-int cor_add_function(const int id, chain_func func, void *ctx);
+ChainElementPart cor_add_function(const int id, chain_func func, void *ctx);
 
 /**
  * @brief call chain api
@@ -63,8 +64,21 @@ void cor_call(const int id, void *arg);
  * @param[in] id key id related to chain api
  * @param[in] func chain api func
  * @return none
+ * @note This function remove all functions which is same address. So if you set same function by cor_add_function, all of them will remove.
+ * @note This function "NOT" free ctx 
  */
 void cor_remove_function(const int id, chain_func func);
+
+/**
+ * @brief remove to chain api
+ *
+ * @param[in] id key id related to chain api
+ * @param[in] element chain element returned at cor_add_function
+ * @return none
+ * @note This function only remove element. So if you want to register same functions, and remove only one element, please use it.
+ * @note This function "NOT" free ctx 
+ */
+void cor_remove_chain_element_part(const int id, ChainElementPart element);
 
 /**
  * @brief clear all list

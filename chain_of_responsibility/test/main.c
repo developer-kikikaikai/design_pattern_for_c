@@ -8,12 +8,13 @@
 enum {
 	ID_TEST1,
 	ID_TEST2,
-	ID_TEST3
+	ID_TEST3,
+	ID_TEST4,
+	MAX
 };
 
 int ctx_g;
 
-#define MAX (4)
 static int all_cnt(int *values) {
 	int i=0;
 	int ret = 0;
@@ -68,7 +69,7 @@ static int test_failsate() {
 	cor_clear();
 
 	//check add function
-	if(cor_add_function(ID_TEST1, NULL, NULL) != COR_FAILED) {
+	if(cor_add_function(ID_TEST1, NULL, NULL)) {
 		ERRLOG("can't escape NULL\n");
 		return -1;
 	}
@@ -89,7 +90,7 @@ int test_add_call_onename() {
 	int i=0;
 	ctx_g=0;
 	for(i=0;i<MAX;i++) {
-		if(cor_add_function(name, funcs[i], &ctx_g) == COR_FAILED) {
+		if(!cor_add_function(name, funcs[i], &ctx_g)) {
 			ERRLOG("add %d func failed\n", i);
 			return -1;
 		}
@@ -114,7 +115,7 @@ int test_add_call_with_stop() {
 
 	int i=0;
 	for(i=0;i<MAX;i++) {
-		if(cor_add_function(name, funcs[i], &ctx_g) == COR_FAILED) {
+		if(!cor_add_function(name, funcs[i], &ctx_g)) {
 			ERRLOG("add %d func failed\n", i);
 			return -1;
 		}
@@ -140,7 +141,7 @@ int test_remove() {
 	chain_func funcs[]={function_1st, function_2nd, function_1st, function_3rd, function_1st, function_4th};
 	int i=0;
 	for(i=0;i<sizeof(funcs)/sizeof(funcs[0]);i++) {
-		if(cor_add_function(name, funcs[i], &ctx_g) == COR_FAILED) {
+		if(!cor_add_function(name, funcs[i], &ctx_g)) {
 			ERRLOG("add %d func failed\n", i);
 			return -1;
 		}
@@ -170,32 +171,62 @@ int test_remove() {
 	return 0;
 }
 
+#define FUNC_SIZE (6)
+int test_remove_element() {
+	int values[MAX];
+	int name = ID_TEST4;
+	ChainElementPart elements[FUNC_SIZE];
+	chain_func funcs[FUNC_SIZE]={function_1st, function_2nd, function_1st, function_3rd, function_1st, function_4th};
+
+	int i=0;
+	for(i=0;i<sizeof(funcs)/sizeof(funcs[0]);i++) {
+		elements[i] = cor_add_function(name, funcs[i], &ctx_g);
+		if(!elements[i]) {
+			ERRLOG("add %d func failed\n", i);
+			return -1;
+		}
+	}
+
+	memset(values, 0, sizeof(values));
+
+	//try call!
+	ctx_g=0;
+	cor_call(name, values);
+	if(values[0] != 21 || values[1] != 2 || values[2] != 8 || values[3] != 32 || ctx_g != 6) {
+		ERRLOG("failed to 4 function order, [%d,%d,%d,%d]\n", values[0],values[1], values[2], values[3]);
+		return -1;
+	}
+
+	//remove function_1st element 1, function_3rd
+	cor_remove_chain_element_part(name, elements[2]);
+	cor_remove_chain_element_part(name, elements[3]);
+
+	//call function_1stx2, function_2nd and function_4th
+	memset(values, 0, sizeof(values));
+	ctx_g = 0;
+	cor_call(name, values);
+	if(values[0] != 5 || values[1] != 2 || values[2] != 0 || values[3] != 8 || ctx_g != 4) {
+		ERRLOG("failed to 4 function order, [%d,%d,%d,%d]\n", values[0],values[1], values[2], values[3]);
+		return -1;
+	}
+	return 0;
+}
+
 int test_clear() {
 	cor_clear();
 	int values[MAX];
 	int values_ok[MAX];
-	int name1 =ID_TEST1;
-	int name2 =ID_TEST2;
-	int name3 =ID_TEST3;
 	memset(values, 0, sizeof(values));
 	memset(values_ok, 0, sizeof(values_ok));
-	cor_call(name1, values);
-	if(memcmp(values, values_ok, sizeof(values)) != 0) {
-		ERRLOG("failed to clear %d\n", name1);
-		return -1;
+	int i=0;
+	for( i = 0; i < MAX; i ++) {
+		cor_call(i, values);
+		if(memcmp(values, values_ok, sizeof(values)) != 0) {
+			ERRLOG("failed to clear %d\n", i);
+			return -1;
+		}
 	}
 
-	cor_call(name2, values);
-	if(memcmp(values, values_ok, sizeof(values)) != 0) {
-		ERRLOG("failed to clear %d\n", name2);
-		return -1;
-	}
-
-	cor_call(name3, values);
-	if(memcmp(values, values_ok, sizeof(values)) != 0) {
-		ERRLOG("failed to clear %d\n", name3);
-		return -1;
-	}
 	return 0;
 }
 
@@ -218,6 +249,11 @@ int main() {
 	}
 
 	if(test_remove()) {
+		ERRLOG("test_remove test case failed!!!\n");
+		return -1;
+	}
+
+	if(test_remove_element()) {
 		ERRLOG("test_remove test case failed!!!\n");
 		return -1;
 	}

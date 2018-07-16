@@ -4,6 +4,7 @@
     cor_add_function;
     cor_call;
     cor_remove_function;
+    cor_remove_chain_element_part;
     cor_clear;
   local: *;
 };

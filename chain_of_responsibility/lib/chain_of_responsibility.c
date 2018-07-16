@@ -70,7 +70,7 @@ static int chain_of_resp_equall_operand(void *this, size_t size, void *input_par
 /*! setter, add function to ChainElement */
 static int chain_of_resp_setter(void *this, size_t size, void *input_parameter) {
 	ChainOfResponsibility instance = (ChainOfResponsibility)this;
-	chain_element_data_t * data = input_parameter;
+	chain_element_req_t * data = input_parameter;
 	return chain_element_add_function(instance->element, data);
 }
 
@@ -87,21 +87,26 @@ void cor_set_threadsafe(int is_threadsafe) {
 	cor_mng_g.is_threadsafe = is_threadsafe;
 }
 
-int cor_add_function(const int id, chain_func func, void *ctx) {
+ChainElementPart cor_add_function(const int id, chain_func func, void *ctx) {
 	if(!func) {
-		return COR_FAILED;
+		return NULL;
 	}
 
 	if(!cor_mng_g.handle) {
-		/* get handle with thread safe */
+		/* get flyweight handle with thread safe */
 		cor_mng_g.handle = flyweight_factory_new(sizeof(struct chain_of_resp_t), cor_mng_g.is_threadsafe, &cor_mng_g.method);
 		if(!cor_mng_g.handle) {
-			return COR_FAILED;
+			return NULL;
 		}
 	}
 
-	chain_element_data_t data={func, ctx};
-	return flyweight_set(cor_mng_g.handle, (void *)&id, &data, NULL);
+	chain_element_req_t data={{func, ctx}, NULL};
+	int ret = flyweight_set(cor_mng_g.handle, (void *)&id, &data, NULL);
+	if( ret == COR_FAILED ) {
+		return NULL;
+	} else {
+		return data.result_element_part;
+	}
 }
 
 void cor_call(const int id, void *arg) {
@@ -115,13 +120,24 @@ void cor_call(const int id, void *arg) {
 }
 
 void cor_remove_function(const int id, chain_func func) {
-	if(!cor_mng_g.handle || func==NULL) {
+	if(!cor_mng_g.handle || !func) {
 		return;
 	}
 
 	ChainOfResponsibility cor_instance = flyweight_get(cor_mng_g.handle, (void *)&id);
 	if(cor_instance) {
 		chain_element_remove_function(cor_instance->element, func);
+	}
+}
+
+void cor_remove_chain_element_part(const int id, ChainElementPart element) {
+	if(!cor_mng_g.handle || !element) {
+		return;
+	}
+
+	ChainOfResponsibility cor_instance = flyweight_get(cor_mng_g.handle, (void *)&id);
+	if(cor_instance) {
+		chain_element_remove_element_part(cor_instance->element, element);
 	}
 }
 

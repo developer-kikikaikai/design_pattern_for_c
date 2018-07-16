@@ -70,12 +70,13 @@ ChainElement chain_element_new(int is_threadsafe) {
 /*************
  * public API definition
 *************/
-int chain_element_add_function(ChainElement this, chain_element_data_t * elemnt_data) {
+int chain_element_add_function(ChainElement this, chain_element_req_t * elemnt_data) {
 	int ret = COR_FAILED;
 CHAIN_ELEMENT_LOCK(this)
-	ChainElementPart part=chain_element_part_new(elemnt_data);
+	ChainElementPart part=chain_element_part_new(&elemnt_data->element_data);
 	if(part) {
 		dputil_list_push((DPUtilList)this, (DPUtilListData)part);
+		elemnt_data->result_element_part = part;
 		ret = COR_SUCCESS;
 	}
 CHAIN_ELEMENT_UNLOCK
@@ -96,6 +97,13 @@ CHAIN_ELEMENT_LOCK(this)
 			part=part->next;
 		}
 	}
+CHAIN_ELEMENT_UNLOCK
+}
+
+void chain_element_remove_element_part(ChainElement this, ChainElementPart element) {
+CHAIN_ELEMENT_LOCK(this)
+	dputil_list_pull((DPUtilList)this, (DPUtilListData)element);
+	chain_element_part_free(element);
 CHAIN_ELEMENT_UNLOCK
 }
 
