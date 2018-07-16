@@ -4,8 +4,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <event2/event-config.h>
-#include <event2/event.h>
 #include "event_threadpool.h"
 #include "config.h"
 #include <sys/eventfd.h>
@@ -118,7 +116,7 @@ typedef struct testdata{
 	const char *funcname;
 } testdata_t;
 
-static void common(evutil_socket_t fd, int eventflag, testdata_t * testdata) {
+static void common(int fd, int eventflag, testdata_t * testdata) {
 	int tmp;
 	DEBUG_ERRPRINT("read start %d\n", eventflag);
 	tmp=read(fd, &tmp, sizeof(tmp));
@@ -129,7 +127,7 @@ static void common(evutil_socket_t fd, int eventflag, testdata_t * testdata) {
 		testdata->checkresult=-1;
 	}
 }
-static void common2(evutil_socket_t fd, int eventflag, testdata_t * testdata) {
+static void common2(int fd, int eventflag, testdata_t * testdata) {
 	uint64_t tmp;
 	if(!(eventflag&EV_TPOOL_READ)) return;
 	eventfd_read(fd, &tmp);
@@ -141,21 +139,21 @@ static void common2(evutil_socket_t fd, int eventflag, testdata_t * testdata) {
 	}
 }
 
-static void test_1(evutil_socket_t fd, int eventflag, void * arg) {
+static void test_1(int fd, int eventflag, void * arg) {
 	DEBUG_ERRPRINT("enter\n");
 	testdata_t * testdata = (testdata_t *)arg;
 	common(fd, eventflag, testdata);
 	testdata->funcname = __FUNCTION__;
 	DEBUG_ERRPRINT("exit, %d, %x, %d, %s\n", testdata->callcnt, (unsigned int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
-static void test_2(evutil_socket_t fd, int eventflag, void * arg) {
+static void test_2(int fd, int eventflag, void * arg) {
 	DEBUG_ERRPRINT("enter\n");
 	testdata_t * testdata = (testdata_t *)arg;
 	common(fd, eventflag, testdata);
 	testdata->funcname = __FUNCTION__;
 	DEBUG_ERRPRINT("exit, %d, %x, %d, %s\n", testdata->callcnt, (unsigned int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
-static void test_3(evutil_socket_t fd, int eventflag, void * arg) {
+static void test_3(int fd, int eventflag, void * arg) {
 	DEBUG_ERRPRINT("enter\n");
 	testdata_t * testdata = (testdata_t *)arg;
 	common(fd, eventflag, testdata);
@@ -163,7 +161,7 @@ static void test_3(evutil_socket_t fd, int eventflag, void * arg) {
 	DEBUG_ERRPRINT("exit, %d, %x, %d, %s\n", testdata->callcnt, (unsigned int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
 
-static void test_4(evutil_socket_t fd, int eventflag, void * arg) {
+static void test_4(int fd, int eventflag, void * arg) {
 	DEBUG_ERRPRINT("enter\n");
 	testdata_t * testdata = (testdata_t *)arg;
 	common(fd, eventflag, testdata);
@@ -386,7 +384,7 @@ int test_tpoll_thread_safe() {
 testdata_t testdata_g[TESTDATA];
 event_subscriber_t subscriber_g[TESTDATA];
 
-static void own_test_1(evutil_socket_t fd, int eventflag, void * arg) {
+static void own_test_1(int fd, int eventflag, void * arg) {
 	DEBUG_ERRPRINT("enter\n");
 	testdata_t * testdata = (testdata_t *)arg;
 	common2(fd, eventflag, testdata);
@@ -398,7 +396,7 @@ static void own_test_1(evutil_socket_t fd, int eventflag, void * arg) {
 	testdata_g[2].tid = result.result;
 	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
-static void own_test_2(evutil_socket_t fd, int eventflag, void * arg) {
+static void own_test_2(int fd, int eventflag, void * arg) {
 	DEBUG_ERRPRINT("enter\n");
 	testdata_t * testdata = (testdata_t *)arg;
 	common2(fd, eventflag, testdata);
@@ -408,7 +406,7 @@ static void own_test_2(evutil_socket_t fd, int eventflag, void * arg) {
 	testdata_g[3].tid = result.result;
 	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
-static void own_test_3(evutil_socket_t fd, int eventflag, void * arg) {
+static void own_test_3(int fd, int eventflag, void * arg) {
 	DEBUG_ERRPRINT("enter\n");
 	testdata_t * testdata = (testdata_t *)arg;
 	common2(fd, eventflag, testdata);
@@ -417,7 +415,7 @@ static void own_test_3(evutil_socket_t fd, int eventflag, void * arg) {
 	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
 
-static void own_test_4(evutil_socket_t fd, int eventflag, void * arg) {
+static void own_test_4(int fd, int eventflag, void * arg) {
 	DEBUG_ERRPRINT("enter\n");
 	testdata_t * testdata = (testdata_t *)arg;
 	common2(fd, eventflag, testdata);
@@ -433,7 +431,7 @@ int test_tpoll_fo_ownthread() {
 		DEBUG_ERRPRINT("####Failed to call event_tpool_manager_new\n");
 		return -1;
 	}
-	void (*functable[])(evutil_socket_t fd, int eventflag, void * arg) = {
+	void (*functable[])(int fd, int eventflag, void * arg) = {
 		own_test_1,own_test_2,own_test_3,own_test_4
 	};
 
@@ -512,7 +510,7 @@ int test_tpoll_fo_ownthread() {
 
 pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond=PTHREAD_COND_INITIALIZER;
-static void testfunc(evutil_socket_t fd, int eventflag, void * arg) {
+static void testfunc(int fd, int eventflag, void * arg) {
 	if(!(eventflag&EV_TPOOL_READ)) return;
 	pthread_mutex_lock(&lock);
 	testdata_t * testdata = (testdata_t *)arg;
@@ -522,7 +520,7 @@ static void testfunc(evutil_socket_t fd, int eventflag, void * arg) {
 	DEBUG_ERRPRINT("exit, %d, %d, %d, %s\n", testdata->callcnt, (int)testdata->tid, testdata->checkresult, testdata->funcname);
 }
 
-static void testfunc_end(evutil_socket_t fd, int eventflag, void * arg) {
+static void testfunc_end(int fd, int eventflag, void * arg) {
 	if(!(eventflag&EV_TPOOL_READ)) return;
 	pthread_mutex_lock(&lock);
 	testdata_t * testdata = (testdata_t *)arg;
