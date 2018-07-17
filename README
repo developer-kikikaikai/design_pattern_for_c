@@ -20,16 +20,21 @@
 
   Headers and libraries are installed in prefix dir (default: /usr/local/)
 
-  To use Threadpool, please install libevent (event2).
-   apt install libevent or compile by github code https://github.com/libevent/libevent/tree/master/
+  When use Threadpool:
+    If you want to use libev, please install libev (libev4).
+      apt install libev4 or compile the code http://dist.schmorp.de/libev/
+    And add configure option --with-threadpool-event=libev
+
+    If you want to use libevent, please install libevent (event2).
+       apt install libevent or compile the github code https://github.com/libevent/libevent/tree/master/
+    And add configure option --with-threadpool-event=libevent
+
 
 # Latest Version 
- v0.0.1 pre-release.
+ v0.0.1 pre-release, 1.0.0 soon.
  Please see [here](https://github.com/developer-kikikaikai/design_pattern_for_c/releases).
 
 # Support libraries
-
-latest version
 
 - Builder
 - Singleton (contained in Flyweight)
@@ -37,12 +42,9 @@ latest version
 - Chain of Responsibility 
 - Observer(Publish-Subscribe) 
 - State 
-
-Next version
-
-- Threadpool (with File disctriptor)  (add in master)
-- Memorypool (add in master)
-- Prototype (add in master)
+- Threadpool (with File disctriptor)
+- Memorypool
+- Prototype
 
 Almost of other pattern will create sample.
 
@@ -108,4 +110,3 @@ If you want to see detail of code, please see [doxgen file in here](https://deve
 
 # License
   This software is released under the MIT License, see [LICENSE file in this package](https://github.com/developer-kikikaikai/design_pattern_for_c/blob/master/LICENSE).
-  If you use this package with "--with-threadpool-event=libev", the LICENSE of threadpool library (libevent_threadpool.so) is GPL (see LICENSE_WITH_LIBEV file).
