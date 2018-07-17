@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "test_state_machine.h"
+#include "config.h"
 
 enum {
 	STATE_BEGIN,
@@ -212,7 +213,7 @@ static int test_state_machine_multi_thread() {
 	};
 
 	//run by multi thread
-	EventTPoolManager threadpool = event_tpool_manager_new(1, 0);
+	EventTPoolManager threadpool = event_tpool_manager_new(1, 0, EVENT_IF_PLUGIN_PATH"/libevent_if_epoll.so");
 	StateMachineInfo state_machine = state_machine_new(sizeof(event_info)/sizeof(event_info[0]), event_info, threadpool);
 	if(!state_machine) {
 		printf("####Failed to call state_machine_new\n");

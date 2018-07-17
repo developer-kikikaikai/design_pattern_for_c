@@ -31,5 +31,8 @@ void event_tpool_thread_del(EventTPoolThread this, int fd);
 void event_thread_atfork_child(EventTPoolThread this);
 
 void event_thread_set_stack_size(size_t stack_size);
+
+int event_tpool_thread_load_plugin(const char *plugin_path);
+int event_tpool_thread_unload_plugin(void);
 /*@}*/
 #endif

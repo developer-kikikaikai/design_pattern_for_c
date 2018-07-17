@@ -2,8 +2,8 @@
  * @file event_if.h
  * This is API of event wrapper
 **/
-#ifndef EVENT_IF_H_
-#define EVENT_IF_H_
+#ifndef TPOOL_EVENT_IF_H_
+#define TPOOL_EVENT_IF_H_
 
 #include "event_threadpool_data.h"
 

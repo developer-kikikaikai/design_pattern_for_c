@@ -1,7 +1,13 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* "Define path of default plugin" */
+#undef EVENT_IF_PLUGIN_PATH
+
 /* "Define Threadpool MAX FD SIZE (this value * 64)" */
 #undef EV_TPOLL_MAXFDS
+
+/* "Define Threadpool MAX FD SIZE (this value * 64)" */
+#undef EV_TPOLL_MAXFDS_SELECT
 
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
@@ -9,20 +15,20 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
+/* Define to 1 if you have the <event/evenv2.h> header file. */
+#undef HAVE_EVENT_EVENV2_H
+
+/* Define to 1 if you have the <ev.h> header file. */
+#undef HAVE_EV_H
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
 /* Define to 1 if you have the `dl' library (-ldl). */
 #undef HAVE_LIBDL
 
-/* Define to 1 if you have the `ev' library (-lev). */
-#undef HAVE_LIBEV
-
 /* Define to 1 if you have the `event' library (-levent). */
 #undef HAVE_LIBEVENT
-
-/* Define to 1 if you have the `gcov' library (-lgcov). */
-#undef HAVE_LIBGCOV
 
 /* Define to 1 if you have the `pthread' library (-lpthread). */
 #undef HAVE_LIBPTHREAD

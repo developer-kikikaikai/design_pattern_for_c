@@ -29,7 +29,6 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AC_CHECK_FUNCS([clock_gettime memset select strerror strstr])
 
-
 ###Disable option
 #without builder
 AC_ARG_WITH([builder],
@@ -39,7 +38,6 @@ AC_ARG_WITH([builder],
   [with_builder=$withval],
   [with_builder=yes]
 )
-#check flag
 AM_CONDITIONAL([USE_BUILDER], [test "$with_builder" = yes])
 
 #without threadpool
@@ -53,31 +51,98 @@ AC_ARG_WITH([threadpool],
 #check flag
 AM_CONDITIONAL([USE_THREADPOOL], [test "$with_threadpool" = yes])
 
-#without threadpool event
-AC_ARG_WITH([threadpool-event],
-  [AC_HELP_STRING([--with-threadpool-event],
-    [choose threadpool event from select, epoll and libevent "[default: epoll]"]
+#without threadpool event_if
+# without libev
+AC_ARG_ENABLE(threadpool-libev,
+  [AC_HELP_STRING([--disable-threadpool-libev],
+    [disable event_if_libev pluigni plugin_if_libev.so, if you want enable, please install libev4. Please care this license is "GPL" license [[default=yes]]]
   )],
-  [with_threadpool_event=$withval],
-  [with_threadpool_event="epoll"]
+  [with_plugin_libev="$withval"],
+  [with_plugin_libev="yes"]
+)
+
+tpool_event_libev=no
+if [ test "${with_plugin_libev}" = "yes" ]; then
+  PKG_CHECK_MODULES( [LIBEV], [libev], [tpool_event_libev="yes"], [
+     AC_CHECK_HEADERS(
+       [ev.h], [
+         AC_CHECK_LIB(
+           [ev],
+           [ev_io_start],
+           [tpool_event_libev="yes"],
+           [AC_MSG_ERROR([libev not found, please install libev4 or add option --disable-threadpool-libev])]
+         )], [
+           AC_MSG_ERROR([libev header found, please install libev4 or add option --disable-threadpool-libev])
+         ])
+    ])
+fi
+
+#without threadpool event_if
+# without libevent
+AC_ARG_ENABLE(threadpool-libevent,
+  [AC_HELP_STRING([--disable-threadpool-libevent],
+    [disable event_if_libevent pluigni plugin_if_libevent.so, if you want enable, please install libevent-dev (event2) [[default=yes]]]
+  )],
+  [with_plugin_libevent=${enableval}],
+  [with_plugin_libevent="yes"]
+)
+tpool_event_libevevent=no
+if [ test "${with_plugin_libevent}" = "yes" ]; then
+  PKG_CHECK_MODULES( [LIBEVENT], [libevent], [
+     AC_CHECK_LIB([event],[event_new]),
+     tpool_event_libevent="yes"
+   ], [
+     AC_CHECK_HEADERS(
+       [event/evenv2.h], [
+         AC_CHECK_LIB(
+           [event],
+           [event_new],
+           [tpool_event_libevent="yes"],
+           [AC_MSG_ERROR([libevnet not found, please install libevent-dev or add option --disable-threadpool-libevent.])]
+         )], [
+           AC_MSG_ERROR([libevent header found, please install libevent-dev or add option --disable-threadpool-libevent.])
+         ])
+    ])
+fi
+
+#without threadpool event_if
+# without libselect
+AC_ARG_ENABLE(threadpool-select,
+  [AC_HELP_STRING([--disable-threadpool-select],
+    [disable event_if_select pluigni plugin_if_select.so,  [[default=yes]]]
+  )],
+  [AC_MSG_NOTICE(["$withval"]);tpool_event_select="$withval"],
+  [tpool_event_select="yes"]
+)
+
+#without threadpool event_if
+# without libepoll
+AC_ARG_ENABLE(threadpool-epoll,
+  [AC_HELP_STRING([--without-threadpool-epoll],
+    [disable event_if_epoll pluigni plugin_if_epoll.so,  [[default=yes]]]
+  )],
+  [tpool_event_epoll="$withval"],
+  [tpool_event_epoll="yes"]
 )
 
 #check flag
-tpool_event_select="no"
-case "$with_threadpool_event" in
-  "select")   AC_MSG_NOTICE([======threadpool event:select==============])
-    tpool_event_select="yes";;
-  "epoll")    AC_MSG_NOTICE([======threadpool event:epoll================])
-    tpool_event_epoll="yes";;
-  "libevent") AC_MSG_NOTICE([======threadpool event:libevent============])
-     AC_CHECK_LIB([event], [main])
-     tpool_event_libevent="yes";;
-  "libev")    AC_MSG_NOTICE([======threadpool event:libev===============])
-     AC_CHECK_LIB([ev], [main])
-     tpool_event_libev="yes";;
-  *)          AC_MSG_NOTICE([======threadpool event:default(epoll)======])
-     tpool_event_epoll="yes";;
-esac
+event_other_select="no"
+if [ test "$tpool_event_libev" = "yes" ]; then
+   AC_MSG_NOTICE([======threadpool event:libev (default priority 1)===============])
+   event_other_select="yes"
+fi
+if [ test "$tpool_event_libevent" = "yes" ]; then
+   AC_MSG_NOTICE([======threadpool event:libevent(default priority 2)============])
+   event_other_select="yes"
+fi
+if [ test "$tpool_event_epoll" = "yes" ]; then
+   AC_MSG_NOTICE([======threadpool event:epoll(default priority 3)================])
+   event_other_select="yes"
+fi
+if [ test "$tpool_event_select" = "yes" ]; then
+  AC_MSG_NOTICE([======threadpool event:selectdefault priority 4==============])
+fi
+
 AM_CONDITIONAL([TPOOLEVENT_LIBEVENT], [test "$tpool_event_libevent" = "yes"])
 AM_CONDITIONAL([TPOOLEVENT_LIBEV], [test "$tpool_event_libev" = "yes"])
 if [ test "$tpool_event_libev" = "yes"] ; then
@@ -87,10 +152,18 @@ fi
 AM_CONDITIONAL([TPOOLEVENT_EPOLL], [test "$tpool_event_epoll" = "yes"])
 AM_CONDITIONAL([TPOOLEVENT_SELECT], [test "$tpool_event_select" = "yes"])
 if [ test "$tpool_event_select" = "yes" ]; then
-	AC_DEFINE([EV_TPOLL_MAXFDS], [15], ["Define Threadpool MAX FD SIZE (this value * 64)"])
-else
+	AC_DEFINE([EV_TPOLL_MAXFDS_SELECT], [15], ["Define Threadpool MAX FD SIZE (this value * 64)"])
+fi
+
+if [ test "$event_other_select" = "yes" ] ; then
 	AC_DEFINE([EV_TPOLL_MAXFDS], [64], ["Define Threadpool MAX FD SIZE (this value * 64)"])
 fi
+#add prefix path
+AC_DEFINE([EVENT_IF_PLUGIN_PATH], ["dummy"], ["Define path of default plugin"])
+case ${prefix} in
+  NONE) $as_echo "#define EVENT_IF_PLUGIN_PATH \"${ac_default_prefix}/lib\"" >>confdefs.h;;
+  *) $as_echo "#define EVENT_IF_PLUGIN_PATH \"${prefix}/lib\"" >>confdefs.h;;
+esac
 
 #without publisher
 AC_ARG_WITH([publisher],
@@ -169,25 +242,25 @@ AC_ARG_WITH([sample],
 #check flag
 AM_CONDITIONAL([USE_SAMPLE], [test "$with_sample" = yes])
 
-###
+####
 # Unit test option
-AC_ARG_ENABLE(coverage,
-  [AC_HELP_STRING([--enable-coverage],
-    [enable coverage test, only for developer of this package. Please "Don't" use this package if you install it, gcov is GPL license [[default=no]]]
-  )],
-[\
-case "${enableval}" in
- yes) enable_coverage=yes ;;
- *)   AC_MSG_ERROR(bad value for --enable-) ;;
-esac],
-enable_coverage=no)
-#check flag, and add gcov option
-if test x"${enable_coverage}" = x"yes"; then
-  AC_CHECK_LIB([gcov], [main])
-  GCOV_OPT="-fprofile-arcs -ftest-coverage"
-  CFLAGS="-g -O0"
-  AC_SUBST([GCOV_OPT])
-fi
+#AC_ARG_ENABLE(coverage,
+#  [AC_HELP_STRING([--enable-coverage],
+#    [enable coverage test, only for developer of this package. Please "Don't" use this package if you install it, gcov is GPL license [[default=no]]]
+#  )],
+#[\
+#case "${enableval}" in
+# yes) enable_coverage=yes ;;
+# *)   AC_MSG_ERROR(bad value for --enable-) ;;
+#esac],
+#enable_coverage=no)
+##check flag, and add gcov option
+#if test x"${enable_coverage}" = x"yes"; then
+#  AC_CHECK_LIB([gcov], [main])
+#  GCOV_OPT="-fprofile-arcs -ftest-coverage"
+#  CFLAGS="-g -O0"
+#  AC_SUBST([GCOV_OPT])
+#fi
 
 AC_CONFIG_FILES([Makefile
 		 design_pattern_util/Makefile
@@ -214,6 +287,7 @@ AC_CONFIG_FILES([Makefile
 		 chain_of_responsibility/test/Makefile
 		 threadpool/Makefile
 		 threadpool/lib/Makefile
+		 threadpool/event_if/Makefile
 		 threadpool/include/Makefile
 		 threadpool/test/Makefile
 		 state/Makefile

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include "config.h"
 
 static void event_publish(int socketfd, int eventflag, void * event_arg) {
 	char buf[256]={0};
@@ -27,7 +28,7 @@ void publisher_notify(int publish_type, void * detail, void *ctx) {
 
 int main() {
 	int maxfd=1, ret = 0;;
-	EventTPoolManager tpool = event_tpool_manager_new(1,0);
+	EventTPoolManager tpool = event_tpool_manager_new(1,0,EVENT_IF_PLUGIN_PATH"/libevent_if_libev.so");
 	add_event_publisher(tpool);
 	publisher_new(1);
 

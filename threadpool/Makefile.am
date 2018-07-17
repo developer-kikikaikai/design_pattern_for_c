@@ -1,1 +1,1 @@
-SUBDIRS = lib include test
+SUBDIRS = lib event_if include test

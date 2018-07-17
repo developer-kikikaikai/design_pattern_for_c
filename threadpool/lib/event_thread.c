@@ -9,9 +9,12 @@
 #include <sys/types.h>
 #include <sys/eventfd.h>
 #include <errno.h>
-#include "event_if.h"
+#include <sys/stat.h>
+#include <dlfcn.h>
 #include "event_thread.h"
+#include "tpool_event_if.h"
 #include "dp_util.h"
+#include "config.h"
 
 #define EVENT_THREAD_WAIT_TIMEOUT (2)/*sec*/
 
@@ -22,6 +25,23 @@
 *************/
 /*! @name event_tpool_thread_t definition.*/
 /*@{*/
+/** interface definition*/
+static struct {
+	void * handle;
+	EventInstance (*new)(void);
+	EventHandler (*add)(EventInstance this, EventSubscriber subscriber, void *arg);
+	EventHandler (*update)(EventInstance this, EventHandler handler, EventSubscriber subscriber, void *arg);
+	void (*del)(EventInstance this, EventHandler handler);
+	int (*getfd)(EventHandler handler);
+	int (*loop)(EventInstance this);
+	void (*loopbreak)(EventInstance this);
+	void (*exit)(EventInstance this);
+	void (*free)(EventInstance this);
+} event_if_instance_g;
+
+static void event_thread_set_func(void *handle, const char *func_name, void ** func);
+static int event_tpool_thread_load_all_fun(void);
+static const char * event_tpool_thread_get_defaullt_plugin(void);
 
 /*! thread stack size, user can change it by using event_tpool_set_stack_size*/
 static size_t event_thread_stack_size_g = EVENT_THREAD_STACKSIZE;
@@ -279,7 +299,7 @@ static EventSubscriberData event_subscriber_data_new(EventTPoolThread this, Even
 		return NULL;
 	}
 
-	instance->eventinfo = event_if_add(this->event_base, subscriber, arg);
+	instance->eventinfo = event_if_instance_g.add(this->event_base, subscriber, arg);
 	if(!instance->eventinfo) {
 		DEBUG_ERRPRINT("Failed to new event!\n" );
 		goto err;
@@ -295,13 +315,13 @@ err:
 /*! free instance */
 static void event_subscriber_data_free(EventTPoolThread this, EventSubscriberData data) {
 	if(data->eventinfo) {
-		event_if_del(this->event_base, data->eventinfo);
+		event_if_instance_g.del(this->event_base, data->eventinfo);
 	}
 	free(data);
 }
 /*! get fd */
 static int event_subscriber_data_get_fd(EventSubscriberData this) {
-	return (int)event_if_getfd(this->eventinfo);
+	return event_if_instance_g.getfd(this->eventinfo);
 }
 /*************
  * for EventTPoolThread private API
@@ -310,7 +330,7 @@ static int event_subscriber_data_get_fd(EventSubscriberData this) {
 /*@{*/
 /*! set event_base */
 static int event_tpool_thread_set_event_base(EventTPoolThread this) {
-	this->event_base = event_if_new();
+	this->event_base = event_if_instance_g.new();
 	if(!this->event_base) {
 		DEBUG_ERRPRINT("Failed to new event_base!\n" );
 		goto err;
@@ -319,7 +339,7 @@ static int event_tpool_thread_set_event_base(EventTPoolThread this) {
 	/*add event*/
 	event_subscriber_t subscriber={this->eventfd, EV_TPOOL_READ, event_tpool_thread_cb};
 	DEBUG_ERRPRINT("base fd=%d\n", this->eventfd);
-	this->msg_evinfo = event_if_add(this->event_base, &subscriber, this);
+	this->msg_evinfo = event_if_instance_g.add(this->event_base, &subscriber, this);
 	if(!this->msg_evinfo) {
 		DEBUG_ERRPRINT("Failed to new event!\n" );
 		goto err;
@@ -333,10 +353,10 @@ err:
 
 static void event_tpool_thread_remove_event_base(EventTPoolThread this) {
 	if(this->msg_evinfo) {
-		event_if_del(this->event_base, this->msg_evinfo);
+		event_if_instance_g.del(this->event_base, this->msg_evinfo);
 	}
 	if(this->event_base) {
-		event_if_free(this->event_base);
+		event_if_instance_g.free(this->event_base);
 	}
 }
 
@@ -368,13 +388,13 @@ static void * event_tpool_thread_main(void *arg) {
 	EventTPoolThread this = (EventTPoolThread)arg;
 	/*add atfork handler*/
 	while(!this->is_stop) {
-		if(event_if_loop(this->event_base) < 0) {
+		if(event_if_instance_g.loop(this->event_base) < 0) {
 			break;
 		}
 	}
 
 	DEBUG_ERRPRINT("exit main thread!\n" );
-	event_if_exit(this->event_base);
+	event_if_instance_g.exit(this->event_base);
 
 	event_tpool_thread_free(this);
 	if(pthread_detach(pthread_self())) {
@@ -411,7 +431,7 @@ static void event_tpool_thread_msg_cb_update(EventTPoolThread this, event_thread
 	}
 
 	/*update event*/
-	subscriber->eventinfo = event_if_update(this->event_base, subscriber->eventinfo, &body->subscriber, body->arg);
+	subscriber->eventinfo = event_if_instance_g.update(this->event_base, subscriber->eventinfo, &body->subscriber, body->arg);
 }
 
 /*! for del*/
@@ -431,7 +451,7 @@ static void event_tpool_thread_msg_cb_del(EventTPoolThread this, event_thread_ms
 static void event_tpool_thread_msg_cb_stop(EventTPoolThread this, event_thread_msg_t *msg) {
 	(void)msg;
 	this->is_stop=1;
-	event_if_loopbreak(this->event_base);
+	event_if_instance_g.loopbreak(this->event_base);
 }
 
 static void event_tpool_thread_call_msgs(EventTPoolThread this, eventfd_t cnt) {
@@ -460,6 +480,59 @@ static void event_tpool_thread_cb(int fd, int flag, void * arg) {
 
 	event_tpool_thread_call_msgs(this, cnt);
 }
+
+static const char * event_tpool_thread_get_defaullt_plugin(void) {
+	static const char * pluginlist[] = {
+		EVENT_IF_PLUGIN_PATH"/libevent_if_libev.so",
+		EVENT_IF_PLUGIN_PATH"/libevent_if_libevent.so",
+		EVENT_IF_PLUGIN_PATH"/libevent_if_epoll.so",
+		EVENT_IF_PLUGIN_PATH"/libevent_if_select.so",
+		NULL,
+	};
+
+	size_t i = 0;
+	mode_t fmode;
+	struct stat stat_buf;
+	for(i = 0; pluginlist[i]; i ++ ) {
+			//check is it library file?
+		if((stat(pluginlist[i], &stat_buf)==0) && ( S_ISREG((stat_buf.st_mode & S_IFMT)) || S_ISLNK(stat_buf.st_mode & S_IFMT))) {
+			break;
+		}
+	}
+	return pluginlist[i];
+}
+
+static int event_tpool_thread_load_all_fun(void) {
+	event_if_instance_g.new = dlsym(event_if_instance_g.handle, "event_if_new");
+	if(!event_if_instance_g.new) return -1;
+
+	event_if_instance_g.add = dlsym(event_if_instance_g.handle, "event_if_add");
+	if(!event_if_instance_g.add) return -1;
+
+	event_if_instance_g.update = dlsym(event_if_instance_g.handle, "event_if_update");
+	if(!event_if_instance_g.update) return -1;
+
+	event_if_instance_g.del = dlsym(event_if_instance_g.handle, "event_if_del");
+	if(!event_if_instance_g.del) return -1;
+
+	event_if_instance_g.getfd = dlsym(event_if_instance_g.handle, "event_if_getfd");
+	if(!event_if_instance_g.getfd) return -1;
+
+	event_if_instance_g.loop = dlsym(event_if_instance_g.handle, "event_if_loop");
+	if(!event_if_instance_g.loop) return -1;
+
+	event_if_instance_g.loopbreak = dlsym(event_if_instance_g.handle, "event_if_loopbreak");
+	if(!event_if_instance_g.loopbreak) return -1;
+
+	event_if_instance_g.exit = dlsym(event_if_instance_g.handle, "event_if_exit");
+	if(!event_if_instance_g.exit) return -1;
+
+	event_if_instance_g.free = dlsym(event_if_instance_g.handle, "event_if_free");
+	if(!event_if_instance_g.free) return -1;
+
+	return 0;
+}
+
 /*@}*/
 /*************
  * for public API
@@ -549,4 +622,37 @@ void event_thread_atfork_child(EventTPoolThread this) {
 
 void event_thread_set_stack_size(size_t stack_size) {
 	event_thread_stack_size_g = stack_size;
+}
+
+int event_tpool_thread_load_plugin(const char *plugin_path) {
+	if(event_if_instance_g.handle) {
+		return 0;
+	}
+
+	const char * path;
+	if(!plugin_path) {
+		path = event_tpool_thread_get_defaullt_plugin();
+	} else {
+		path = plugin_path;
+	}
+
+	if(!path) {
+		DEBUG_ERRPRINT("There is no install plugin, please check it!\n" );
+		return -1;
+	}
+
+	event_if_instance_g.handle = dlopen(path, RTLD_NOW);
+	if(!event_if_instance_g.handle) {
+		DEBUG_ERRPRINT("Failed to open %s, err=%s!\n", plugin_path , dlerror() );
+		return -1;
+	}
+
+	return event_tpool_thread_load_all_fun();
+}
+
+int event_tpool_thread_unload_plugin(void) {
+	if(event_if_instance_g.handle) {
+		dlclose(event_if_instance_g.handle);
+	}
+	memset(&event_if_instance_g, 0, sizeof(event_if_instance_g));
 }

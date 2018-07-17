@@ -10,6 +10,7 @@
 #include "event_threadpool.h"
 #include "event_thread.h"
 #include "dp_util.h"
+#include "config.h"
 
 /*************
  * public define
@@ -54,7 +55,7 @@ static int event_tpool_thread_has_fd(EventTPoolThreadInfo this, int fd);
 /*! @name EventTPoolThreadInfo list API and EventTPoolFDData list API definition.*/
 /*@{*/
 /*! new thread info */
-static EventTPoolThreadInfo event_tpool_thread_info_new(size_t thread_size);
+static EventTPoolThreadInfo event_tpool_thread_info_new(size_t thread_size, const char * plugin_path);
 /*! free thread info */
 static void event_tpool_thread_info_free(EventTPoolThreadInfo this, size_t thread_size);
 /*! free fddata */
@@ -181,13 +182,20 @@ static void event_tpool_thread_delete_thread(EventTPoolThreadInfo this, int fd) 
 /*************
  * for list API
 *************/
-static EventTPoolThreadInfo event_tpool_thread_info_new(size_t thread_size) {
+static EventTPoolThreadInfo event_tpool_thread_info_new(size_t thread_size, const char * plugin_path) {
 	EventTPoolThreadInfo info = NULL;
+
+	if(event_tpool_thread_load_plugin(plugin_path) < 0) {
+		DEBUG_ERRPRINT("Failed to load plugin!\n" );
+		return NULL;
+	}
+
 	size_t size = sizeof(*info) * thread_size;/*sizeof EventTPoolThreadInfo*/
 	size += (sizeof(uint64_t)*EV_TPOLL_MAXFDS*thread_size);/*sizeof fds in EventTPoolThreadInfo*/
 	info = malloc(size);
 	if(!info) {
 		DEBUG_ERRPRINT("Failed to get instance threads!\n" );
+		event_tpool_thread_unload_plugin();
 		return NULL;
 	}
 	memset(info, 0, size);
@@ -205,6 +213,7 @@ static EventTPoolThreadInfo event_tpool_thread_info_new(size_t thread_size) {
 		/*create thread instance*/
 		info[i].tinstance = event_tpool_thread_new(thread_size);
 		if(!info[i].tinstance) {
+			event_tpool_thread_unload_plugin();
 			DEBUG_ERRPRINT("Failed to create thread new!\n" );
 			return NULL;
 		}
@@ -266,7 +275,7 @@ static int event_tpool_manager_search_insert_thread(EventTPoolManager this, int 
 *************/
 /*! @name API for EventTPoolManager instance */
 /*@{*/
-EventTPoolManager event_tpool_manager_new(int thread_num, int is_threadsafe) {
+EventTPoolManager event_tpool_manager_new(int thread_num, int is_threadsafe, const char * plugin_path) {
 	pthread_mutex_t *lock=NULL;
 //DEBUG_INIT
 	EventTPoolManager instance = (EventTPoolManager)calloc(1, sizeof(*instance));
@@ -292,7 +301,7 @@ EventTPoolManager event_tpool_manager_new(int thread_num, int is_threadsafe) {
 		instance->thread_size = (size_t)thread_num;
 	}
 
-	instance->threads = event_tpool_thread_info_new(instance->thread_size);
+	instance->threads = event_tpool_thread_info_new(instance->thread_size, plugin_path);
 	if(!instance->threads) {
 		DEBUG_ERRPRINT("Failed to get instance threads!\n" );
 		goto err;
