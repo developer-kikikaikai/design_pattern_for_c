@@ -652,6 +652,8 @@ TPOOLEVENT_SELECT_FALSE
 TPOOLEVENT_SELECT_TRUE
 TPOOLEVENT_EPOLL_FALSE
 TPOOLEVENT_EPOLL_TRUE
+TPOOLEVENT_LIBEV_FALSE
+TPOOLEVENT_LIBEV_TRUE
 TPOOLEVENT_LIBEVENT_FALSE
 TPOOLEVENT_LIBEVENT_TRUE
 USE_THREADPOOL_FALSE
@@ -13261,6 +13263,48 @@ _ACEOF
 fi
 
      tpool_event_libevent="yes";;
+  "libev")    { $as_echo "$as_me:${as_lineno-$LINENO}: ======threadpool event:libev===============" >&5
+$as_echo "$as_me: ======threadpool event:libev===============" >&6;}
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lev" >&5
+$as_echo_n "checking for main in -lev... " >&6; }
+if ${ac_cv_lib_ev_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lev  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_ev_main=yes
+else
+  ac_cv_lib_ev_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ev_main" >&5
+$as_echo "$ac_cv_lib_ev_main" >&6; }
+if test "x$ac_cv_lib_ev_main" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBEV 1
+_ACEOF
+
+  LIBS="-lev $LIBS"
+
+fi
+
+     tpool_event_libev="yes";;
   *)          { $as_echo "$as_me:${as_lineno-$LINENO}: ======threadpool event:default(epoll)======" >&5
 $as_echo "$as_me: ======threadpool event:default(epoll)======" >&6;}
      tpool_event_epoll="yes";;
@@ -13271,6 +13315,20 @@ esac
 else
   TPOOLEVENT_LIBEVENT_TRUE='#'
   TPOOLEVENT_LIBEVENT_FALSE=
+fi
+
+ if test "$tpool_event_libev" = "yes"; then
+  TPOOLEVENT_LIBEV_TRUE=
+  TPOOLEVENT_LIBEV_FALSE='#'
+else
+  TPOOLEVENT_LIBEV_TRUE='#'
+  TPOOLEVENT_LIBEV_FALSE=
+fi
+
+if  test "$tpool_event_libev" = "yes" ; then
+
+$as_echo "#define USE_LIBEV 1" >>confdefs.h
+
 fi
 
  if test "$tpool_event_epoll" = "yes"; then
@@ -13648,6 +13706,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${TPOOLEVENT_LIBEVENT_TRUE}" && test -z "${TPOOLEVENT_LIBEVENT_FALSE}"; then
   as_fn_error $? "conditional \"TPOOLEVENT_LIBEVENT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${TPOOLEVENT_LIBEV_TRUE}" && test -z "${TPOOLEVENT_LIBEV_FALSE}"; then
+  as_fn_error $? "conditional \"TPOOLEVENT_LIBEV\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${TPOOLEVENT_EPOLL_TRUE}" && test -z "${TPOOLEVENT_EPOLL_FALSE}"; then

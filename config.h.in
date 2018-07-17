@@ -15,6 +15,9 @@
 /* Define to 1 if you have the `dl' library (-ldl). */
 #undef HAVE_LIBDL
 
+/* Define to 1 if you have the `ev' library (-lev). */
+#undef HAVE_LIBEV
+
 /* Define to 1 if you have the `event' library (-levent). */
 #undef HAVE_LIBEVENT
 
@@ -95,6 +98,9 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
+
+/* when use libev */
+#undef USE_LIBEV
 
 /* Version number of package */
 #undef VERSION

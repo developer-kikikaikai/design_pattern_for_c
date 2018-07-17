@@ -7,7 +7,10 @@
 #include "event_threadpool.h"
 #include "config.h"
 #include <sys/eventfd.h>
-
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <errno.h>
+//#include "dp_debug.h"
 #define DEBUG_ERRPRINT(...)  DEBUG_ERRPRINT_(__VA_ARGS__, "")
 #define DEBUG_ERRPRINT_(fmt, ...)  \
         fprintf(stderr, "[%s(%s:%u)thread:%x]: "fmt"%s", __func__,__FILE__,__LINE__,(unsigned int)pthread_self(), __VA_ARGS__)
@@ -584,6 +587,7 @@ int test_tpoll_maxfd() {
 		return -1;
 	}
 
+#ifndef USE_LIBEV
 	//update check
 	for(int i=0;i<=max;i++) {
 		subscriber[i].eventflag=EV_TPOOL_HUNGUP;
@@ -609,7 +613,7 @@ int test_tpoll_maxfd() {
 		DEBUG_ERRPRINT("####Failed to call event_tpool_update(re-read) callback event, cnt=%d\n",testdata.callcnt);
 		return -1;
 	}
-
+#endif
 	//delete
 	for(int i=0;i<=max;i++) {
 		event_tpool_del(tpool, subscriber[i].fd);
@@ -670,6 +674,7 @@ int test_tpoll_free() {
 
 int main() {
 
+//DPDEBUG_INIT_THREADSAFE
 	if(test_tpoll_failsafe()) {
 		DEBUG_ERRPRINT("Failed to check fail safe\n");
 		return -1;
