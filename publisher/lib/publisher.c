@@ -104,6 +104,21 @@ SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*n
 	return account;
 }
 
+void publisher_subscribe_oneshot(int content_id, int publish_type, void (*notify)(int publish_type, void * detail, void * ctx), void * ctx ) {
+	if(!notify || publish_type == 0) {
+		DEBUG_ERRPRINT("There is no notification information, please set it!\n");
+		return;
+	}
+
+	PublishContent content = publisher_get_content(content_id);
+	if(!content) {
+		DEBUG_ERRPRINT("invalid content_id\n");
+		return;
+	}
+
+	publish_content_subscribe_oneshot(content, publish_type, notify, ctx);
+}
+
 void publisher_unsubscribe(int content_id, SubscriberAccount account) {
 	PublishContent content = publisher_get_content(content_id);
 	if(!content) {

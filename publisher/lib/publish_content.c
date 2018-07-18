@@ -9,6 +9,7 @@
 struct subscriber_account_t {
 	SubscriberAccount next;
 	SubscriberAccount prev;
+	int is_oneshot;
 	int publish_type;
 	void (*notify)(int publish_type, void * detail, void * ctx);
 	void * ctx;
@@ -66,6 +67,20 @@ PUBLISH_CONTENT_UNLOCK
 	return account;
 }
 
+void publish_content_subscribe_oneshot(PublishContent this, int publish_type, void (*notify)(int publish_type, void * detail, void * ctx), void * ctx) {
+
+PUBLISH_CONTENT_LOCK(this)
+	SubscriberAccount account = (SubscriberAccount)calloc(1, sizeof(publish_content_t));
+	if(account) {
+		account->is_oneshot = 1;
+		account->publish_type = publish_type;
+		account->notify = notify;
+		account->ctx = ctx;
+		publish_content_push_subscriber(this, account);
+	}
+PUBLISH_CONTENT_UNLOCK
+}
+
 void publish_content_unsubscribe(PublishContent this, SubscriberAccount account) {
 PUBLISH_CONTENT_LOCK(this)
 	publish_content_pull_subscriber(this, account);
@@ -75,12 +90,23 @@ PUBLISH_CONTENT_UNLOCK
 
 void publish_content_publish(PublishContent this, int publish_type, void * detail) {
 PUBLISH_CONTENT_LOCK(this)
-	SubscriberAccount account;
-	for(account = this->head ; account != NULL ; account = account->next ) {
+	SubscriberAccount account, account_next;
+	account = this->head;
+	while(account) {
 		/* check type */
-		if((account->publish_type & publish_type) == publish_type) {
-			/* notify message, notify is not null because publisher check it */
-			account->notify(publish_type, detail, account->ctx);
+		if((account->publish_type & publish_type) != publish_type) {
+			account=account->next;
+			continue;
+		}
+
+		/* notify message, notify is not null because publisher check it */
+		account->notify(publish_type, detail, account->ctx);
+		if(account->is_oneshot) {
+			account_next = account->next;
+			publish_content_pull_subscriber(this, account);
+			account=account_next;
+		} else {
+			account=account->next;
 		}
 	}
 

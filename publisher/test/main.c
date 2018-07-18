@@ -67,10 +67,13 @@ static int test_failsate() {
 	return 0;
 }
 
-#define MAX_PUBLISHERTE (3)
-#define PULISH_CONTENT_FOR_NORMAL (1)
-#define PULISH_CONTENT_FOR_MULTI_TYPE (2)
-#define PULISH_CONTENT_FOR_UNSUBSCRIBE (3)
+enum {
+	PULISH_CONTENT_FOR_NORMAL=1,
+	PULISH_CONTENT_FOR_MULTI_TYPE,
+	PULISH_CONTENT_FOR_UNSUBSCRIBE,
+	PULISH_CONTENT_WITH_ONETHOT,
+	MAX_PUBLISHERTE
+};
 #define CHECK_TYPE_MAX (0xF)
 static int testdata_init() {
 printf("%s enter\n", __FUNCTION__);
@@ -298,6 +301,71 @@ int test_subscribe_with_context() {
 	return 0;
 }
 
+static int test_subscribe_with_oneshot() {
+printf("%s enter\n", __FUNCTION__);
+	if(publisher_subscribe(PULISH_CONTENT_WITH_ONETHOT, NTYPE(1), test_notify1, NULL) == NULL) {
+		printf("####failed to add test_notify1 subscribe\n");
+		return -1;
+	}
+
+	publisher_subscribe_oneshot(PULISH_CONTENT_WITH_ONETHOT, NTYPE(2), test_notify2, NULL);
+
+	if(publisher_subscribe(PULISH_CONTENT_WITH_ONETHOT, NTYPE(3), test_notify3, NULL) == NULL) {
+		printf("####failed to add test_notify3 subscribe\n");
+		return -1;
+	}
+
+	testdata_t prev_data, current_data;
+	memset(&prev_data, 0, sizeof(prev_data));
+	memset(&current_data, 0, sizeof(current_data));
+
+	int i=0;
+	for(i=0;i<CHECK_TYPE_MAX;i++) {
+		publisher_publish(PULISH_CONTENT_WITH_ONETHOT, i, &current_data);
+		if(i==0) {
+			prev_data.notify1_cnt++;
+			if(!prev_data.notify2_cnt) prev_data.notify2_cnt++;
+			prev_data.notify3_cnt++;
+		} else if(NTYPE(1) == i) {
+			prev_data.notify1_cnt++;
+		} else if(NTYPE(2) == i) {
+			if(!prev_data.notify2_cnt) prev_data.notify2_cnt++;
+		} else if(NTYPE(3) == i) {
+			prev_data.notify3_cnt++;
+		}
+
+		if(memcmp(&prev_data, &current_data, sizeof(prev_data)) != 0) {
+			printf("%d publish failed 1st\n", i);
+			return -1;
+		}
+	}
+
+	memset(&prev_data, 0, sizeof(prev_data));
+        memset(&current_data, 0, sizeof(current_data));
+
+	/*re-call*/
+	for(i=0;i<CHECK_TYPE_MAX;i++) {
+		publisher_publish(PULISH_CONTENT_WITH_ONETHOT, i, &current_data);
+		if(i==0) {
+			prev_data.notify1_cnt++;
+//			prev_data.notify2_cnt++;
+			prev_data.notify3_cnt++;
+		} else if(NTYPE(1) == i) {
+			prev_data.notify1_cnt++;
+		} else if(NTYPE(2) == i) {
+//			prev_data.notify2_cnt++;
+		} else if(NTYPE(3) == i) {
+			prev_data.notify3_cnt++;
+		}
+
+		if(memcmp(&prev_data, &current_data, sizeof(prev_data)) != 0) {
+			printf("%d publish failed 2nd\n", i);
+			return -1;
+		}
+	}
+	return 0;
+}
+
 int main() {
 	if(test_failsate()) {
 		printf("####test_failsate test case failed!!!\n");
@@ -325,7 +393,11 @@ int main() {
 	}
 
 	if(test_subscribe_with_context()) {
-		printf("####test_normally_subscribe test case failed!!!\n");
+		printf("####test_subscribe_with_context test case failed!!!\n");
+		return -1;
+	}
+	if(test_subscribe_with_oneshot()) {
+		printf("####test_subscribe_with_oneshot test case failed!!!\n");
 		return -1;
 	}
 

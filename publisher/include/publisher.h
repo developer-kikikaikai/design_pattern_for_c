@@ -44,6 +44,16 @@ void publisher_free(void);
 SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*notify)(int publish_type, void * detail, void * ctx), void * ctx );
 
 /**
+ * @brief subscribe only oneshot
+ * @param[in] content_id id of publish content you want to receive
+ * @param[in] publish_type type of pushlish related to publish. this ID use bitwise operation "OR". So if you want to receive notification from some publish type, please use "OR". So, if you set 0, send notify to all
+ * @param[in] notify notification interface. If subscriber set this IF and type, publisher notify when publish.
+ * @param[in] ctx user definition ctx information
+ * @return none
+ * @note ctx is not free in this library
+ */
+void publisher_subscribe_oneshot(int content_id, int publish_type, void (*notify)(int publish_type, void * detail, void * ctx), void * ctx );
+/**
  * @brief unsubscribe, if you want to stop subscribe, please call it
  * @param[in] content_id id of publish content
  * @param[in] account account returned at publisher_subscribe
