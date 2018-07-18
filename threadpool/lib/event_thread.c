@@ -483,7 +483,6 @@ static void event_tpool_thread_cb(int fd, int flag, void * arg) {
 
 static const char * event_tpool_thread_get_defaullt_plugin(void) {
 	static const char * pluginlist[] = {
-		EVENT_IF_PLUGIN_PATH"/libevent_if_libev.so",
 		EVENT_IF_PLUGIN_PATH"/libevent_if_libevent.so",
 		EVENT_IF_PLUGIN_PATH"/libevent_if_epoll.so",
 		EVENT_IF_PLUGIN_PATH"/libevent_if_select.so",
