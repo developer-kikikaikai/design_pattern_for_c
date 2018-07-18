@@ -8,10 +8,12 @@
 /*! @name API for EventTPoolManager instance */
 /*@{*/
 /**
- * constructor of EventTPoolManager
+ * new EventTPoolManager
  * @param[in] thread_num size of thread. If this is negative value, this library set thread CPU number * 2
  * @param[in] is_threadsafe if you use this instance in multi thread, please set 1.
  * @param[in] plugin_path if you want to choose plugin. Default : choose higher priority plugin from prefix
+ * @retval !=NULL  this class handle
+ * @retval NULL error
  * @note when call it, start thread which has event_base struct. Those threads pool event fd, and call event function.
  */
 EventTPoolManager event_tpool_manager_new(int thread_num, int is_threadsafe, const char * plugin_path);
