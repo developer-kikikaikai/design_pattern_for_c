@@ -13,22 +13,38 @@
   Download:
   Please download from [here](https://github.com/developer-kikikaikai/design_pattern_for_c/releases).
 
+  Before build:
+  1. Please install gcc, autoconf libtool
+     Debian: apt install autoconf libtool
+     Redhat: yum install gcc autoconf libtool
+
+  2. Please install libevent if you want to use plugin of libevent.
+     Debian: apt install libevent-dev
+     Redhat: yum install libev libevent-devel (include libevent)
+
+     If you don't want to use it, please add configure option --disable-threadpool-libevent
+
+  3. Please install libev if you want to use plugin of libev. (Please care this plugin libevent_if_libev is GPL License).
+     Debian: apt install libev4
+     Redhat: yum install libev libev-devel
+
+     If you don't want to use it, please add configure option --disable-threadpool-libev    
+
   Build:
   1. ./configure
+     (or ./configure --disable-threadpool-libev --disable-threadpool-libevent)
   2. make
   3. sudo make install
 
+  If you failed to make, as "[aclocal.m4]" error, please call ./autogen.sh before calling configure.
+
   Headers and libraries are installed in prefix dir (default: /usr/local/)
 
-  When use Threadpool:
-    If you want to use libev, please install libev (libev4).
-      apt install libev4 or compile the code http://dist.schmorp.de/libev/
-    And add configure option --with-threadpool-event=libev
+  Option:
+  - You can choose to disable package libraries with --without-XXX option.
+    Ex. ./configure --without-builder
 
-    If you want to use libevent, please install libevent (event2).
-       apt install libevent or compile the github code https://github.com/libevent/libevent/tree/master/
-    And add configure option --with-threadpool-event=libevent
-
+ - I checked Debian=> Ubuntu 18.04, Redhat=>CentOS 7.5.1804
 
 # Latest Version 
  v0.0.1 pre-release, 1.0.0 soon.
@@ -110,4 +126,4 @@ If you want to see detail of code, please see [doxgen file in here](https://deve
 
 # License
   Almost of this software is released under the MIT License, see [LICENSE file in this package](https://github.com/developer-kikikaikai/design_pattern_for_c/blob/master/LICENSE).
-  Only libevent_if_libev.so plugin is released under the GNU General Public License ("GPL") version 2 or any later version. Please see LICENSE.GPL
+  Only libevent_if_libev plugin is released under the GNU General Public License ("GPL") version 2 or any later version. Please see LICENSE.GPL
