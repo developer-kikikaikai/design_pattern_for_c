@@ -82,10 +82,12 @@ void * event_if_update(EventInstance this, EventHandler handler, EventSubscriber
 	/*delete and add to update*/
 	event_if_del(event_base, eventinfo);
 	eventinfo = event_if_add(this, subscriber, arg);
-	
+
+#if 0	
+	/*This function support after 2.1.2-alpha*/
 	/*restart loop and reload settings*/
 	event_base_loopcontinue(event_base);
-
+#endif
 	return eventinfo;
 }
 

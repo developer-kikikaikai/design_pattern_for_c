@@ -17,6 +17,21 @@ typedef struct mpool_result_t {
 	int result;
 } mpool_result_t;
 
+static int call_cnt_g=0;
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+static void set_cnt() {
+	pthread_mutex_lock(&lock);
+	call_cnt_g++;
+	pthread_mutex_unlock(&lock);
+}
+static int get_cnt() {
+	int cnt=0;
+	pthread_mutex_lock(&lock);
+	cnt=call_cnt_g;
+	pthread_mutex_unlock(&lock);
+	return cnt;
+}
+
 void * test_mpool_get_thread(void *arg) {
 	mpool_result_t * data = (mpool_result_t *)arg;
 	char buf[MAXSIZE]={1};
@@ -43,14 +58,19 @@ void * test_mpool_get_thread(void *arg) {
 	}
 	printf("finish!\n");
 
-	sleep(1);
-	void * local = mpool_get(data->this);
+	if(data->is_multithread) {
+		set_cnt();
+		while(get_cnt() != 2) {
+			sleep(1);
+		}
+	}
+	void * local = NULL;
+	local = mpool_get(data->this);
 	if(local != NULL) {
 		printf( "###(%d)failed\n", __LINE__);
 		goto end;
 	}
 //	printf("0x%x\n", local);
-
 	//no release tmp data
 	for(i=0;i<MAXNUM;i++) {
 		memset(mem_list[i], 0, MAXSIZE);
@@ -87,7 +107,6 @@ void * test_mpool_get_thread(void *arg) {
 		}
 	}
 
-	sleep(2);
 	/*try to get/release many times*/
 	for(i=0;i<MAXNUM;i++) {
 		mem_list[i] = mpool_get(data->this);
