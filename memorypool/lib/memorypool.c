@@ -122,6 +122,7 @@ static inline void * mpool_get_memory(MemoryPool this) {
 		mpool_list_push(this, memory);
 		return memory->mem;
 	} else {
+		printf("nused\n");
 		return NULL;
 	}
 }
@@ -207,7 +208,8 @@ MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, voi
 
 	//set user pointer list
 	malloc_data_t * memory;
-	for(int i=0;i<max_cnt;i++) {
+	int i=0;
+	for(i=0;i<max_cnt;i++) {
 		memory = (malloc_data_t *)(instance->buf + (sizeof(malloc_data_t) * i));
 		memory->mem = correut;
 		correut = memory->mem + max_size;

@@ -173,7 +173,8 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 	testdata_t testdata[TESTDATA];
 	memset(testdata, 0, sizeof(testdata));
 
-	for(int i=0;i<TESTDATA;i++) {
+	int i;
+	for(i=0;i<TESTDATA;i++) {
 		socketpair(AF_UNIX, SOCK_DGRAM, 0, testdata[i].sockpair);
 	}
 
@@ -190,7 +191,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 	};
 
 	event_tpool_add_result_t tid[TESTDATA];
-	for(int i=0; i<TESTDATA-1; i++) {
+	for(i=0; i<TESTDATA-1; i++) {
 		printf("add[%d] fd:%d\n", i, subscriber[i].fd);
 		tid[i] = event_tpool_add(tpool, &subscriber[i], &testdata[i]);
 		if(tid[i].result < 0) {
@@ -223,7 +224,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 
 	//wait to add event
 	//call write
-	for(int i=0;i<TESTDATA;i++) {
+	for(i=0;i<TESTDATA;i++) {
 		int tmp=0;
 		tmp=write(testdata[i].sockpair[TEST_FD], &tmp, sizeof(tmp));
 	}
@@ -292,7 +293,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 	}
 	//sleep(2);
 	//rewrite
-	for(int i=0;i<TESTDATA;i++) {
+	for(i=0;i<TESTDATA;i++) {
 		int tmp=0;
 		tmp=write(testdata[i].sockpair[TEST_FD], &tmp, sizeof(tmp));
 	}
@@ -322,7 +323,7 @@ int test_tpoll_standard(EventTPoolManager tpool, int separatecheck) {
 	event_tpool_del(tpool, subscriber[2].fd);
 	event_tpool_del(tpool, subscriber[3].fd);
 
-	for(int i=0;i<TESTDATA;i++) {
+	for(i=0;i<TESTDATA;i++) {
 		close(testdata[i].sockpair[0]);
 		close(testdata[i].sockpair[1]);
 	}
@@ -435,7 +436,7 @@ int test_tpoll_fo_ownthread(const char * plugin) {
 		own_test_1,own_test_2,own_test_3,own_test_4
 	};
 
-	for(int i=0;i<TESTDATA;i++) {
+	for(i=0;i<TESTDATA;i++) {
 		testdata_g[i].tpool = tpool;
 		testdata_g[i].sockpair[SUBSCRIBER_FD] = eventfd(0,0);
 		subscriber_g[i].fd = testdata_g[i].sockpair[SUBSCRIBER_FD];
@@ -538,7 +539,8 @@ int test_tpoll_maxfd(const char * plugin) {
 	testdata.tpool = tpool;
 
 	int max=0;
-	for(int i=0;i<TESTDATA_MAX;i++) {
+	int i=0;
+	for(i=0;i<TESTDATA_MAX;i++) {
 		subscriber[i].fd = eventfd(0,0);;
 		if(subscriber[i].fd < 0) {
 			DEBUG_ERRPRINT("####Failed to call event_tpool_add[%d]\n", i);
@@ -555,7 +557,7 @@ int test_tpoll_maxfd(const char * plugin) {
 
 	//add all event
 	event_tpool_add_result_t result[TESTDATA_MAX];
-	for(int i=0;i<max;i++) {
+	for(i=0;i<max;i++) {
 		result[i] = event_tpool_add(tpool, &subscriber[i], &testdata);
 		if(result[i].result < 0) {
 			DEBUG_ERRPRINT("####Failed to call event_tpool_add[%d]\n", i);
@@ -586,7 +588,7 @@ int test_tpoll_maxfd(const char * plugin) {
 
 #ifndef USE_LIBEV
 	//update check
-	for(int i=0;i<=max;i++) {
+	for(i=0;i<=max;i++) {
 		subscriber[i].eventflag=EV_TPOOL_HUNGUP;
 		result[i] = event_tpool_update(tpool, result[i].event_handle, &subscriber[i], &testdata);
 		if(result[i].result < 0) {
@@ -601,7 +603,7 @@ int test_tpoll_maxfd(const char * plugin) {
 	}
 
 	//clean
-	for(int i=0;i<=max;i++) {
+	for(i=0;i<=max;i++) {
 		subscriber[i].eventflag=0;
 		result[i] = event_tpool_update(tpool, result[i].event_handle, &subscriber[i], &testdata);
 		eventfd_write(subscriber[i].fd, 1);
@@ -612,7 +614,7 @@ int test_tpoll_maxfd(const char * plugin) {
 	}
 #endif
 	//delete
-	for(int i=0;i<=max;i++) {
+	for(i=0;i<=max;i++) {
 		event_tpool_del(tpool, subscriber[i].fd);
 		eventfd_write(subscriber[i].fd, 1);
 	}
@@ -623,7 +625,7 @@ int test_tpoll_maxfd(const char * plugin) {
 
 	//end
 	event_tpool_manager_free(tpool);
-	for(int i=0;i<=max;i++) {
+	for(i=0;i<=max;i++) {
 		close(subscriber[i].fd);
 	}
 	return 0;
@@ -637,7 +639,8 @@ int test_tpoll_free(const char * plugin) {
 	testdata.tpool = tpool;
 
 	int max=0;
-	for(int i=0;i<TESTDATA_MAX;i++) {
+	int i=0;
+	for(i=0;i<TESTDATA_MAX;i++) {
 		subscriber[i].fd = eventfd(0,0);;
 		if(subscriber[i].fd < 0) {
 			DEBUG_ERRPRINT("####Failed to call event_tpool_add[%d]\n", i);
@@ -653,7 +656,7 @@ int test_tpoll_free(const char * plugin) {
 
 	//add all event
 	event_tpool_add_result_t result[TESTDATA_MAX];
-	for(int i=0;i<max;i++) {
+	for(i=0;i<max;i++) {
 		result[i] = event_tpool_add(tpool, &subscriber[i], &testdata);
 		if(result[i].result < 0) {
 			DEBUG_ERRPRINT("####Failed to call event_tpool_add[%d]\n", i);
@@ -663,7 +666,7 @@ int test_tpoll_free(const char * plugin) {
 
 	//free before delete all
 	event_tpool_manager_free(tpool);
-	for(int i=0; i<=max; i++) {
+	for(i=0; i<=max; i++) {
 		close(subscriber[i].fd);
 	}
 	return 0;

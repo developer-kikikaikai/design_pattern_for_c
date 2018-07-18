@@ -15,7 +15,9 @@ static inline short convert_etpoll_eveid2own(int eventflag) {
 	short ret_eveflag=EV_PERSIST;
 	if(eventflag&EV_TPOOL_READ) ret_eveflag |= EV_READ;
 	if(eventflag&EV_TPOOL_WRITE) ret_eveflag |= EV_WRITE;
+#ifdef EV_CLOSED
 	if(eventflag&EV_TPOOL_HUNGUP) ret_eveflag |= EV_CLOSED;
+#endif
 	return ret_eveflag;
 }
 
@@ -23,7 +25,9 @@ static inline int convert_etpoll_own2eveid(short eventflag) {
 	int ret_eveflag=0;
 	if(eventflag&EV_READ) ret_eveflag |= EV_TPOOL_READ;
 	if(eventflag&EV_WRITE) ret_eveflag |= EV_TPOOL_WRITE;
+#ifdef EV_CLOSED
 	if(eventflag&EV_CLOSED) ret_eveflag |= EV_TPOOL_HUNGUP;
+#endif
 	return ret_eveflag;
 }
 
