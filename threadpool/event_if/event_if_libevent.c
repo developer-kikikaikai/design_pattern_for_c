@@ -75,7 +75,6 @@ err:
 
 /** update registered event */
 void * event_if_update(EventInstance this, EventHandler handler, EventSubscriber subscriber, void *arg) {
-	DEBUG_ERRPRINT("Update!\n" );
 	struct event_base * event_base = (struct event_base *)this;
 	EventLibeventHandler eventinfo = (EventLibeventHandler)handler;
 

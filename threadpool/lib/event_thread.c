@@ -186,15 +186,13 @@ static int event_thread_msg_send(EventTPoolThread this, EventThreadMsg msg) {
 EVMSG_LOCK(this)
 	ret = eventfd_write(this->eventfd, 1);
 	if(ret < 0) {
-		DEBUG_ERRPRINT("################Failed to send event\n");
+		DEBUG_PRINT("################Failed to send event\n");
 	} else {
 		/*wait receive message notification from event thread main*/
-		DEBUG_ERRPRINT("(thread:%x)wait signal from event thread , %p\n", (unsigned int)pthread_self(), &this->msgdata.cond );
 		struct timespec timeout;
 		clock_gettime(CLOCK_REALTIME, &timeout);
 		timeout.tv_sec += EVENT_THREAD_WAIT_TIMEOUT;
 		ret = pthread_cond_timedwait(&this->msgdata.cond, &this->msgdata.lock, &timeout);
-		DEBUG_ERRPRINT("(thread:%x)wait signal from event thread %p end, ret=%d\n", (unsigned int)pthread_self(),&this->msgdata.cond , ret);
 		if(ret == ETIMEDOUT) {
 			DEBUG_ERRPRINT("#####################timeout!!!!!!\n");
 			ret = -1;
@@ -230,13 +228,13 @@ static void event_thread_msg_send_subscribe(EventTPoolThread this, EventSubscrib
 	}
 }
 static void event_thread_msg_send_add(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
-	DEBUG_ERRPRINT("add, subscriber->%d!\n", subscriber->fd);
+	DEBUG_PRINT("add, subscriber->%d!\n", subscriber->fd);
 
 	event_thread_msg_send_subscribe(this, subscriber, arg, EVE_THREAD_MSG_TYPE_ADD);
 }
 
 static void event_thread_msg_send_update(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
-	DEBUG_ERRPRINT("update, subscriber->%d!\n", subscriber->fd);
+	DEBUG_PRINT("update, subscriber->%d!\n", subscriber->fd);
 	event_thread_msg_send_subscribe(this, subscriber, arg, EVE_THREAD_MSG_TYPE_UPDATE);
 }
 static void event_thread_msg_send_del(EventTPoolThread this, int fd) {
@@ -251,7 +249,7 @@ static void event_thread_msg_send_del(EventTPoolThread this, int fd) {
 	memset(msg, 0, sizeof(*msg));
 	msg->type=EVE_THREAD_MSG_TYPE_DEL;
 	msg->data.del.fd = fd;
-	DEBUG_ERRPRINT("del, subscriber->%d!\n", fd);
+	DEBUG_PRINT("del, subscriber->%d!\n", fd);
 
 	if(!is_ownthread) {
 		int ret = event_thread_msg_send(this, msg);
@@ -282,7 +280,7 @@ static int event_thread_msg_send_stop(EventTPoolThread this) {
 	} else {
 		event_tpool_thread_msg_cb_call(this, msg);
 	}
-	DEBUG_ERRPRINT("send stop, return %d!\n", ret);
+	DEBUG_PRINT("send stop, return %d!\n", ret);
 	return ret;
 }
 
@@ -293,7 +291,7 @@ static void event_tpool_thread_msg_cb_call(EventTPoolThread this, event_thread_m
 /*@}*/
 /*! new instance */
 static EventSubscriberData event_subscriber_data_new(EventTPoolThread this, EventSubscriber subscriber, void *arg) {
-	DEBUG_ERRPRINT("add subscriber->%d!\n", subscriber->fd);
+	DEBUG_PRINT("add subscriber->%d!\n", subscriber->fd);
 	EventSubscriberData instance = calloc(1, sizeof(*instance));
 	if(!instance) {
 		return NULL;
@@ -338,7 +336,7 @@ static int event_tpool_thread_set_event_base(EventTPoolThread this) {
 
 	/*add event*/
 	event_subscriber_t subscriber={this->eventfd, EV_TPOOL_READ, event_tpool_thread_cb};
-	DEBUG_ERRPRINT("base fd=%d\n", this->eventfd);
+	DEBUG_PRINT("base fd=%d\n", this->eventfd);
 	this->msg_evinfo = event_if_instance_g.add(this->event_base, &subscriber, this);
 	if(!this->msg_evinfo) {
 		DEBUG_ERRPRINT("Failed to new event!\n" );
@@ -393,7 +391,7 @@ static void * event_tpool_thread_main(void *arg) {
 		}
 	}
 
-	DEBUG_ERRPRINT("exit main thread!\n" );
+	DEBUG_PRINT("exit main thread!\n" );
 	event_if_instance_g.exit(this->event_base);
 
 	event_tpool_thread_free(this);
@@ -461,9 +459,8 @@ EVMSG_LOCK(this)
 		cnt--;
 		event_tpool_thread_msg_cb_call(this, &this->msgdata.store_msgs[--this->msgdata.store_msg_cnt]);
 		/*notify event message to called API thread*/
-		DEBUG_ERRPRINT("cond signal from event thread to %p\n", &this->msgdata.cond );
+		DEBUG_PRINT("cond signal from event thread to %p\n", &this->msgdata.cond );
 		pthread_cond_signal(&this->msgdata.cond);
-		DEBUG_ERRPRINT("cond signal from event thread to %p end\n", &this->msgdata.cond );
 	}
 EVMSG_UNLOCK
 }

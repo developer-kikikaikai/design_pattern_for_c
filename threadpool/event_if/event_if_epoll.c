@@ -131,7 +131,7 @@ void event_if_del(EventInstance this, EventHandler handler) {
 	if(epoll_ctl(base->epfd, EPOLL_CTL_DEL, instance->subscriber.fd, NULL)) {
 		DEBUG_ERRPRINT("Failed to delete event! %s\n", strerror(errno) );
 	}
-	DEBUG_ERRPRINT("free handle %p!\n", handler );
+	DEBUG_PRINT("free handle %p!\n", handler );
 	free(handler);
 	base->curevent_cnt--;
 }
@@ -161,20 +161,20 @@ int event_if_loop(EventInstance this) {
 		memset(events, 0, base->maxevents * sizeof(struct epoll_event));
 		cnt = epoll_wait(base->epfd, events, base->maxevents, EVENT_EPOLL_TIMEOUT);
 		if(cnt<0) {
-			DEBUG_ERRPRINT("Exit loop!\n" );
+			DEBUG_PRINT("Exit loop!\n" );
 			ret = -1;
 			break;
 		}
 
 		for(i=0;i<cnt;i++) {
-			DEBUG_ERRPRINT("check event [%d]\n" , i);
+			DEBUG_PRINT("check event [%d]\n" , i);
 			if(!events[i].data.ptr) continue;
 			eventflag = convert_etpoll_ownid2eve(events[i].events);
 			handler = (EventEpollHandler)events[i].data.ptr;
 			handler->subscriber.event_callback(handler->subscriber.fd, eventflag, handler->arg);
 		}
 	}
-	DEBUG_ERRPRINT("exit main\n" );
+	DEBUG_PRINT("exit main\n" );
 
 	free(events);
 	return ret;

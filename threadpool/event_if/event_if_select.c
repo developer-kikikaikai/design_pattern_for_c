@@ -121,7 +121,7 @@ EventHandler event_if_add(EventInstance this, EventSubscriber subscriber, void *
 		base->maxfd = instance->subscriber.fd;
 	}
 
-	DEBUG_ERRPRINT("maxfd [%d]\n" , base->maxfd);
+	DEBUG_PRINT("maxfd [%d]\n" , base->maxfd);
 	/*add set flag*/
 	event_select_set_fds(base, &instance->subscriber);	
 	return instance;
@@ -132,7 +132,7 @@ void * event_if_update(EventInstance this, EventHandler handler, EventSubscriber
 	EventSelect base = (EventSelect)this;
 	EventSelectHandler instance = (EventSelectHandler) handler;
 
-	DEBUG_ERRPRINT("event_update [%d]\n" , instance->subscriber.fd);
+	DEBUG_PRINT("event_update [%d]\n" , instance->subscriber.fd);
 	/*is different event?*/
 	if(instance->subscriber.eventflag != subscriber->eventflag) {
 		/*unset old, and set new*/
@@ -152,7 +152,7 @@ void event_if_del(EventInstance this, EventHandler handler) {
 	EventSelect base = (EventSelect)this;
 	EventSelectHandler instance = (EventSelectHandler) handler;
 
-	DEBUG_ERRPRINT("event_del [%d]\n" , instance->subscriber.fd);
+	DEBUG_PRINT("event_del [%d]\n" , instance->subscriber.fd);
 	/*change maxfd*/
 	if(base->tail == instance) {
 		if(base->tail->prev) {
@@ -217,7 +217,7 @@ int event_if_loop(EventInstance this) {
 			handler=handler->prev;
 		}
 	}
-	DEBUG_ERRPRINT("###exit main loop\n");
+	DEBUG_PRINT("###exit main loop\n");
 	return ret;
 }
 

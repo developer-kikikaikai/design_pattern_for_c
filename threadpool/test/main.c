@@ -3,7 +3,7 @@
 #include "test_main.h"
 
 int main() {
-//DPDEBUG_INIT_THREADSAFE
+DPDEBUG_INIT_THREADSAFE
 	static const char * pluginlist[] = {
 		EVENT_IF_PLUGIN_PATH"/libevent_if_libev.so",
 		EVENT_IF_PLUGIN_PATH"/libevent_if_libevent.so",

@@ -52,25 +52,39 @@ void dp_timelog_exit(DPTimeLog handle);
 /*************
  * define debug macro
 *************/
-#define DBGFLAG
+#define DEBUG_PRINT(...) 
+
+#define DBGFLAG/*if you want to disable all debug information, please comment out it*/
+//#define DBGFLAG_ALL/*if you want to enaable all debug(at threadpool)information, please enable itr*/
+
 #ifdef DBGFLAG
-#include <errno.h>
-#define DEBUG_ERRPRINT(...)  DEBUG_ERRPRINT_(__VA_ARGS__, "")
 #include <pthread.h>
 /*! global timelog handle to show debug log*/
 extern DPTimeLog timelog_g;
 /*! If you want to show deail log, please set DPDEBUG_INIT or DPDEBUG_INIT_THREADSAFE at start, and set DPDEBUG_EXIT at end*/
 #define DPDEBUG_INIT           timelog_g=dp_timelog_init(",", 2048, 8192, 0); dp_timelog_print(timelog_g,"init\n");
 /*! If you want to show deail log, please set DPDEBUG_INIT or DPDEBUG_INIT_THREADSAFE at start, and set DPDEBUG_EXIT at end*/
-#define DPDEBUG_INIT_THREADSAFE timelog_g=dp_timelog_init(",", 2048, 8192, 1); dp_timelog_print(timelog_g,"init\n");
+#define DPDEBUG_INIT_THREADSAFE timelog_g=dp_timelog_init(",", 2048, 1, 1); dp_timelog_print(timelog_g,"init\n");
+#include <errno.h>
+#define DEBUG_ERRPRINT(...)  DEBUG_ERRPRINT_(__VA_ARGS__, "")
 #define DEBUG_ERRPRINT_(fmt, ...)  \
         dp_timelog_print(timelog_g, "[%s(%s:%d)thread:%x]: "fmt"%s", __FUNCTION__,__FILE__,__LINE__,(unsigned int)pthread_self(), __VA_ARGS__)
 /*! If you want to show deail log, please set DPDEBUG_INIT or DPDEBUG_INIT_THREADSAFE at start, and set DPDEBUG_EXIT at end*/
 #define DPDEBUG_EXIT           dp_timelog_print(timelog_g,"exit\n");dp_timelog_exit(timelog_g);timelog_g=NULL;
-#else
+
+/*define DEBUG_PRINT*/
+#ifdef DBGFLAG_ALL
+#undef DEBUG_PRINT
+#define DEBUG_PRINT(...) DEBUG_ERRPRINT_(__VA_ARGS__, "")
+#endif
+
+#else/*DBGFLAG*/
+
 #define DPDEBUG_INIT
 #define DPDEBUG_INIT_THREDSAFE
 #define DEBUG_ERRPRINT(...) 
 #define DPDEBUG_EXIT
-#endif
-#endif
+
+#endif/*DBGFLAG*/
+
+#endif/*DP_UTIL_DEBUG_H_*/

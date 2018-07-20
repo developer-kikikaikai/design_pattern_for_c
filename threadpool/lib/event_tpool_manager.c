@@ -104,24 +104,24 @@ static int event_tpoll_get_far_right_bit_index(uint8_t data) {
 static void event_tpool_thread_set_fds(EventTPoolThreadInfo this, int fd) {
 	uint64_t place = EV_TPOLL_FDSU64PLACE(fd);
 	uint16_t place_u8 = EV_TPOLL_FDINDEX(fd,place)/EV_TPOLL_U8_BITSIZE;
-	DEBUG_ERRPRINT( "%s:place=%lu\n", __func__, place);
-	DEBUG_ERRPRINT( "%s:fds=%lx\n", __func__, this->fds[place].u64);
+	DEBUG_PRINT( "%s:place=%lu\n", __func__, place);
+	DEBUG_PRINT( "%s:fds=%lx\n", __func__, this->fds[place].u64);
 	this->fds[place].u8[place_u8] |= (0x1) << EV_TPOLL_FDINDEX_U8(fd,place, place_u8);
 }
 static void event_tpool_thread_unset_fds(EventTPoolThreadInfo this, int fd) {
-	DEBUG_ERRPRINT("%s:fd=%d\n", __func__, fd);
+	DEBUG_PRINT("%s:fd=%d\n", __func__, fd);
 	uint64_t place = EV_TPOLL_FDSU64PLACE(fd);
 	uint16_t place_u8 = EV_TPOLL_FDINDEX(fd,place)/EV_TPOLL_U8_BITSIZE;
-	DEBUG_ERRPRINT( "%s:place=%lu\n", __func__, place);
-	DEBUG_ERRPRINT( "%s:fds=%lx\n", __func__, this->fds[place].u64);
+	DEBUG_PRINT( "%s:place=%lu\n", __func__, place);
+	DEBUG_PRINT( "%s:fds=%lx\n", __func__, this->fds[place].u64);
 	this->fds[place].u8[place_u8] &= ~((0x1) << EV_TPOLL_FDINDEX_U8(fd,place,place_u8));
 }
 static int event_tpool_thread_is_set_fds(EventTPoolThreadInfo this, int fd) {
-	DEBUG_ERRPRINT("%s:fd=%d\n", __func__, fd);
+	DEBUG_PRINT("%s:fd=%d\n", __func__, fd);
 	uint64_t place = EV_TPOLL_FDSU64PLACE(fd);
 	uint16_t place_u8 = EV_TPOLL_FDINDEX(fd,place)/EV_TPOLL_U8_BITSIZE;
-	DEBUG_ERRPRINT( "%s:place=%lu\n", __func__, place);
-	DEBUG_ERRPRINT( "%s:fds=%lx\n", __func__, this->fds[place].u64);
+	DEBUG_PRINT( "%s:place=%lu\n", __func__, place);
+	DEBUG_PRINT( "%s:fds=%lx\n", __func__, this->fds[place].u64);
 	int ret = (this->fds[place].u8[place_u8] & ((0x1) << EV_TPOLL_FDINDEX_U8(fd,place,place_u8)) );
 	return ret;
 }
@@ -206,7 +206,7 @@ static EventTPoolThreadInfo event_tpool_thread_info_new(size_t thread_size, cons
 	size_t i=0;
 	for( i = 0; i < thread_size; i ++ ) {
 		//keep 64bit * EV_TPOLL_MAXFDS => 4096 fds place
-		DEBUG_ERRPRINT("info[%d]=%p!\n", i, current_p );
+		DEBUG_PRINT("info[%d]=%p!\n", i, current_p );
 		info[i].fds = (data_fds_u *)current_p;
 		current_p = info[i].fds + EV_TPOLL_MAXFDS;
 
@@ -256,7 +256,7 @@ static int event_tpool_manager_search_insert_thread(EventTPoolManager this, int 
 		if(event_tpool_thread_has_fd(&this->threads[i], fd)) {
 			*has_fd = 1;
 			threadid=i;
-			DEBUG_ERRPRINT("event_tpool_thread_has_fd, in %d\n", threadid);
+			DEBUG_PRINT("event_tpool_thread_has_fd, in %d\n", threadid);
 			break;
 		}
 

@@ -134,7 +134,6 @@ EventHandler event_if_add(EventInstance this, EventSubscriber subscriber, void *
 
 /** update registered event */
 void * event_if_update(EventInstance this, EventHandler handler, EventSubscriber subscriber, void *arg) {
-	DEBUG_ERRPRINT("Update!\n" );
 	EventLibevManager base = (EventLibevManager)this;
 	EventLibevHandler libev_handler = (EventLibevHandler)handler;
 	if(event_if_is_stop((EventLibevManager)this)) return NULL;
