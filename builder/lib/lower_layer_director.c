@@ -42,13 +42,15 @@ void lower_layer_director_free(LowerLayerDirector this) {
 
 	Director director =  this->director;
 
-	//destruct
-	director_destruct(director);
+	if(director) {
+		//destruct
+		director_destruct(director);
 
-	//interface free
-	director_interface_class_free(director, this->lower_layer_interface);
+		//interface free
+		director_interface_class_free(director, this->lower_layer_interface);
 
-	//director free
-	director_free(director);
+		//director free
+		director_free(director);
+	}
 	free(this);
 }
