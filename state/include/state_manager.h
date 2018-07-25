@@ -4,7 +4,8 @@
 **/
 #ifndef STATE_MANAGER_
 #define STATE_MANAGER_
-
+#include "dp_define.h"
+DP_H_BEGIN
 
 #define STATE_MNG_SUCCESS (0)
 #define STATE_MNG_FAILED (-1)
@@ -91,4 +92,5 @@ void state_manager_show(StateManager this);
  * @return none
  */
 void state_manager_free(StateManager this);
+DP_H_END
 #endif

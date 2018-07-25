@@ -4,6 +4,8 @@
 **/
 #ifndef PROTOTYPE_H
 #define PROTOTYPE_H
+#include "dp_define.h"
+DP_H_BEGIN
 
 /*! @struct prototype_manager_t
  * PrototypeManager class member definition, defined in prototype_manager.c
@@ -105,4 +107,5 @@ void * prototype_clone(PrototypeFactory this);
  * @return none
  */
 void prototype_free(PrototypeFactory this, void * cloned_data);
+DP_H_END
 #endif

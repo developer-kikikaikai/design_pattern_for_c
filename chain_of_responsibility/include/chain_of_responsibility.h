@@ -4,6 +4,8 @@
 **/
 #ifndef CHAIN_OF_RESPONSIBILITY_H_
 #define CHAIN_OF_RESPONSIBILITY_H_
+#include "dp_define.h"
+DP_H_BEGIN
 
 /*! 
  * @brief chain_api result type
@@ -86,4 +88,5 @@ void cor_remove_chain_element_part(const int id, ChainElementPart element);
  * @return none
  */
 void cor_clear(void);
+DP_H_END
 #endif

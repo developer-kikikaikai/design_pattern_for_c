@@ -4,6 +4,8 @@
 **/
 #ifndef EVENT_THREADPOOL_DATA_H_
 #define EVENT_THREADPOOL_DATA_H_
+#include "dp_define.h"
+DP_H_BEGIN
 
 /*! @name Used class name definition.*/
 /*@{*/
@@ -45,5 +47,6 @@ struct event_tpool_add_result_t {
 
 typedef struct event_tpool_add_result_t event_tpool_add_result_t;
 
+DP_H_END
 /*@}*/
 #endif

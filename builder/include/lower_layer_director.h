@@ -8,6 +8,7 @@
 #ifndef LOWER_LAYER_DIRECTOR_H_
 #define LOWER_LAYER_DIRECTOR_H_
 #include "lower_layer_builder.h"
+DP_H_BEGIN
 
 /*! @struct director_t
  * @brief director class member definition
@@ -53,5 +54,6 @@ int lower_layer_director_construct(LowerLayerDirector director, void * initial_p
  * @param[in] director  LowerLayerDirector class instance returned at lower_layer_director_construct
  */
 void lower_layer_director_free(LowerLayerDirector director);
+DP_H_END
 #endif
 

@@ -5,6 +5,9 @@
 #ifndef PUBLISHER_H_
 #define PUBLISHER_H_
 
+#include "dp_define.h"
+DP_H_BEGIN
+
 #include <stddef.h>
 
 #define PUBLISHER_SUCCESS (0)
@@ -69,4 +72,5 @@ void publisher_unsubscribe(int content_id, SubscriberAccount account);
  * @return none
  */
 void publisher_publish(int content_id, int publish_type, void * detail);
+DP_H_END
 #endif

@@ -4,6 +4,8 @@
 **/
 #ifndef DP_UTIL_DEBUG_H_
 #define DP_UTIL_DEBUG_H_
+#include "dp_define.h"
+DP_H_BEGIN
 
 #include <stddef.h>
 #include <stdarg.h>
@@ -87,4 +89,5 @@ extern DPTimeLog timelog_g;
 
 #endif/*DBGFLAG*/
 
+DP_H_END
 #endif/*DP_UTIL_DEBUG_H_*/

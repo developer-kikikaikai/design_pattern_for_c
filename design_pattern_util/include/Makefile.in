@@ -291,7 +291,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-include_HEADERS = dp_debug.h  dp_list.h  dp_mutex.h  dp_util.h
+include_HEADERS = dp_define.h dp_debug.h  dp_list.h  dp_mutex.h  dp_util.h
 all: all-am
 
 .SUFFIXES:

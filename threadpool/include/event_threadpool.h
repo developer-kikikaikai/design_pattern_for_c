@@ -5,6 +5,9 @@
 #ifndef EVENT_THREADPOOL_H_
 #define EVENT_THREADPOOL_H_
 #include "event_threadpool_data.h"
+#include "dp_define.h"
+DP_H_BEGIN
+
 /*! @name API for EventTPoolManager instance */
 /*@{*/
 /**
@@ -92,4 +95,5 @@ void event_tpool_atfork_child(EventTPoolManager this);
  */
 void event_tpool_set_stack_size(size_t stack_size);
 /*@}*/
+DP_H_END
 #endif

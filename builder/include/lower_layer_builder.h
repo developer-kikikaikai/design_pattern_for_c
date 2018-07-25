@@ -5,6 +5,9 @@ lower_layer_builder will load plugin defined this API. (this API will load by li
  **/
 #ifndef LOWER_LAYER_BUILDER_LIB_H_
 #define LOWER_LAYER_BUILDER_LIB_H_
+#include "dp_define.h"
+DP_H_BEGIN
+
 /*! result code : success */
 #define LL_BUILDER_SUCCESS (0)
 /*! result code : error */
@@ -30,4 +33,6 @@ void lower_layer_builder_instance_free(void * interfaceClass);
  * @brief name definition of plugin interface "free"
  */
 #define LL_BUILDER_FREENAME "lower_layer_builder_instance_free"
+
+DP_H_END
 #endif

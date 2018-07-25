@@ -6,6 +6,7 @@
 #define STATE_MACHINE_H_
 #include "state_manager.h"
 #include "event_threadpool.h"
+DP_H_BEGIN
 
 /*! @struct state_event_info_t
  * @brief event ID and related state functions
@@ -87,4 +88,5 @@ void state_machine_show(StateMachineInfo this);
  * @return none
  */
 void state_machine_free(StateMachineInfo this);
+DP_H_END
 #endif

@@ -4,6 +4,8 @@
 **/
 #ifndef MEMORYPOOL_H
 #define MEMORYPOOL_H
+#include "dp_define.h"
+DP_H_BEGIN
 /*! @struct memorypool_t
  * @brief MemoryPool class member definition, detail is defined in C file.
 */
@@ -70,4 +72,5 @@ size_t mpool_get_usedcnt(MemoryPool this);
  * @note not initialize memory
  */
 void mpool_release(MemoryPool this, void * ptr);
+DP_H_END
 #endif

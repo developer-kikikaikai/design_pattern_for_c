@@ -4,6 +4,8 @@
 **/
 #ifndef DPUTIL_LIST_H_
 #define DPUTIL_LIST_H_
+#include "dp_define.h"
+DP_H_BEGIN
 
 /*! @name List Structure */
 /* @{ */
@@ -38,4 +40,5 @@ void dputil_list_pull(DPUtilList this, DPUtilListData data);
 DPUtilListData dputil_list_pop(DPUtilList this);
 /* @} */
 
+DP_H_END
 #endif

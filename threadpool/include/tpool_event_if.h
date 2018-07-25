@@ -4,6 +4,8 @@
 **/
 #ifndef TPOOL_EVENT_IF_H_
 #define TPOOL_EVENT_IF_H_
+#include "dp_define.h"
+DP_H_BEGIN
 
 #include "event_threadpool_data.h"
 
@@ -85,4 +87,5 @@ void event_if_exit(EventInstance this);
  */
 void event_if_free(EventInstance this);
 /*@}*/
+DP_H_END
 #endif

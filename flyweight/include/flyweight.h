@@ -6,7 +6,8 @@
 #define FLYWEIGHT_H_
 
 #include <stddef.h>
-#include "dp_util.h"
+#include "dp_define.h"
+DP_H_BEGIN
 
 /*! @struct flyweight_methods_t
  * @brief Flyweight methods interface definition, to set flyweight_factory_new. This interface is used for generating instance into FlyweightFactory.
@@ -95,4 +96,6 @@ int flyweight_set(FlyweightFactory this, void * constructor_parameter, void * da
  * @return none
  */
 void flyweight_factory_free(FlyweightFactory this);
+
+DP_H_END
 #endif/*FLYWEIGHT_*/
