@@ -22,6 +22,7 @@
 struct director_t {
 	//public
 	pthread_t tid;
+	int is_sync;
 	int builder_method_cnt;
 	int (** builder_methods)(void * initial_parameter);
 	//private
@@ -192,20 +193,29 @@ err:
 	return NULL;
 }
 
-void director_construct(Director director, void * initial_parameter, void (*initial_result)(int result)) {
+int director_construct(Director director, void * initial_parameter, void (*initial_result)(void * initial_parameter, int result)) {
 
+	int ret = LL_BUILDER_SUCCESS;
 	builder_action_parameter_t parameter;
 	parameter.initial_parameter = initial_parameter;
 	parameter.initial_result = initial_result;
 	parameter.builder_method_cnt = director->builder_method_cnt;
 	parameter.builder_methods = director->builder_methods;
 
-	director->tid = builder_action_construct(&parameter);
+	if(parameter.initial_result) {
+		director->tid = builder_action_construct(&parameter);
+	} else {
+		director->is_sync = 1;
+		ret = builder_action_construct_sync(&parameter);
+	}
+	return ret;
 }
 
 void director_destruct(Director director) {
 	//to care constructing now
-	builder_action_destruct(director->tid);
+	if(!director->is_sync) {
+		builder_action_destruct(director->tid);
+	}
 }
 
 void * director_interface_class_new(Director this) {

@@ -42,11 +42,10 @@ LowerLayerDirector lower_layer_director_new(char * builder_lib_name, char * buil
  *
  * @param[in] director  LowerLayerDirector class instance returned at lower_layer_director_construct
  * @param[in] initial_parameter initialize parameter if you have
- * @param[in] initial_result initialize callback, result is in here
- * @return none
- * @note please keep initial_parameter on static field (define static or allocate memory)
+ * @param[in] initial_result initialize callback if you want to unsync call API, result is in here
+ * @return LL_BUILDER_SUCCESS or LL_BUILDER_FAILED
  */
-void lower_layer_director_construct(LowerLayerDirector director, void * initial_parameter, void (*initial_result)(int result));
+int lower_layer_director_construct(LowerLayerDirector director, void * initial_parameter, void (*initial_result)(void * initial_parameter, int result));
 
 /**
  * @brief director denstruct

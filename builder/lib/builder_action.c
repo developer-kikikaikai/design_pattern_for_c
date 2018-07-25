@@ -19,6 +19,8 @@ typedef builder_action_parameter_t *BuilderAction;
 
 /*! @name BuilderAction private method */
 /* @{ */
+/*! @brief run main */
+static int builder_action_main(BuilderAction this);
 /*! @brief run action */
 static void * builder_action_run(void * this);
 /* @} */
@@ -26,9 +28,7 @@ static void * builder_action_run(void * this);
 /*************
  * for BuilderAction method
 *************/
-
-static void * builder_action_run(void * arg) {
-	BuilderAction this = (BuilderAction) arg;
+static int builder_action_main(BuilderAction this) {
 	int i=0;
 	int ret = LL_BUILDER_SUCCESS;
 	//call builder methods
@@ -41,10 +41,17 @@ static void * builder_action_run(void * arg) {
 			}
 		}
 	}
+	return ret;
+}
+
+static void * builder_action_run(void * arg) {
+	BuilderAction this = (BuilderAction) arg;
+	int i=0;
+	int ret = builder_action_main(this);
 
 	//call result callback
 	if(this->initial_result) {
-		this->initial_result(ret);
+		this->initial_result(this->initial_parameter , ret);
 	}
 	free(this);
 	pthread_exit(NULL);
@@ -74,4 +81,10 @@ pthread_t builder_action_construct(builder_action_parameter_t * parameter) {
 	//free instance in builder_action_run
 	return tid;
 }
+
+int builder_action_construct_sync(builder_action_parameter_t * parameter) {
+
+	return builder_action_main(parameter);
+}
+
 /* @} */

@@ -31,8 +31,8 @@ err:
 	return NULL;
 }
 
-void lower_layer_director_construct(LowerLayerDirector this, void * initial_parameter, void (*initial_result)(int result)) {
-	director_construct(this->director, initial_parameter, initial_result);
+int lower_layer_director_construct(LowerLayerDirector this, void * initial_parameter, void (*initial_result)(void * initial_parameter, int result)) {
+	return director_construct(this->director, initial_parameter, initial_result);
 }
 
 void lower_layer_director_free(LowerLayerDirector this) {

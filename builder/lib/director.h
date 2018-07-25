@@ -11,7 +11,7 @@
 /*! @brief director new */
 Director director_new(char * builder_lib_name, char * builder_interface_conf);
 /*! @brief director construct */
-void director_construct(Director director, void * initial_parameter, void (*initial_result)(int result));
+int director_construct(Director director, void * initial_parameter, void (*initial_result)(void * initial_parameter, int result));
 /*! @brief director destruct */
 void director_destruct(Director director);
 /*! @brief interface class new */

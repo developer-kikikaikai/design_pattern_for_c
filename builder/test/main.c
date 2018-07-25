@@ -10,7 +10,7 @@
 #define OSSSUPPORT_PLUGIN_NAME "../sample_plugin/.libs/libossupport_device_plugin.so"
 
 static int result_g;
-static void initial_result(int result) {
+static void initial_result(void * initial_parameter, int result) {
 	printf("<%s> result=%d\n", __FUNCTION__, result);
 	result_g = result;
 }
