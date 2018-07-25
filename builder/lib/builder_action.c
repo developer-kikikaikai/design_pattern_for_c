@@ -8,6 +8,8 @@
 #include "builder_action.h"
 #include "dp_debug.h"
 
+#define THREAD_STACKSIZE (256 * 1024)/*suitable stack size*/
+
 /*************
  * public define
 *************/
@@ -77,7 +79,11 @@ pthread_t builder_action_construct(builder_action_parameter_t * parameter) {
 
 	memcpy(instance, parameter, sizeof(*instance));
 
-	pthread_create(&tid, NULL, builder_action_run, instance);
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setstacksize(&attr, THREAD_STACKSIZE);/*fix THREAD_STACKSIZE stack size*/
+	pthread_create(&tid, &attr, builder_action_run, instance);
+	pthread_attr_destroy(&attr);
 	//free instance in builder_action_run
 	return tid;
 }
