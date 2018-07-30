@@ -32,5 +32,5 @@ SUBDIRS+= prototype
 endif
 
 if USE_SAMPLE
-SUBDIRS+= mediator proxy combination_sample
+SUBDIRS+= mediator proxy command combination_sample
 endif
