@@ -1,0 +1,15 @@
+V.XXX
+- Builder: change interface of `lower_layer_director_construct` to get constructor parameter in callback.
+- Builder: change behavior of `lower_layer_director_construct`, switch sync or usync from input callback. NULL=>sync, return result at this API.
+
+V1.00
+Support following:
+- Builder
+- Singleton (contained in Flyweight)
+- Flyweight
+- Chain of Responsibility 
+- Observer(Publish-Subscribe) 
+- State 
+- Threadpool (with File disctriptor)
+- Memorypool
+- Prototype
