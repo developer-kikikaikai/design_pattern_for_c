@@ -95,7 +95,7 @@ host_triplet = @host@
 @USE_COR_TRUE@am__append_6 = chain_of_responsibility
 @USE_MEMPOOL_TRUE@am__append_7 = memorypool
 @USE_PROTOTYPE_TRUE@am__append_8 = prototype
-@USE_SAMPLE_TRUE@am__append_9 = mediator proxy command combination_sample
+@USE_SAMPLE_TRUE@am__append_9 = combination_sample
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -167,10 +167,10 @@ CTAGS = ctags
 CSCOPE = cscope
 DIST_SUBDIRS = design_pattern_util flyweight builder publisher \
 	threadpool state chain_of_responsibility memorypool prototype \
-	mediator proxy command combination_sample
+	combination_sample
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in README \
-	ar-lib compile config.guess config.sub install-sh ltmain.sh \
-	missing
+	ar-lib compile config.guess config.sub depcomp install-sh \
+	ltmain.sh missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)

@@ -302,13 +302,6 @@ AC_CONFIG_FILES([Makefile
 		 prototype/lib/Makefile
 		 prototype/include/Makefile
 		 prototype/test/Makefile
-		 mediator/Makefile
-		 mediator/sample/Makefile
-		 proxy/Makefile
-		 proxy/sample1/Makefile
-		 proxy/sample2/Makefile
-		 command/Makefile
-		 command/sample/Makefile
 		 combination_sample/Makefile
 		 combination_sample/publisher_with_fd/Makefile
 		 ])
