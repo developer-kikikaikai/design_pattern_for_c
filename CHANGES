@@ -1,6 +1,16 @@
 V.XXX
+NEW:
+- Mement ; Add new
+
+Change Spec:
 - Builder: change interface of `lower_layer_director_construct` to get constructor parameter in callback.
 - Builder: change behavior of `lower_layer_director_construct`, switch sync or usync from input callback. NULL=>sync, return result at this API.
+- Builder: fix stack size of local thread, which call lower_layer_builder API
+- Common: Add extern C option in all header for C++
+- Common: Move patterns which have only sample code to design_pattern_for_c_appendix
+
+Bug fix:
+- Builder: Fix to fail to load lib
 
 V1.00
 Support following:

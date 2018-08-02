@@ -47,8 +47,11 @@
  - I checked Debian=> Ubuntu 18.04, Redhat=>CentOS 7.5.1804
 
 # Latest Version 
- V1.00
+ Stable: V1.00
  Please see [here](https://github.com/developer-kikikaikai/design_pattern_for_c/releases).
+
+ Current: master code
+ Please see [here](https://github.com/developer-kikikaikai/design_pattern_for_c)
 
 # Support libraries
 
@@ -61,12 +64,11 @@
 - Threadpool (with File disctriptor)
 - Memorypool
 - Prototype
+- Mement
 
 Almost of other pattern will create sample.
 
 # Detail: all design pattern libraries
-
-*Not yet* means planning now
 
 Related to Create:
 
@@ -80,28 +82,28 @@ Related to Create:
 
 Related to Construct:
 
-  |name            |support| exist sample  |  other                                     |
-  |:---------------|:-----:|:-------------:|:------------------------------------------:|
-  |Flyweight       |  Yes  | see flyweight |                                            |
-  |Adapter         |  No   | create future |                                            |
-  |Bridge          |  No   | create future |                                            |
-  |Composite       |  No   |   No          | Please use a tree or a list as dp_list.h   |
-  |Decorator       |  No   | create future |                                            |
-  |Facade          |  No   | create future |                                            |
-  |Proxy           |  No   | see proxy     | Please switch by library/dlopen/LD_PRELOAD |
+  |name            |support| exist sample    |  other                                     |
+  |:---------------|:-----:|:---------------:|:------------------------------------------:|
+  |Flyweight       |  Yes  | see flyweight   |                                            |
+  |Adapter         |  No   | create future   |                                            |
+  |Bridge          |  No   | create future   |                                            |
+  |Composite       |  No   |   No            | Please use a tree or a list as dp_list.h   |
+  |Decorator       |  No   | create future   |                                            |
+  |Facade          |  No   | create future   |                                            |
+  |Proxy           |  No   | see other repos | Switch by library/dlopen/LD_PRELOAD        |
 
 Related to Behavior:
 
   |name                        |support| exist sample              |  other                        |
   |:---------------------------|:-----:|:-------------------------:|:-----------------------------:|
   |Chain of Responsibility     |  Yes  | see ChainOfResponsibility |                               |
-  |Observer(Publish-Subscribe) |  Yes  | see publisher             |                               |
+  |Observer(Publish-Subscribe) |  Yes  | see publisher <br> or combination_sample/publisher_with_fd ||
   |State                       |  Yes  | see state                 | State and StateMachine lib    |
-  |Command                     |Not yet| create future             |                               |
-  |Mediator                    |  No   | see mediator              |                               |
+  |Command                     |  No   | see other repos           |                               |
+  |Mediator                    |  No   | see other repos           |                               |
   |Interpreter                 |  No   | No                        | There is no skill             |
   |Iterator                    |  No   | No                        | Please use list as dp_list.h  |
-  |Memento                     |  No   | create future             |                               |
+  |Memento                     |  Yes  | see mement                |                               |
   |Strategy                    |  No   | create future             |                               |
   |Template Method             |  No   | Not yet                   |                               |
   |Visitor                     |  No   | create future             |                               |
@@ -119,6 +121,8 @@ Other:
   |Memorypool                  |  Yes  | see memorypool            | Also it can use as Prototype  |
 
   If you want to see detail, please see [here](https://qiita.com/developer-kikikaikai/items/8e7858c130c8ae8df488) (Japanese website) 
+
+  Sample without support is in [here](https://github.com/developer-kikikaikai/design_patter_for_c_appendix).
 
 # Detail of libraries code
 
