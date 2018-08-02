@@ -131,3 +131,19 @@ If you want to see detail of code, please see [doxgen file in here](https://deve
 # License
   Almost of this software is released under the MIT License, see [LICENSE file in this package](https://github.com/developer-kikikaikai/design_pattern_for_c/blob/master/LICENSE).
   Only libevent_if_libev plugin is released under the GNU General Public License ("GPL") version 2 or any later version. Please see LICENSE.GPL
+
+# Sample case
+
+I try to modify [lighttpd](https://github.com/lighttpd/lighttpd1.4) (which is light memory/cpu/speed httpd server) for using this package.
+And I success to do following:
+
+- Multi-thread connection by using threadpool and state machine
+- Faster access of memory by using memorypool
+- Reuse same header types by using flyweight
+- Register some settings and clone it by using prototype.
+- Communication between main and connections by observer.
+
+Other libraries is not better to use for it, so I only write test code for other.
+
+This sample repository is [here](https://github.com/developer-kikikaikai/lighttpd_multithread) .
+(lighttpd_multithread is only for sample, please care it.)
