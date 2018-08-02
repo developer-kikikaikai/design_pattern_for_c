@@ -89,7 +89,7 @@ AC_ARG_ENABLE(threadpool-libevent,
 tpool_event_libevevent=no
 if [ test "${with_plugin_libevent}" = "yes" ]; then
   PKG_CHECK_MODULES( [LIBEVENT], [libevent], [
-     AC_CHECK_LIB([event],[event_new]),
+     AC_CHECK_LIB([event],[event_new])
      tpool_event_libevent="yes"
    ], [
      AC_CHECK_HEADERS(
@@ -231,6 +231,17 @@ AC_ARG_WITH([prototype],
 #check flag
 AM_CONDITIONAL([USE_PROTOTYPE], [test "$with_prototype" = yes])
 
+#without mement
+AC_ARG_WITH([mement],
+  [AC_HELP_STRING([--without-mement],
+    [exclude mement library]
+  )],
+  [with_mement=$withval],
+  [with_mement=yes]
+)
+#check flag
+AM_CONDITIONAL([USE_MEMENT], [test "$with_mement" = yes])
+
 #without sample
 AC_ARG_WITH([sample],
   [AC_HELP_STRING([--without-sample],
@@ -302,6 +313,10 @@ AC_CONFIG_FILES([Makefile
 		 prototype/lib/Makefile
 		 prototype/include/Makefile
 		 prototype/test/Makefile
+		 mement/Makefile
+		 mement/lib/Makefile
+		 mement/include/Makefile
+		 mement/test/Makefile
 		 combination_sample/Makefile
 		 combination_sample/publisher_with_fd/Makefile
 		 ])

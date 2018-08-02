@@ -31,6 +31,10 @@ if USE_PROTOTYPE
 SUBDIRS+= prototype
 endif
 
+if USE_MEMENT
+SUBDIRS+= mement
+endif
+
 if USE_SAMPLE
 SUBDIRS+= combination_sample
 endif

@@ -306,6 +306,7 @@ STATE_DIR = $(top_srcdir)/state
 THREADPOOL_DIR = $(top_srcdir)/threadpool
 MEMPOOL_DIR = $(top_srcdir)/memorypool
 PROTOTYPE_DIR = $(top_srcdir)/prototype
+MEMENT_DIR = $(top_srcdir)/mement
 AM_CPPFLAGS = -I$(DPUTIL_DIR)/include/ $(GCOV_OPT)
 INCLUDES_PATH = $(DPUTIL_DIR)/include/
 test_CFLAGS = -g -O0 

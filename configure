@@ -635,6 +635,8 @@ LTLIBOBJS
 LIBOBJS
 USE_SAMPLE_FALSE
 USE_SAMPLE_TRUE
+USE_MEMENT_FALSE
+USE_MEMENT_TRUE
 USE_PROTOTYPE_FALSE
 USE_PROTOTYPE_TRUE
 USE_MEMPOOL_FALSE
@@ -805,6 +807,7 @@ with_flyweight
 with_cor
 with_memorypool
 with_prototype
+with_mement
 with_sample
 '
       ac_precious_vars='build_alias
@@ -1500,6 +1503,7 @@ Optional Packages:
                           flyweight is excluded, exclude it.
   --without-memorypool    exclude memorypool library
   --without-prototype     exclude prototype library
+  --without-mement        exclude mement library
   --without-sample        exclude only sample design pattern compile
 
 Some influential environment variables:
@@ -13807,7 +13811,7 @@ _ACEOF
   LIBS="-levent $LIBS"
 
 fi
-,
+
      tpool_event_libevent="yes"
 
 fi
@@ -14036,6 +14040,26 @@ else
 fi
 
 
+#without mement
+
+# Check whether --with-mement was given.
+if test "${with_mement+set}" = set; then :
+  withval=$with_mement; with_mement=$withval
+else
+  with_mement=yes
+
+fi
+
+#check flag
+ if test "$with_mement" = yes; then
+  USE_MEMENT_TRUE=
+  USE_MEMENT_FALSE='#'
+else
+  USE_MEMENT_TRUE='#'
+  USE_MEMENT_FALSE=
+fi
+
+
 #without sample
 
 # Check whether --with-sample was given.
@@ -14076,7 +14100,7 @@ fi
 #  AC_SUBST([GCOV_OPT])
 #fi
 
-ac_config_files="$ac_config_files Makefile design_pattern_util/Makefile design_pattern_util/lib/Makefile design_pattern_util/include/Makefile design_pattern_util/sample/Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile publisher/Makefile publisher/lib/Makefile publisher/include/Makefile publisher/test/Makefile publisher/sample/Makefile chain_of_responsibility/Makefile chain_of_responsibility/lib/Makefile chain_of_responsibility/include/Makefile chain_of_responsibility/test/Makefile threadpool/Makefile threadpool/lib/Makefile threadpool/event_if/Makefile threadpool/include/Makefile threadpool/test/Makefile state/Makefile state/lib/Makefile state/include/Makefile state/test/Makefile memorypool/Makefile memorypool/lib/Makefile memorypool/include/Makefile memorypool/test/Makefile prototype/Makefile prototype/lib/Makefile prototype/include/Makefile prototype/test/Makefile combination_sample/Makefile combination_sample/publisher_with_fd/Makefile"
+ac_config_files="$ac_config_files Makefile design_pattern_util/Makefile design_pattern_util/lib/Makefile design_pattern_util/include/Makefile design_pattern_util/sample/Makefile flyweight/Makefile flyweight/lib/Makefile flyweight/include/Makefile flyweight/test/Makefile builder/Makefile builder/lib/Makefile builder/include/Makefile builder/sample_plugin/Makefile builder/test/Makefile publisher/Makefile publisher/lib/Makefile publisher/include/Makefile publisher/test/Makefile publisher/sample/Makefile chain_of_responsibility/Makefile chain_of_responsibility/lib/Makefile chain_of_responsibility/include/Makefile chain_of_responsibility/test/Makefile threadpool/Makefile threadpool/lib/Makefile threadpool/event_if/Makefile threadpool/include/Makefile threadpool/test/Makefile state/Makefile state/lib/Makefile state/include/Makefile state/test/Makefile memorypool/Makefile memorypool/lib/Makefile memorypool/include/Makefile memorypool/test/Makefile prototype/Makefile prototype/lib/Makefile prototype/include/Makefile prototype/test/Makefile mement/Makefile mement/lib/Makefile mement/include/Makefile mement/test/Makefile combination_sample/Makefile combination_sample/publisher_with_fd/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -14262,6 +14286,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_PROTOTYPE_TRUE}" && test -z "${USE_PROTOTYPE_FALSE}"; then
   as_fn_error $? "conditional \"USE_PROTOTYPE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_MEMENT_TRUE}" && test -z "${USE_MEMENT_FALSE}"; then
+  as_fn_error $? "conditional \"USE_MEMENT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_SAMPLE_TRUE}" && test -z "${USE_SAMPLE_FALSE}"; then
@@ -15186,6 +15214,10 @@ do
     "prototype/lib/Makefile") CONFIG_FILES="$CONFIG_FILES prototype/lib/Makefile" ;;
     "prototype/include/Makefile") CONFIG_FILES="$CONFIG_FILES prototype/include/Makefile" ;;
     "prototype/test/Makefile") CONFIG_FILES="$CONFIG_FILES prototype/test/Makefile" ;;
+    "mement/Makefile") CONFIG_FILES="$CONFIG_FILES mement/Makefile" ;;
+    "mement/lib/Makefile") CONFIG_FILES="$CONFIG_FILES mement/lib/Makefile" ;;
+    "mement/include/Makefile") CONFIG_FILES="$CONFIG_FILES mement/include/Makefile" ;;
+    "mement/test/Makefile") CONFIG_FILES="$CONFIG_FILES mement/test/Makefile" ;;
     "combination_sample/Makefile") CONFIG_FILES="$CONFIG_FILES combination_sample/Makefile" ;;
     "combination_sample/publisher_with_fd/Makefile") CONFIG_FILES="$CONFIG_FILES combination_sample/publisher_with_fd/Makefile" ;;
 
