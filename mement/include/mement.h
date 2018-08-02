@@ -14,13 +14,6 @@ struct mement_register_t;
 /*! MementRegister class definition, member is defined in mement_manager_t */
 typedef struct mement_register_t *MementRegister;
 
-/*! @struct mement_factory_t
- * PrototypeFactory methods interface definition, to set mement_register.
-*/
-struct mement_factory_t;
-/*! PrototypeFactory class definition, member is defined in mement_factory_t */
-typedef struct mement_factory_t *PrototypeFactory;
-
 /*! @struct mement_method_t
  * MementMethod methods interface definition, to set mement_register.
 */
