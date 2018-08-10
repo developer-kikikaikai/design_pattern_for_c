@@ -118,29 +118,38 @@ AC_ARG_ENABLE(threadpool-select,
 #without threadpool event_if
 # without libepoll
 AC_ARG_ENABLE(threadpool-epoll,
-  [AC_HELP_STRING([--without-threadpool-epoll],
+  [AC_HELP_STRING([--disable-threadpool-epoll],
     [disable event_if_epoll pluigni plugin_if_epoll.so,  [[default=yes]]]
   )],
   [tpool_event_epoll="$withval"],
   [tpool_event_epoll="yes"]
 )
 
+#change threadpool fd max
+AC_ARG_WITH([threadpool-maxfd],
+  [AC_HELP_STRING([--with-threadpool-maxfd=value],
+    [set max fd size (default: 64). fd size of select is always fixed at 15]
+  )],
+  [threadpool_maxfd=$withval],
+  [threadpool_maxfd=64]
+)
+
 #check flag
 event_other_select="no"
 if [ test "$tpool_event_libev" = "yes" ]; then
-   AC_MSG_NOTICE([======threadpool event:libev (default priority 1)===============])
+   AC_MSG_NOTICE([======threadpool event:libev (default: unuse)===============])
    event_other_select="yes"
 fi
 if [ test "$tpool_event_libevent" = "yes" ]; then
-   AC_MSG_NOTICE([======threadpool event:libevent(default priority 2)============])
+   AC_MSG_NOTICE([======threadpool event:libevent(default priority 1)============])
    event_other_select="yes"
 fi
 if [ test "$tpool_event_epoll" = "yes" ]; then
-   AC_MSG_NOTICE([======threadpool event:epoll(default priority 3)================])
+   AC_MSG_NOTICE([======threadpool event:epoll(default priority 2)================])
    event_other_select="yes"
 fi
 if [ test "$tpool_event_select" = "yes" ]; then
-  AC_MSG_NOTICE([======threadpool event:selectdefault priority 4==============])
+  AC_MSG_NOTICE([======threadpool event:select(default priority 3)==============])
 fi
 
 AM_CONDITIONAL([TPOOLEVENT_LIBEVENT], [test "$tpool_event_libevent" = "yes"])
@@ -156,8 +165,10 @@ if [ test "$tpool_event_select" = "yes" ]; then
 fi
 
 if [ test "$event_other_select" = "yes" ] ; then
-	AC_DEFINE([EV_TPOLL_MAXFDS], [64], ["Define Threadpool MAX FD SIZE (this value * 64)"])
+	AC_DEFINE([EV_TPOLL_MAXFDS], [1], ["Define Threadpool MAX FD SIZE (this value * 64)"])
+	$as_echo "#define EV_TPOLL_MAXFDS ${threadpool_maxfd}" >>confdefs.h
 fi
+
 #add prefix path
 AC_DEFINE([EVENT_IF_PLUGIN_PATH], ["dummy"], ["Define path of default plugin"])
 case ${prefix} in

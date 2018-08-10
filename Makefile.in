@@ -170,8 +170,8 @@ DIST_SUBDIRS = design_pattern_util flyweight builder publisher \
 	threadpool state chain_of_responsibility memorypool prototype \
 	mement combination_sample
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in README \
-	ar-lib compile config.guess config.sub install-sh ltmain.sh \
-	missing
+	ar-lib compile config.guess config.sub depcomp install-sh \
+	ltmain.sh missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)

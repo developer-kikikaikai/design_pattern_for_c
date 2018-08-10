@@ -801,6 +801,7 @@ enable_threadpool_libev
 enable_threadpool_libevent
 enable_threadpool_select
 enable_threadpool_epoll
+with_threadpool_maxfd
 with_publisher
 with_state
 with_flyweight
@@ -1478,7 +1479,7 @@ Optional Features:
   --disable-threadpool-select
                           disable event_if_select pluigni plugin_if_select.so,
                           [[default=yes]]
-  --without-threadpool-epoll
+  --disable-threadpool-epoll
                           disable event_if_epoll pluigni plugin_if_epoll.so,
                           [[default=yes]]
 
@@ -1495,6 +1496,9 @@ Optional Packages:
                           compiler's sysroot if not specified).
   --without-builder       exclude builder pattern library
   --without-threadpool    exclude threadpool pattern library.
+  --with-threadpool-maxfd=value
+                          set max fd size (default: 64). fd size of select is
+                          always fixed at 15
   --without-publisher     exclude publisher pattern library
   --without-state         exclude state pattern/state machine library, if
                           threadpool is excluded, exclude it.
@@ -13840,26 +13844,37 @@ else
 fi
 
 
+#change threadpool fd max
+
+# Check whether --with-threadpool-maxfd was given.
+if test "${with_threadpool_maxfd+set}" = set; then :
+  withval=$with_threadpool_maxfd; threadpool_maxfd=$withval
+else
+  threadpool_maxfd=64
+
+fi
+
+
 #check flag
 event_other_select="no"
 if  test "$tpool_event_libev" = "yes" ; then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: ======threadpool event:libev (default priority 1)===============" >&5
-$as_echo "$as_me: ======threadpool event:libev (default priority 1)===============" >&6;}
+   { $as_echo "$as_me:${as_lineno-$LINENO}: ======threadpool event:libev (default: unuse)===============" >&5
+$as_echo "$as_me: ======threadpool event:libev (default: unuse)===============" >&6;}
    event_other_select="yes"
 fi
 if  test "$tpool_event_libevent" = "yes" ; then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: ======threadpool event:libevent(default priority 2)============" >&5
-$as_echo "$as_me: ======threadpool event:libevent(default priority 2)============" >&6;}
+   { $as_echo "$as_me:${as_lineno-$LINENO}: ======threadpool event:libevent(default priority 1)============" >&5
+$as_echo "$as_me: ======threadpool event:libevent(default priority 1)============" >&6;}
    event_other_select="yes"
 fi
 if  test "$tpool_event_epoll" = "yes" ; then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: ======threadpool event:epoll(default priority 3)================" >&5
-$as_echo "$as_me: ======threadpool event:epoll(default priority 3)================" >&6;}
+   { $as_echo "$as_me:${as_lineno-$LINENO}: ======threadpool event:epoll(default priority 2)================" >&5
+$as_echo "$as_me: ======threadpool event:epoll(default priority 2)================" >&6;}
    event_other_select="yes"
 fi
 if  test "$tpool_event_select" = "yes" ; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: ======threadpool event:selectdefault priority 4==============" >&5
-$as_echo "$as_me: ======threadpool event:selectdefault priority 4==============" >&6;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: ======threadpool event:select(default priority 3)==============" >&5
+$as_echo "$as_me: ======threadpool event:select(default priority 3)==============" >&6;}
 fi
 
  if test "$tpool_event_libevent" = "yes"; then
@@ -13908,9 +13923,11 @@ fi
 
 if  test "$event_other_select" = "yes"  ; then
 
-$as_echo "#define EV_TPOLL_MAXFDS 64" >>confdefs.h
+$as_echo "#define EV_TPOLL_MAXFDS 1" >>confdefs.h
 
+	$as_echo "#define EV_TPOLL_MAXFDS ${threadpool_maxfd}" >>confdefs.h
 fi
+
 #add prefix path
 
 $as_echo "#define EVENT_IF_PLUGIN_PATH \"dummy\"" >>confdefs.h
