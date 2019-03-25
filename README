@@ -14,9 +14,9 @@
   Please download from [here](https://github.com/developer-kikikaikai/design_pattern_for_c/releases).
 
   Before build:
-  1. Please install gcc, autoconf libtool
-     Debian: apt install autoconf libtool
-     Redhat: yum install gcc autoconf libtool
+  1. Please install gcc, autoconf libtool and pkg-config
+     Debian: apt install autoconf libtool pkg-config
+     Redhat: yum install gcc autoconf libtool 
 
   2. Please install libevent if you want to use plugin of libevent.
      Debian: apt install libevent-dev
