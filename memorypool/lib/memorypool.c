@@ -33,7 +33,7 @@ static int get_bit_digit_index_over_size(uint64_t size) {
 /* @} */
 
 /*! @struct memorypool_t*
- *  definition of malloc manage data, to search data fast, add buffer_unused list and unfull list for check buffer_unused (because buffer_unused will over 
+ *  definition of malloc manage data, to search data fast
 /* @{ */
 typedef struct maloc_data_t {
 	struct maloc_data_t * next;
@@ -122,7 +122,7 @@ static inline void * mpool_get_memory(MemoryPool this) {
 		mpool_list_push(this, memory);
 		return memory->mem;
 	} else {
-		printf("nused\n");
+		printf("used\n");
 		return NULL;
 	}
 }
@@ -145,7 +145,7 @@ static inline void * mpool_get_next_memory(MemoryPool this, void * ptr) {
 }
 
 static inline void mpool_unuse_memory(MemoryPool this, void *ptr) {
-	//get plage of memory, and get list from this place
+	//get place of memory, and get list from this place
 	uint64_t place = mpool_get_buffer_place(this, this->user_buf, ptr);
 	malloc_data_t * memory = (malloc_data_t *)(this->buf + (sizeof(malloc_data_t) * place));
 
@@ -189,30 +189,30 @@ MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, voi
 	instance->slide_bit = slide_bit;
 	instance->max_size = max_size;	
 	instance->max_cnt = max_cnt;
-	void *correut = (instance + 1);
+	void *current = (instance + 1);
 	//set lock
 	if(is_multithread) {
-		instance->lock=(pthread_mutex_t *) (correut);
-		correut = instance->lock + 1;
+		instance->lock=(pthread_mutex_t *) (current);
+		current = instance->lock + 1;
 		pthread_mutex_init(instance->lock, NULL);
 	} else {
 		instance->lock = NULL;
 	}
 
 	//keep pointer line, head is list of malloc_data_t
-	instance->buf = (uint8_t *)(correut);
-	correut = instance->buf + max_cnt * sizeof(malloc_data_t);
+	instance->buf = (uint8_t *)(current);
+	current = instance->buf + max_cnt * sizeof(malloc_data_t);
 
 	//set user pointer list
-	instance->user_buf = correut;
+	instance->user_buf = current;
 
 	//set user pointer list
 	malloc_data_t * memory;
 	int i=0;
 	for(i=0;i<max_cnt;i++) {
 		memory = (malloc_data_t *)(instance->buf + (sizeof(malloc_data_t) * i));
-		memory->mem = correut;
-		correut = memory->mem + max_size;
+		memory->mem = current;
+		current = memory->mem + max_size;
 		if(constructor) constructor(memory->mem, constructor_parameter);
 		mpool_list_push(instance, memory);
 	}
