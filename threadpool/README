@@ -8,7 +8,7 @@
 
   Please see wiki "https://github.com/developer-kikikaikai/design_pattern_for_c/wiki/Threadpool" for more detai.
 
-#To use full fd
+# To use full fd
 
 Please update /etc/sysctl.conf
 
@@ -24,4 +24,12 @@ and up /etc/security/limits.conf like
 *    hard nofile 8192
 root soft nofile 8192
 root hard nofile 8192
+```
+
+# How to check max of fds?
+
+Please check
+
+```
+ulimit -Sn
 ```

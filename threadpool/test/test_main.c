@@ -12,6 +12,40 @@
 #include <errno.h>
 #include "test_main.h"
 
+#define TESTDATA_MAX (EV_TPOLL_MAXFDS * 64)
+static int test_tpoll_get_maxfd() {
+	//check max fd
+	FILE * fp = popen(" ulimit -Sn", "r");
+	if(!fp) return -1;
+	char buffer[16]={0};
+	if(fgets(buffer, sizeof(buffer), fp) ==NULL) return -1;
+	pclose(fp);
+	return atoi(buffer);
+}
+
+static int test_tpoll_used_fd() {
+	//check max fd
+	pid_t pid = getpid();
+	char cmd[36]={0};
+	snprintf(cmd, sizeof(cmd), "ls /proc/%d/fd | wc -l", pid);
+	FILE * fp = popen(cmd, "r");
+	if(!fp) return -1;
+	char buffer[16]={0};
+	if(fgets(buffer, sizeof(buffer), fp) ==NULL) return -1;
+	pclose(fp);
+	return atoi(buffer);
+}
+
+//Get max size of fd
+static int test_tpoll_get_max_testfd() {
+	//check max fd
+	int maxfd = test_tpoll_get_maxfd();
+	int usedfd = test_tpoll_used_fd();
+
+	if((0 < maxfd) && (0 <= usedfd) && (maxfd - usedfd) < TESTDATA_MAX) return maxfd - usedfd;
+	return TESTDATA_MAX;
+}
+
 int test_tpoll_failsafe(const char * plugin) {
 	event_tpool_manager_free(NULL);
 
@@ -533,26 +567,29 @@ static void testfunc_end(int fd, int eventflag, void * arg) {
 
 int test_tpoll_maxfd(const char * plugin) {
 	testdata_t testdata={0};
-	int fd = 0;
 	event_subscriber_t subscriber[TESTDATA_MAX];
 	EventTPoolManager tpool = event_tpool_manager_new(4, 1, plugin);
 	testdata.tpool = tpool;
 
+	int maxtestfd = test_tpoll_get_max_testfd();
 	int max=0;
 	int i=0;
-	for(i=0;i<TESTDATA_MAX;i++) {
-		subscriber[i].fd = eventfd(0,0);;
+	for(i=0;i<maxtestfd;i++) {
+		subscriber[i].fd = eventfd(0,0);
 		if(subscriber[i].fd < 0) {
 			DEBUG_ERRPRINT("####Failed to call event_tpool_add[%d]\n", i);
 			return -1;
 		}
 		subscriber[i].eventflag=EV_TPOOL_READ;
+		//normal test
 		subscriber[i].event_callback = testfunc;
-		if(TESTDATA_MAX <= subscriber[i].fd) {
+		//care max test fd size < soft fd resource limit 
+		if(maxtestfd <= subscriber[i].fd) {
 			max=i;
 			break;
 		}
 	}
+	//callack for exit this event
 	subscriber[max].event_callback = testfunc_end;
 
 	//add all event
@@ -567,20 +604,24 @@ int test_tpoll_maxfd(const char * plugin) {
 	}
 
 	usleep(10000);
+	//exit event
 	result[max] = event_tpool_add(tpool, &subscriber[max], &testdata);
 	pthread_mutex_lock(&lock);
+	//send exit event
 	eventfd_write(subscriber[max].fd, 1);
 
 	struct timespec timeout;
 	clock_gettime(CLOCK_REALTIME, &timeout);
 	timeout.tv_sec += 10;
+	//wait exit
 	int ret = pthread_cond_timedwait(&cond, &lock, &timeout);
 	pthread_mutex_unlock(&lock);
 	if(ret == ETIMEDOUT) {
 		DEBUG_ERRPRINT("####Failed to call end\n");
 		return -1;
 	}
-	
+
+	//called count
 	if(testdata.callcnt != max+1 || strcmp(testdata.funcname, "testfunc") != 0) {
 		DEBUG_ERRPRINT("####Failed to call event_tpool_add callback event, cnt=%d\n",testdata.callcnt);
 		return -1;
@@ -625,7 +666,7 @@ int test_tpoll_maxfd(const char * plugin) {
 
 	//end
 	event_tpool_manager_free(tpool);
-	for(i=0;i<=max;i++) {
+	for(i=0;i<=maxtestfd;i++) {
 		close(subscriber[i].fd);
 	}
 	return 0;
@@ -633,14 +674,14 @@ int test_tpoll_maxfd(const char * plugin) {
 
 int test_tpoll_free(const char * plugin) {
 	testdata_t testdata={0};
-	int fd = 0;
 	event_subscriber_t subscriber[TESTDATA_MAX];
 	EventTPoolManager tpool = event_tpool_manager_new(-1, 1, plugin);
 	testdata.tpool = tpool;
 
+	int maxtestfd = test_tpoll_get_max_testfd();
 	int max=0;
 	int i=0;
-	for(i=0;i<TESTDATA_MAX;i++) {
+	for(i=0;i<maxtestfd;i++) {
 		subscriber[i].fd = eventfd(0,0);;
 		if(subscriber[i].fd < 0) {
 			DEBUG_ERRPRINT("####Failed to call event_tpool_add[%d]\n", i);
@@ -648,7 +689,7 @@ int test_tpoll_free(const char * plugin) {
 		}
 		subscriber[i].eventflag=EV_TPOOL_READ;
 		subscriber[i].event_callback = testfunc;
-		if(TESTDATA_MAX <= subscriber[i].fd) {
+		if(maxtestfd <= subscriber[i].fd) {
 			max=i;
 			break;
 		}
@@ -666,7 +707,7 @@ int test_tpoll_free(const char * plugin) {
 
 	//free before delete all
 	event_tpool_manager_free(tpool);
-	for(i=0; i<=max; i++) {
+	for(i=0; i<=maxtestfd; i++) {
 		close(subscriber[i].fd);
 	}
 	return 0;

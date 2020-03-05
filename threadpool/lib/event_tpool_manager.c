@@ -19,7 +19,7 @@
 /*@{*/
 /*! thread instance and fd list */
 /*Fix size of max fds 4096 value FD (to care sign */
-//#define EV_TPOLL_MAXFDS (64)
+//#define EV_TPOLL_MAXFDS (64) //defined in configure option. Default is 64
 #define EV_TPOLL_U64_BITSIZE (64)
 #define EV_TPOLL_U8_BITSIZE (8)
 #define EV_TPOLL_USABLE_BITSIZE (64)
