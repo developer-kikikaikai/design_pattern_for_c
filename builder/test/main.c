@@ -15,14 +15,14 @@ static void initial_result(void * initial_parameter, int result) {
 	result_g = result;
 }
 
-int main(int argc, char argv[]) {
+int main(int argc, char *argv[]) {
 	printf("If not set parameter=> try to load %s\n", USBPLUGIN_NAME);
 	printf("Otherwise=> try to load %s\n", OSSSUPPORT_PLUGIN_NAME);
 
 	char *libname[]={USBPLUGIN_NAME, OSSSUPPORT_PLUGIN_NAME};
 
-	int i=0;
-	for(i<0;i<sizeof(libname)/sizeof(libname[0]);i++) {
+	int i;
+	for(i=0;i<sizeof(libname)/sizeof(libname[0]);i++) {
 
 		printf("load %s\n", libname[i]);
 		LowerLayerDirector director = lower_layer_director_new(libname[i], CONFNAME);

@@ -277,7 +277,7 @@ SMACHINE_LOCK(this);
 
 		free(msg);
 	}
-SMACHINE_UNLOCK(this);
+SMACHINE_UNLOCK
 }
 
 /*! for multi thread, open socket */

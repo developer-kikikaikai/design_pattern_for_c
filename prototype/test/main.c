@@ -292,7 +292,7 @@ static int test_prototype_multi_thread() {
 	return result;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 	if(test_prototype_fail_safe()) {
 		ERRORCASE
 	}

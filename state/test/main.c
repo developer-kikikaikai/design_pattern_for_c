@@ -2,7 +2,7 @@
 #include "test_state_manager.h"
 #include "test_state_machine.h"
 
-int main() {
+int main(int argc, char *argv[]) {
 	if(test_state_manager()) {
 		printf("Failed to test state_manager\n");
 		return -1;

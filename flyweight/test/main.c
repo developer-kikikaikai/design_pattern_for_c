@@ -1,6 +1,6 @@
 #include "flyweight.h"
 #include "test.h"
-int main() {
+int main(int argc, char *argv[]) {
 	int totalcnt=0;
 	int cnt=0;
 	cnt = test_normalclass(0);

@@ -16,7 +16,7 @@ static int write_data=0;
 static int normal_data=0;
 static DPTimeLog handle;
 
-void * mutex_thread(void *arg) {
+static void * mutex_thread(void *arg) {
 	int *num = (int *) arg;
 	int i=0;
 	dp_timelog_print(handle, "start, value=%d\n", mutex_data);
@@ -29,7 +29,7 @@ void * mutex_thread(void *arg) {
 	pthread_exit(NULL);
 	return NULL;
 }
-void * nomutex_thread(void *arg) {
+static void * nomutex_thread(void *arg) {
 	int *num = (int *) arg;
 	int i=0;
 	dp_timelog_print(handle, "start, value=%d\n", normal_data);
@@ -41,7 +41,7 @@ void * nomutex_thread(void *arg) {
 	return NULL;
 }
 
-void * read_thread(void *arg) {
+static void * read_thread(void *arg) {
 	int *num = (int *) arg;
 	int i=0;
 	pthread_t tid=0;
@@ -55,7 +55,7 @@ void * read_thread(void *arg) {
 	return NULL;
 }
 
-int initialize() {
+static void initialize() {
 	socketpair(AF_UNIX, SOCK_DGRAM, 0, sockpair);
 }
 

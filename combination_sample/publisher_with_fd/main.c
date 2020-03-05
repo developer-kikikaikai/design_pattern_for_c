@@ -25,7 +25,7 @@ void publisher_notify(int publish_type, void * detail, void *ctx) {
 	printf("input:%s(context:%s)\n", str, str_ctx);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 	int maxfd=1, ret = 0;;
 	EventTPoolManager tpool = event_tpool_manager_new(1,0,NULL);
 	add_event_publisher(tpool);
