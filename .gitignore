@@ -1,0 +1,22 @@
+#build object
+*.o
+*.lo
+*.la
+.deps
+.libs
+*.o
+
+#generated file by configure
+Makefile
+config.h
+config.log
+config.status
+config.h.in~
+stamp-h1
+autom4te.cache
+
+#test/sample binary
+*/test/test
+*/sample/test
+publisher/sample/thread_sample
+combination_sample/publisher_with_fd/publish_with_fdevent
