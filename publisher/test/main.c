@@ -366,7 +366,7 @@ printf("%s enter\n", __FUNCTION__);
 	return 0;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 	if(test_failsate()) {
 		printf("####test_failsate test case failed!!!\n");
 		return -1;

@@ -646,7 +646,7 @@ int event_tpool_thread_load_plugin(const char *plugin_path) {
 	return event_tpool_thread_load_all_fun();
 }
 
-int event_tpool_thread_unload_plugin(void) {
+void event_tpool_thread_unload_plugin(void) {
 	if(event_if_instance_g.handle) {
 		dlclose(event_if_instance_g.handle);
 	}

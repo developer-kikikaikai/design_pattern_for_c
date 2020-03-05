@@ -230,7 +230,7 @@ int test_clear() {
 	return 0;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 	cor_set_threadsafe(1);
 
 	if(test_failsate()) {

@@ -180,7 +180,7 @@ static int test_mement_normally(void) {
 	return 0;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 	if(test_mement_fail_safe()) {
 		ERRORCASE
 	}

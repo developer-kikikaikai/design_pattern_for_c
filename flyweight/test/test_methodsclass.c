@@ -90,6 +90,7 @@ static char * getname_implement_withset(struct testclass1 *data) {
 static int setter_override(void *this, size_t size, void *input_parameter) {
 	struct testclass1 * class_instance = (struct testclass1 *)this;
 	class_instance->getname = getname_implement_withset;
+	return 0;
 }
 
 #define TESTDATA_LEN 5

@@ -20,7 +20,7 @@ void sighandler(int signum) {
 	printf("exit process! please enter some key!!\n");
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 	struct {
 		int type;
 		char *defail;

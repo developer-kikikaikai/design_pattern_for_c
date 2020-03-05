@@ -23,7 +23,7 @@ static int get_bit_digit_index_over_size(uint64_t size) {
 	while(current_size != 0) {
 		tmp_digit = get_far_right_bit_index(current_size);
 		digit += tmp_digit + 1;
-		current_size = current_size >> tmp_digit + 1;
+		current_size = current_size >> (tmp_digit + 1);
 	}
 
 	if(digit == get_far_right_bit_index(size) + 1) digit--;
@@ -32,8 +32,8 @@ static int get_bit_digit_index_over_size(uint64_t size) {
 
 /* @} */
 
-/*! @struct memorypool_t*
- *  definition of malloc manage data, to search data fast
+/*! @struct memorypool_t
+ *  definition of malloc manage data, to search data fast */
 /* @{ */
 typedef struct maloc_data_t {
 	struct maloc_data_t * next;
