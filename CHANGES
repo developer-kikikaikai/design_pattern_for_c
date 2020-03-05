@@ -1,3 +1,8 @@
+V.111
+Bug fix:
+- fix build error at clang(#49)
+- fix test code when limit of fd < 4096 (#51)
+
 V.110
 NEW:
 - Mement ; Add new

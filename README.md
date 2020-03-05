@@ -47,7 +47,7 @@
  - I checked Debian=> Ubuntu 18.04, Redhat=>CentOS 7.5.1804
 
 # Latest Version 
- Stable: V1.10
+ Stable: V1.11
  Please see [here](https://github.com/developer-kikikaikai/design_pattern_for_c/releases).
 
  Current: master code
