@@ -89,6 +89,12 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 noinst_PROGRAMS = test$(EXEEXT)
+
+#Set define option related to event select
+@TPOOLEVENT_SELECT_TRUE@am__append_1 = -DTPOOLEVENT_SELECT
+@TPOOLEVENT_LIBEVENT_TRUE@am__append_2 = -DTPOOLEVENT_LIBEVENT
+@TPOOLEVENT_LIBEV_TRUE@am__append_3 = -DTPOOLEVENT_LIBEV
+@TPOOLEVENT_EPOLL_TRUE@am__append_4 = -DTPOOLEVENT_EPOLL
 subdir = threadpool/test
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -313,7 +319,8 @@ MEMENT_DIR = $(top_srcdir)/mement
 AM_CPPFLAGS = -I$(DPUTIL_DIR)/include/ $(GCOV_OPT) \
 	-I$(THREADPOOL_DIR)/include
 INCLUDES_PATH = $(DPUTIL_DIR)/include/ $(THREADPOOL_DIR)/include
-test_CFLAGS = -g -O0 
+test_CFLAGS = -g -O0 $(am__append_1) $(am__append_2) $(am__append_3) \
+	$(am__append_4)
 test_SOURCES = test_main.c main.c
 test_LDFLAGS = ${AM_LDFLAGS}  $(DPUTIL_DIR)/lib/libdputil.la -Xlinker -rpath -Xlinker $(libdir)
 all: all-am
