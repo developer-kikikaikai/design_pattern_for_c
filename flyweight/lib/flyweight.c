@@ -315,6 +315,8 @@ void flyweight_factory_free(FlyweightFactory this) {
 	FLYWEIGHT_CLASS_UNLOCK
 
 	//free API care NULL
+	if(keep_mutex_for_free) {
+		pthread_mutex_destroy(keep_mutex_for_free);
+	}
 	free(keep_mutex_for_free);
 }
-

@@ -67,6 +67,8 @@ PrototypeManager prototype_manager_new(int is_threadsafe);
  * free class handle
  * @param [in] this PrototypeManager instance returned at prototype_manager_new,
  * @return none
+ * @note The caller must ensure that no other API is using this manager or one
+ *       of its PrototypeFactory instances while this function runs.
  */
 void prototype_manager_free(PrototypeManager this);
 
@@ -90,6 +92,8 @@ PrototypeFactory prototype_register(PrototypeManager this, void * base, size_t b
  * @param[in] this PrototypeManager instance returned at prototype_manager_new,
  * @param[in] factory PrototypeFactory instance returned at prototype_register,
  * @return none
+ * @note The caller must ensure that no other API is using factory while this
+ *       function runs.
  */
 void prototype_unregister(PrototypeManager this, PrototypeFactory factory);
 /**

@@ -31,6 +31,8 @@ MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, voi
  * @param[in] this MemoryPool instance returned at mpool_malloc_new,
  * @param[in] destructor if you want to finialize memory
  * @return none
+ * @note The caller must ensure no memory-pool API is running while this
+ *       function runs.
  */
 void mpool_delete(MemoryPool this, void (*destructor)(void *));
 

@@ -367,6 +367,8 @@ static void event_tpool_thread_free(EventTPoolThread this) {
 	}
 	event_tpool_thread_remove_event_base(this);
 	close(this->eventfd);
+	pthread_cond_destroy(&this->msgdata.cond);
+	pthread_mutex_destroy(&this->msgdata.lock);
 	free(this);
 }
 
@@ -535,6 +537,7 @@ static int event_tpool_thread_load_all_fun(void) {
 *************/
 /** create and thread instance */
 EventTPoolThread event_tpool_thread_new(size_t thread_size) {
+	int sync_initialized = 0;
 	EventTPoolThread instance = calloc(1, sizeof(*instance) + sizeof(event_thread_msg_t)*thread_size);
 	if(!instance) {
 		DEBUG_ERRPRINT("Failed to get instance!\n" );
@@ -550,6 +553,7 @@ EventTPoolThread event_tpool_thread_new(size_t thread_size) {
 
 	pthread_mutex_init(&instance->msgdata.lock, NULL);
 	pthread_cond_init(&instance->msgdata.cond, NULL);
+	sync_initialized = 1;
 
 	if(event_tpool_thread_set_event_base(instance)) {
 		DEBUG_ERRPRINT("Failed to set base event!\n" );
@@ -558,6 +562,10 @@ EventTPoolThread event_tpool_thread_new(size_t thread_size) {
 
 	return instance;
 err:
+	if(sync_initialized) {
+		pthread_cond_destroy(&instance->msgdata.cond);
+		pthread_mutex_destroy(&instance->msgdata.lock);
+	}
 	if(instance->eventfd) {
 		close(instance->eventfd);
 	}

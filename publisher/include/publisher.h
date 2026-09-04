@@ -32,6 +32,8 @@ int publisher_new(size_t contents_num);
 /**
  * @brief free All publisher content
  * @return none
+ * @note The caller must ensure no publisher API or notification callback is
+ *       running while this function runs.
  */
 void publisher_free(void);
 
@@ -43,6 +45,7 @@ void publisher_free(void);
  * @param[in] ctx user definition ctx information
  * @retval !=NULL SubscriberAccount account of this subscribe, if you want to manage unscribe/subscribe many time, please keep this accout information
  * @retval NULL failed to subscribe
+ * @note ctx is not free in this library
  */
 SubscriberAccount publisher_subscribe(int content_id, int publish_type, void (*notify)(int publish_type, void * detail, void * ctx), void * ctx );
 
@@ -70,6 +73,9 @@ void publisher_unsubscribe(int content_id, SubscriberAccount account);
  * @param[in] publish_type publish type
  * @param[in] detail detail data of publish
  * @return none
+ * @note Notification callbacks run without the publisher lock and may call publisher APIs recursively.
+ * @note If unsubscribe races with publish, a callback already selected for that publish may still be called.
+ *       The caller must keep ctx valid until all concurrent publisher_publish calls have completed.
  */
 void publisher_publish(int content_id, int publish_type, void * detail);
 DP_H_END

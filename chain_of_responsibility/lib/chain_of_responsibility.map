@@ -1,5 +1,11 @@
 {
   global:
+    cor_manager_new;
+    cor_manager_free;
+    cor_manager_add_function;
+    cor_manager_call;
+    cor_manager_remove_function;
+    cor_manager_remove_chain_element_part;
     cor_set_threadsafe;
     cor_add_function;
     cor_call;

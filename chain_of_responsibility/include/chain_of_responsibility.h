@@ -22,6 +22,12 @@ struct chain_element_part;
 /** ChainElementPart class definition  */
 typedef struct chain_element_part * ChainElementPart;
 
+/*! @struct cor_manager_t
+ * @brief Independent Chain of Responsibility manager. The member is private.
+ */
+struct cor_manager_t;
+typedef struct cor_manager_t *CorManager;
+
 /**
  * @brief chain func
  *
@@ -33,10 +39,67 @@ typedef struct chain_element_part * ChainElementPart;
 typedef cor_result_e (*chain_func)(void *arg, void *ctx);
 
 /**
+ * @brief create an independent Chain of Responsibility manager
+ * @param[in] is_threadsafe if !=0, protect manager and chain operations for multi-thread use
+ * @retval !=NULL manager handle
+ * @retval NULL allocation error
+ */
+CorManager cor_manager_new(int is_threadsafe);
+
+/**
+ * @brief free an independent manager and all its chain elements
+ * @param[in] manager manager returned by cor_manager_new
+ * @note This function does not free ctx registered with chain functions.
+ * @note The caller must ensure no other API or callback is using manager while this function runs.
+ */
+void cor_manager_free(CorManager manager);
+
+/**
+ * @brief add a function to an independent manager
+ * @param[in] manager manager returned by cor_manager_new
+ * @param[in] id key identifying the chain
+ * @param[in] func chain callback
+ * @param[in] ctx caller-owned callback context
+ * @retval !=NULL handle for removing this element
+ * @retval NULL invalid input or allocation error
+ * @note The manager never frees ctx.
+ */
+ChainElementPart cor_manager_add_function(CorManager manager, const int id, chain_func func, void *ctx);
+/**
+ * @brief call a chain in an independent manager
+ * @param[in] manager manager returned by cor_manager_new
+ * @param[in] id key identifying the chain
+ * @param[in] arg argument passed to each chain callback
+ * @note Chain callbacks run without an internal lock and may call manager APIs recursively.
+ * @note If removal races with a call, a callback already selected for that call may still run.
+ *       The caller must keep ctx valid until all concurrent calls have completed.
+ */
+void cor_manager_call(CorManager manager, const int id, void *arg);
+/**
+ * @brief remove every element with the specified function from an independent manager
+ * @param[in] manager manager returned by cor_manager_new
+ * @param[in] id key identifying the chain
+ * @param[in] func callback to remove
+ * @note The manager does not free callback context data.
+ */
+void cor_manager_remove_function(CorManager manager, const int id, chain_func func);
+/**
+ * @brief remove one element from an independent manager
+ * @param[in] manager manager returned by cor_manager_new
+ * @param[in] id key identifying the chain
+ * @param[in] element handle returned by cor_manager_add_function for this manager and id
+ * @note Passing an element from another manager/id or an element already removed is invalid.
+ * @note The manager does not free callback context data.
+ */
+void cor_manager_remove_chain_element_part(CorManager manager, const int id, ChainElementPart element);
+
+/**
  * @brief set thredsafe
  *
  * @param [in] is_threadsafe 1 if you want to use threadsafe.
  * @return none
+ * @note Call this before the first call to cor_add_function. Calls after the
+ *       default manager has been created do not change its configuration.
  */
 void cor_set_threadsafe(int is_threadsafe);
 
@@ -57,6 +120,9 @@ ChainElementPart cor_add_function(const int id, chain_func func, void *ctx);
  * @param[in] id key id related to chain api
  * @param[in] arg input parameter pointer, related to function
  * @return none. If you want to get result, please define input parameter to know result
+ * @note Chain callbacks run without an internal lock and may call CoR APIs recursively.
+ * @note If removal races with a call, a callback already selected for that call may still run.
+ *       The caller must keep ctx valid until all concurrent calls have completed.
  */
 void cor_call(const int id, void *arg);
 
@@ -86,6 +152,8 @@ void cor_remove_chain_element_part(const int id, ChainElementPart element);
  * @brief clear all list
  *
  * @return none
+ * @note The caller must ensure no other default-manager API or callback is
+ *       running while this function runs.
  */
 void cor_clear(void);
 DP_H_END

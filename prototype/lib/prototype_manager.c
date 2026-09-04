@@ -68,6 +68,9 @@ PROTOTYPE_LOCK(this)
 	}
 	free(this);
 PROTOTYPE_UNLOCK
+	if(lock) {
+		pthread_mutex_destroy(lock);
+	}
 	free(lock);
 }
 

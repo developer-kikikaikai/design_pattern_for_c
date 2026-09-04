@@ -312,6 +312,9 @@ EventTPoolManager event_tpool_manager_new(int thread_num, int is_threadsafe, con
 err:
 	lock=instance->lock;
 	event_tpool_manager_free_without_lock(instance);
+	if(lock) {
+		pthread_mutex_destroy(lock);
+	}
 	free(lock);
 	return NULL;
 }
@@ -325,6 +328,9 @@ EVT_TPOOL_MNG_LOCK(this);
 	lock = this->lock;
 	event_tpool_manager_free_without_lock(this);
 EVT_TPOOL_MNG_UNLOCK
+	if(lock) {
+		pthread_mutex_destroy(lock);
+	}
 	free(lock);
 }
 

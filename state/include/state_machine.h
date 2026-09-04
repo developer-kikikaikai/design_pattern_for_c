@@ -86,6 +86,8 @@ void state_machine_show(StateMachineInfo this);
  *
  * @param[in] this StateMachine class instance returned at state_machine_new
  * @return none
+ * @note The caller must ensure no state-machine API or callback is running
+ *       while this function runs.
  */
 void state_machine_free(StateMachineInfo this);
 DP_H_END

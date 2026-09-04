@@ -5,6 +5,8 @@
 
 #include "dp_util.h"
 #include "chain_element.h"
+#include <stdlib.h>
+#include <string.h>
 
 /*! @name ChainElementPart class */
 /* @{ */
@@ -108,19 +110,40 @@ CHAIN_ELEMENT_UNLOCK
 }
 
 void chain_element_call(ChainElement this, void *arg) {
+	size_t part_count = 0;
+	size_t index = 0;
+	chain_element_data_t *callbacks = NULL;
+	ChainElementPart part;
+	if(!this) {
+		return;
+	}
+
 CHAIN_ELEMENT_LOCK(this)
-	ChainElementPart part = this->head;
-	while(part) {
-		if((part->data.func) && (part->data.func(arg, part->data.ctx) == CoR_RETURN)) {
+	for(part = this->head; part; part = part->next) {
+		part_count++;
+	}
+	if(part_count) {
+		callbacks = calloc(part_count, sizeof(*callbacks));
+	}
+	for(part = this->head; part && callbacks; part = part->next) {
+		callbacks[index++] = part->data;
+	}
+CHAIN_ELEMENT_UNLOCK
+
+	/* User callbacks may add or remove chain elements recursively. */
+	for(index = 0; index < part_count && callbacks; index++) {
+		if(callbacks[index].func && callbacks[index].func(arg, callbacks[index].ctx) == CoR_RETURN) {
 			/*exit*/
 			break;
 		}
-		part=part->next;
 	}
-CHAIN_ELEMENT_UNLOCK
+	free(callbacks);
 }
 
 void chain_element_delete(ChainElement this) {
+	if(!this) {
+		return;
+	}
 CHAIN_ELEMENT_LOCK(this)
 	ChainElementPart part;
 	do {
@@ -128,5 +151,8 @@ CHAIN_ELEMENT_LOCK(this)
 		chain_element_part_free(part);
 	} while(part);
 CHAIN_ELEMENT_UNLOCK
+	if(this->lock) {
+		pthread_mutex_destroy(this->lock);
+	}
 	free(this);
 }

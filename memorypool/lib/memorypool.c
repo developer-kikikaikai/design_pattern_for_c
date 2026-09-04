@@ -221,6 +221,9 @@ MemoryPool mpool_create(size_t max_size, size_t max_cnt, int is_multithread, voi
 }
 
 void mpool_delete(MemoryPool this, void (*destructor)(void *)) {
+	pthread_mutex_t *lock;
+	if(!this) return;
+	lock = this->lock;
 MPOOL_LOCK(this)
 	if(destructor) {
 		malloc_data_t * memory = this->head;
@@ -230,6 +233,9 @@ MPOOL_LOCK(this)
 		}
 	}
 MPOOL_UNLOCK
+	if(lock) {
+		pthread_mutex_destroy(lock);
+	}
 	free(this);
 }
 

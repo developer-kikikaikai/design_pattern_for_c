@@ -16,6 +16,15 @@ static void test_notify2(int publish_type, void * detail, void *ctx);
 static void test_notify3(int publish_type, void * detail, void *ctx);
 
 static void test_notify_with_ctx(int publish_type, void * detail, void *ctx);
+static SubscriberAccount reentrant_account;
+static int reentrant_content_id;
+
+static void test_notify_reentrant(int publish_type, void *detail, void *ctx) {
+	(void)publish_type;
+	publisher_unsubscribe(reentrant_content_id, reentrant_account);
+	publisher_subscribe(reentrant_content_id, NTYPE(1), test_notify2, NULL);
+	((TestData)detail)->notify1_cnt++;
+}
 
 static void test_notify1(int publish_type, void * detail, void *ctx) {
 	printf("%s, %d\n", __FUNCTION__, publish_type);
@@ -72,6 +81,7 @@ enum {
 	PULISH_CONTENT_FOR_MULTI_TYPE,
 	PULISH_CONTENT_FOR_UNSUBSCRIBE,
 	PULISH_CONTENT_WITH_ONETHOT,
+	PULISH_CONTENT_REENTRANT,
 	MAX_PUBLISHERTE
 };
 #define CHECK_TYPE_MAX (0xF)
@@ -366,6 +376,26 @@ printf("%s enter\n", __FUNCTION__);
 	return 0;
 }
 
+static int test_reentrant_callback() {
+	testdata_t data;
+	memset(&data, 0, sizeof(data));
+	reentrant_content_id = PULISH_CONTENT_REENTRANT;
+	reentrant_account = publisher_subscribe(reentrant_content_id, NTYPE(1), test_notify_reentrant, NULL);
+	if(!reentrant_account) {
+		return -1;
+	}
+
+	publisher_publish(reentrant_content_id, NTYPE(1), &data);
+	if(data.notify1_cnt != 1 || data.notify2_cnt != 0) {
+		return -1;
+	}
+	publisher_publish(reentrant_content_id, NTYPE(1), &data);
+	if(data.notify1_cnt != 1 || data.notify2_cnt != 1) {
+		return -1;
+	}
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
 	if(test_failsate()) {
 		printf("####test_failsate test case failed!!!\n");
@@ -398,6 +428,10 @@ int main(int argc, char *argv[]) {
 	}
 	if(test_subscribe_with_oneshot()) {
 		printf("####test_subscribe_with_oneshot test case failed!!!\n");
+		return -1;
+	}
+	if(test_reentrant_callback()) {
+		printf("####test_reentrant_callback test case failed!!!\n");
 		return -1;
 	}
 

@@ -24,6 +24,8 @@ EventTPoolManager event_tpool_manager_new(int thread_num, int is_threadsafe, con
  * destructor of EventTPoolManager
  * @param[in] this EventTPoolManager instance returned at event_tpool_new.
  * @note when call it, stop all threads.
+ * @note The caller must ensure no other API or event callback is using this
+ *       manager while this function runs.
  */
 void event_tpool_manager_free(EventTPoolManager this);
 /**

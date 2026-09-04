@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 #include "chain_of_responsibility.h"
 
 #define ERRLOG(...) printf("####<%s:%d>", __FUNCTION__, __LINE__);printf(__VA_ARGS__);
@@ -14,6 +15,19 @@ enum {
 };
 
 int ctx_g;
+static CorManager reentrant_manager;
+static ChainElementPart reentrant_part;
+
+static cor_result_e remove_self(void *arg, void *ctx) {
+	(*(int *)arg)++;
+	cor_manager_remove_chain_element_part(reentrant_manager, ID_TEST1, reentrant_part);
+	return CoR_GONEXT;
+}
+
+static cor_result_e count_call(void *arg, void *ctx) {
+	(*(int *)arg)++;
+	return CoR_GONEXT;
+}
 
 static int all_cnt(int *values) {
 	int i=0;
@@ -230,6 +244,78 @@ int test_clear() {
 	return 0;
 }
 
+static int test_independent_manager_and_reentrant_callback() {
+	CorManager other_manager;
+	int count = 0;
+	reentrant_manager = cor_manager_new(1);
+	other_manager = cor_manager_new(1);
+	if(!reentrant_manager || !other_manager) {
+		cor_manager_free(reentrant_manager);
+		cor_manager_free(other_manager);
+		return -1;
+	}
+
+	reentrant_part = cor_manager_add_function(reentrant_manager, ID_TEST1, remove_self, NULL);
+	if(!reentrant_part || !cor_manager_add_function(reentrant_manager, ID_TEST1, count_call, NULL) ||
+	   !cor_manager_add_function(other_manager, ID_TEST1, count_call, NULL)) {
+		cor_manager_free(reentrant_manager);
+		cor_manager_free(other_manager);
+		return -1;
+	}
+
+	cor_manager_call(reentrant_manager, ID_TEST1, &count);
+	cor_manager_call(reentrant_manager, ID_TEST1, &count);
+	if(count != 3) {
+		cor_manager_free(reentrant_manager);
+		cor_manager_free(other_manager);
+		return -1;
+	}
+
+	count = 0;
+	cor_manager_call(other_manager, ID_TEST1, &count);
+	cor_manager_free(reentrant_manager);
+	cor_manager_free(other_manager);
+	reentrant_manager = NULL;
+	return count == 1 ? 0 : -1;
+}
+
+#define INIT_THREAD_COUNT 8
+#define INIT_ADD_COUNT 50
+static void *add_from_thread(void *arg) {
+	int i;
+	for(i = 0; i < INIT_ADD_COUNT; i++) {
+		if(!cor_add_function(ID_TEST1, count_call, NULL)) {
+			return (void *)1;
+		}
+	}
+	return NULL;
+}
+
+static int test_concurrent_default_initialization() {
+	pthread_t threads[INIT_THREAD_COUNT];
+	int i;
+	int count = 0;
+	cor_clear();
+	cor_set_threadsafe(1);
+
+	for(i = 0; i < INIT_THREAD_COUNT; i++) {
+		if(pthread_create(&threads[i], NULL, add_from_thread, NULL)) {
+			return -1;
+		}
+	}
+	for(i = 0; i < INIT_THREAD_COUNT; i++) {
+		void *result = NULL;
+		pthread_join(threads[i], &result);
+		if(result) {
+			return -1;
+		}
+	}
+
+	cor_call(ID_TEST1, &count);
+	cor_clear();
+	return count == INIT_THREAD_COUNT * INIT_ADD_COUNT ? 0 : -1;
+}
+
 int main(int argc, char *argv[]) {
 	cor_set_threadsafe(1);
 
@@ -260,6 +346,16 @@ int main(int argc, char *argv[]) {
 
 	if(test_clear()) {
 		ERRLOG("test_clear test case failed!!!\n");
+		return -1;
+	}
+
+	if(test_independent_manager_and_reentrant_callback()) {
+		ERRLOG("test_independent_manager_and_reentrant_callback failed!!!\n");
+		return -1;
+	}
+
+	if(test_concurrent_default_initialization()) {
+		ERRLOG("test_concurrent_default_initialization failed!!!\n");
 		return -1;
 	}
 

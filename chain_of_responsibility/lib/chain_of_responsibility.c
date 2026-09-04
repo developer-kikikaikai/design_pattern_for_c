@@ -15,8 +15,14 @@
 typedef struct chain_of_resp_t * ChainOfResponsibility;
 struct chain_of_resp_t {
 	int id;
+	int is_threadsafe;
 	ChainElement element;
 };
+
+typedef struct chain_of_resp_request_t {
+	int id;
+	int is_threadsafe;
+} chain_of_resp_request_t;
 
 /*! new API */
 static void chain_of_resp_new(void *this, size_t size, void *input_parameter);
@@ -28,23 +34,21 @@ static int chain_of_resp_setter(void *this, size_t size, void *input_parameter);
 static void chain_of_resp_free(void *this);
 /* @} */
 
-/*! @struct chain_of_resp_mng_t
- * @brief management parameter of this class API, to use flyweight
-*/
-struct chain_of_resp_mng_t {
-	flyweight_methods_t method;
+struct cor_manager_t {
 	FlyweightFactory handle;
 	int is_threadsafe;
-} cor_mng_g = {
-	.method ={
-		.constructor=chain_of_resp_new,
-		.equall_operand=chain_of_resp_equall_operand,
-		.setter=chain_of_resp_setter,
-		.destructor=chain_of_resp_free,
-	},
-	.handle = NULL,
-	.is_threadsafe = 0,
 };
+
+static flyweight_methods_t cor_methods = {
+	.constructor=chain_of_resp_new,
+	.equall_operand=chain_of_resp_equall_operand,
+	.setter=chain_of_resp_setter,
+	.destructor=chain_of_resp_free,
+};
+
+static CorManager cor_default_manager;
+static int cor_default_threadsafe;
+static pthread_mutex_t cor_default_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /*************
  * ChainOfResponsibility method definition
@@ -53,24 +57,34 @@ struct chain_of_resp_mng_t {
 /*input is name*/
 static void chain_of_resp_new(void *this, size_t size, void *input_parameter) {
 	ChainOfResponsibility instance = (ChainOfResponsibility)this;
-	int * id = (int *)input_parameter;
-	instance->id = *id;
-	instance->element = chain_element_new(cor_mng_g.is_threadsafe);
+	chain_of_resp_request_t *request = input_parameter;
+	(void)size;
+	instance->id = request->id;
+	instance->is_threadsafe = request->is_threadsafe;
+	instance->element = chain_element_new(instance->is_threadsafe);
 }
 
 /*! equall operand, check name */
 static int chain_of_resp_equall_operand(void *this, size_t size, void *input_parameter) {
 	ChainOfResponsibility instance = (ChainOfResponsibility)this;
-	int * id = (int *)input_parameter;
+	chain_of_resp_request_t *request = input_parameter;
+	(void)size;
 
 	//check name is same
-	return instance->id == *id;
+	return instance->id == request->id;
 }
 
 /*! setter, add function to ChainElement */
 static int chain_of_resp_setter(void *this, size_t size, void *input_parameter) {
 	ChainOfResponsibility instance = (ChainOfResponsibility)this;
 	chain_element_req_t * data = input_parameter;
+	(void)size;
+	if(!instance->element) {
+		instance->element = chain_element_new(instance->is_threadsafe);
+	}
+	if(!instance->element) {
+		return COR_FAILED;
+	}
 	return chain_element_add_function(instance->element, data);
 }
 
@@ -80,28 +94,61 @@ static void chain_of_resp_free(void *this) {
 	chain_element_delete(instance->element);
 }
 
+static CorManager cor_get_default_manager(int create) {
+	CorManager manager;
+	pthread_mutex_lock(&cor_default_lock);
+	if(create && !cor_default_manager) {
+		cor_default_manager = cor_manager_new(cor_default_threadsafe);
+	}
+	manager = cor_default_manager;
+	pthread_mutex_unlock(&cor_default_lock);
+	return manager;
+}
+
 /*************
  * public interface API implement
 *************/
 void cor_set_threadsafe(int is_threadsafe) {
-	cor_mng_g.is_threadsafe = is_threadsafe;
+	pthread_mutex_lock(&cor_default_lock);
+	if(!cor_default_manager) {
+		cor_default_threadsafe = !!is_threadsafe;
+	}
+	pthread_mutex_unlock(&cor_default_lock);
 }
 
-ChainElementPart cor_add_function(const int id, chain_func func, void *ctx) {
+CorManager cor_manager_new(int is_threadsafe) {
+	CorManager manager = calloc(1, sizeof(*manager));
+	if(!manager) {
+		return NULL;
+	}
+	manager->is_threadsafe = !!is_threadsafe;
+	manager->handle = flyweight_factory_new(sizeof(struct chain_of_resp_t), manager->is_threadsafe, &cor_methods);
+	if(!manager->handle) {
+		free(manager);
+		return NULL;
+	}
+	return manager;
+}
+
+void cor_manager_free(CorManager manager) {
+	if(!manager) {
+		return;
+	}
+	flyweight_factory_free(manager->handle);
+	free(manager);
+}
+
+ChainElementPart cor_manager_add_function(CorManager manager, const int id, chain_func func, void *ctx) {
 	if(!func) {
 		return NULL;
 	}
-
-	if(!cor_mng_g.handle) {
-		/* get flyweight handle with thread safe */
-		cor_mng_g.handle = flyweight_factory_new(sizeof(struct chain_of_resp_t), cor_mng_g.is_threadsafe, &cor_mng_g.method);
-		if(!cor_mng_g.handle) {
-			return NULL;
-		}
+	if(!manager) {
+		return NULL;
 	}
 
 	chain_element_req_t data={{func, ctx}, NULL};
-	int ret = flyweight_set(cor_mng_g.handle, (void *)&id, &data, NULL);
+	chain_of_resp_request_t request = {id, manager->is_threadsafe};
+	int ret = flyweight_set(manager->handle, &request, &data, NULL);
 	if( ret == COR_FAILED ) {
 		return NULL;
 	} else {
@@ -109,39 +156,62 @@ ChainElementPart cor_add_function(const int id, chain_func func, void *ctx) {
 	}
 }
 
-void cor_call(const int id, void *arg) {
-	if(!cor_mng_g.handle) {
+void cor_manager_call(CorManager manager, const int id, void *arg) {
+	if(!manager) {
 		return;
 	}
-	ChainOfResponsibility cor_instance = flyweight_get(cor_mng_g.handle, (void *)&id);
+	chain_of_resp_request_t request = {id, manager->is_threadsafe};
+	ChainOfResponsibility cor_instance = flyweight_get(manager->handle, &request);
 	if(cor_instance) {
 		chain_element_call(cor_instance->element, arg);
 	}
 }
 
-void cor_remove_function(const int id, chain_func func) {
-	if(!cor_mng_g.handle || !func) {
+void cor_manager_remove_function(CorManager manager, const int id, chain_func func) {
+	if(!manager || !func) {
 		return;
 	}
 
-	ChainOfResponsibility cor_instance = flyweight_get(cor_mng_g.handle, (void *)&id);
+	chain_of_resp_request_t request = {id, manager->is_threadsafe};
+	ChainOfResponsibility cor_instance = flyweight_get(manager->handle, &request);
 	if(cor_instance) {
 		chain_element_remove_function(cor_instance->element, func);
 	}
 }
 
-void cor_remove_chain_element_part(const int id, ChainElementPart element) {
-	if(!cor_mng_g.handle || !element) {
+void cor_manager_remove_chain_element_part(CorManager manager, const int id, ChainElementPart element) {
+	if(!manager || !element) {
 		return;
 	}
 
-	ChainOfResponsibility cor_instance = flyweight_get(cor_mng_g.handle, (void *)&id);
+	chain_of_resp_request_t request = {id, manager->is_threadsafe};
+	ChainOfResponsibility cor_instance = flyweight_get(manager->handle, &request);
 	if(cor_instance) {
 		chain_element_remove_element_part(cor_instance->element, element);
 	}
 }
 
+ChainElementPart cor_add_function(const int id, chain_func func, void *ctx) {
+	return cor_manager_add_function(cor_get_default_manager(1), id, func, ctx);
+}
+
+void cor_call(const int id, void *arg) {
+	cor_manager_call(cor_get_default_manager(0), id, arg);
+}
+
+void cor_remove_function(const int id, chain_func func) {
+	cor_manager_remove_function(cor_get_default_manager(0), id, func);
+}
+
+void cor_remove_chain_element_part(const int id, ChainElementPart element) {
+	cor_manager_remove_chain_element_part(cor_get_default_manager(0), id, element);
+}
+
 void cor_clear(void) {
-	flyweight_factory_free(cor_mng_g.handle);
-	cor_mng_g.handle=NULL;
+	CorManager manager;
+	pthread_mutex_lock(&cor_default_lock);
+	manager = cor_default_manager;
+	cor_default_manager = NULL;
+	pthread_mutex_unlock(&cor_default_lock);
+	cor_manager_free(manager);
 }

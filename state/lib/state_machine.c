@@ -192,6 +192,9 @@ static int state_machine_initial_thread(StateMachine this) {
 	};
 
 	event_tpool_add_result_t result =  event_tpool_add(this->threadpool, &subscriber, this);
+	if(result.result < 0) {
+		state_machine_close_socket(this);
+	}
 	return result.result;
 }
 
@@ -249,6 +252,7 @@ static void state_machine_thread_main(int socketfd, int eventflag, void * event_
 	StateMachine this = (StateMachine)event_arg;
 	int ret = 0;
 	StateMachineMsg msg;
+	state_machine_msg_list_t pending = {0};
 	eventfd_t cnt=0;
 
 	//set threadid
@@ -264,8 +268,15 @@ static void state_machine_thread_main(int socketfd, int eventflag, void * event_
 	}
 
 SMACHINE_LOCK(this);
+	/* Detach the current batch; state handlers and responses may enqueue again. */
+	pending.head = this->msglist.head;
+	pending.tail = this->msglist.tail;
+	this->msglist.head = NULL;
+	this->msglist.tail = NULL;
+SMACHINE_UNLOCK
+
 	while(1) {
-		msg = (StateMachineMsg)dputil_list_pop((DPUtilList)&this->msglist);
+		msg = (StateMachineMsg)dputil_list_pop((DPUtilList)&pending);
 		if(!msg) {
 			break;
 		}
@@ -277,7 +288,6 @@ SMACHINE_LOCK(this);
 
 		free(msg);
 	}
-SMACHINE_UNLOCK
 }
 
 /*! for multi thread, open socket */
@@ -290,6 +300,7 @@ static inline int state_machine_open_socket(StateMachine this) {
 /*! for multi thread, close socket */
 static void state_machine_close_socket(StateMachine this) {
 	close(this->msglist.eventfd);
+	pthread_mutex_destroy(&this->msglist.lock);
 }
 
 
@@ -323,6 +334,7 @@ StateMachineInfo state_machine_new(size_t event_num, const state_event_info_t * 
 		goto err;
 	}
 	instance_info->state_machine = instance;
+	instance->free = state_machine_free_states_normally;
 
 	/* set data */
 	int i = 0;
@@ -437,6 +449,10 @@ void state_machine_show(StateMachineInfo this) {
 
 void state_machine_free(StateMachineInfo this) {
 	if(!this) {
+		return;
+	}
+	if(!this->state_machine) {
+		free(this);
 		return;
 	}
 

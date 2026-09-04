@@ -94,6 +94,8 @@ int flyweight_set(FlyweightFactory this, void * constructor_parameter, void * da
  * @brief clear class handle
  * @param [in] this FlyweightFactory instance returned at flyweight_factory_new,
  * @return none
+ * @note The caller must ensure that no other API is using this factory or an
+ *       instance returned by flyweight_get while this function runs.
  */
 void flyweight_factory_free(FlyweightFactory this);
 

@@ -172,6 +172,8 @@ DPTLOG_LOCK(mng)
 	lock=mng->lock;
 	free(mng);
 DPTLOG_UNLOCK
+	if(lock) {
+		pthread_mutex_destroy(lock);
+	}
 	free(lock);
 }
-
