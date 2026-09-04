@@ -2,6 +2,7 @@
 include $(top_srcdir)/threadpool/threadpool_am.conf
 
 noinst_PROGRAMS = test
+TESTS = test
 
 test_CFLAGS = -g -O0 
 

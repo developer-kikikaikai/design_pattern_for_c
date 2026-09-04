@@ -2,6 +2,7 @@
 include $(top_srcdir)/memorypool/memorypool_am.conf
 
 noinst_PROGRAMS = test
+TESTS = test
 
 test_CFLAGS = -g -O0 
 test_SOURCES = main.c

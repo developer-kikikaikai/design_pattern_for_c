@@ -2,6 +2,7 @@
 include $(top_srcdir)/chain_of_responsibility/CoR_am.conf
 
 noinst_PROGRAMS = test
+TESTS = test
 
 test_CXXFLAGS = -g -O0
 test_CFLAGS = -g -O0
