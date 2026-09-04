@@ -3,12 +3,20 @@
 
 AC_PREREQ([2.59])
 AC_INIT([designpettern], [0.01], [])
+AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 AC_CONFIG_SRCDIR([flyweight/lib/flyweight.c])
 AC_CONFIG_HEADERS([config.h])
 
 AM_PROG_AR
 AC_PROG_LIBTOOL
+
+# GNU ld version scripts are not supported by the macOS linker.
+case "$host_os" in
+  linux*) use_gnu_version_script=yes ;;
+  *) use_gnu_version_script=no ;;
+esac
+AM_CONDITIONAL([USE_GNU_VERSION_SCRIPT], [test "$use_gnu_version_script" = yes])
 
 # Checks for programs.
 AC_PROG_CC
@@ -40,13 +48,19 @@ AC_ARG_WITH([builder],
 )
 AM_CONDITIONAL([USE_BUILDER], [test "$with_builder" = yes])
 
+# Threadpool currently depends on Linux eventfd and affinity APIs.
+case "$host_os" in
+  linux*) threadpool_default=yes ;;
+  *) threadpool_default=no ;;
+esac
+
 #without threadpool
 AC_ARG_WITH([threadpool],
   [AC_HELP_STRING([--without-threadpool],
     [exclude threadpool pattern library.]
   )],
   [with_threadpool=$withval],
-  [with_threadpool=yes]
+  [with_threadpool=$threadpool_default]
 )
 #check flag
 AM_CONDITIONAL([USE_THREADPOOL], [test "$with_threadpool" = yes])
@@ -58,7 +72,7 @@ AC_ARG_ENABLE(threadpool-libev,
     [disable event_if_libev pluigni plugin_if_libev.so, if you want enable, please install libev4. Please care this license is "GPL" license [[default=yes]]]
   )],
   [with_plugin_libev="$withval"],
-  [with_plugin_libev="yes"]
+  [with_plugin_libev="$with_threadpool"]
 )
 
 tpool_event_libev=no
@@ -84,9 +98,9 @@ AC_ARG_ENABLE(threadpool-libevent,
     [disable event_if_libevent pluigni plugin_if_libevent.so, if you want enable, please install libevent-dev (event2) [[default=yes]]]
   )],
   [with_plugin_libevent=${enableval}],
-  [with_plugin_libevent="yes"]
+  [with_plugin_libevent="$with_threadpool"]
 )
-tpool_event_libevevent=no
+tpool_event_libevent=no
 if [ test "${with_plugin_libevent}" = "yes" ]; then
   PKG_CHECK_MODULES( [LIBEVENT], [libevent], [
      AC_CHECK_LIB([event],[event_new])
@@ -112,17 +126,21 @@ AC_ARG_ENABLE(threadpool-select,
     [disable event_if_select pluigni plugin_if_select.so,  [[default=yes]]]
   )],
   [AC_MSG_NOTICE(["$withval"]);tpool_event_select="$withval"],
-  [tpool_event_select="yes"]
+  [tpool_event_select="$with_threadpool"]
 )
 
 #without threadpool event_if
 # without libepoll
+case "$host_os" in
+  linux*) threadpool_epoll_default="$with_threadpool" ;;
+  *) threadpool_epoll_default=no ;;
+esac
 AC_ARG_ENABLE(threadpool-epoll,
   [AC_HELP_STRING([--disable-threadpool-epoll],
     [disable event_if_epoll pluigni plugin_if_epoll.so,  [[default=yes]]]
   )],
   [tpool_event_epoll="$withval"],
-  [tpool_event_epoll="yes"]
+  [tpool_event_epoll="$threadpool_epoll_default"]
 )
 
 #change threadpool fd max
@@ -261,8 +279,8 @@ AC_ARG_WITH([sample],
   [with_sample=$withval],
   [with_sample=yes]
 )
-#check flag
-AM_CONDITIONAL([USE_SAMPLE], [test "$with_sample" = yes])
+# The combination sample depends on both Publisher and Threadpool.
+AM_CONDITIONAL([USE_SAMPLE], [test "$with_sample" = yes -a "$with_publisher" = yes -a "$with_threadpool" = yes])
 
 ####
 # Unit test option

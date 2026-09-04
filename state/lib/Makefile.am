@@ -5,9 +5,13 @@ lib_LTLIBRARIES = libstate_manager.la libstate_machine.la
 
 libstate_manager_la_SOURCES = state_manager.c
 libstate_manager_la_LDFLAGS=-shared $(top_srcdir)/design_pattern_util/lib/libdputil.la -Xlinker -rpath -Xlinker $(libdir)
+if USE_GNU_VERSION_SCRIPT
 libstate_manager_la_LDFLAGS+=-Wl,--version-script,state_manager.map
+endif
 
 libstate_machine_la_SOURCES = state_machine.c
 libstate_machine_la_LDFLAGS=-shared libstate_manager.la  -Xlinker -rpath -Xlinker $(libdir) 
 libstate_machine_la_LDFLAGS+= $(THREADPOOL_DIR)/lib/libevent_threadpool.la -Xlinker -rpath -Xlinker $(libdir) 
+if USE_GNU_VERSION_SCRIPT
 libstate_machine_la_LDFLAGS+= -Wl,--version-script,state_machine.map
+endif

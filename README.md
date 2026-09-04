@@ -38,6 +38,17 @@
 
   If you failed to make, as "[aclocal.m4]" error, please call ./autogen.sh before calling configure.
 
+  On macOS, install the build tools with Homebrew and regenerate the Autotools
+  files before configuring:
+
+      brew install autoconf automake libtool pkg-config
+      ./autogen.sh
+      ./configure
+      make
+
+  Threadpool, State, and their combination sample are disabled by default on
+  non-Linux systems because they currently depend on Linux eventfd and affinity APIs.
+
   Headers and libraries are installed in prefix dir (default: /usr/local/)
 
   Option:

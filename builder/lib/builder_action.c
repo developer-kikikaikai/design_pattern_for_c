@@ -63,7 +63,7 @@ static void * builder_action_run(void * arg) {
 /*! @name BuilderAction public method */
 /* @{ */
 void builder_action_destruct(pthread_t tid) {
-	if(0<tid) {
+	if(tid) {
 		pthread_join(tid, NULL);
 	}
 }
@@ -74,7 +74,7 @@ pthread_t builder_action_construct(builder_action_parameter_t * parameter) {
 	BuilderAction instance = calloc(1, sizeof(*instance));
 	if(!instance) {
 		DEBUG_ERRPRINT("failed to new BuilderAction\n");
-		return -1;
+		return (pthread_t)0;
 	}
 
 	memcpy(instance, parameter, sizeof(*instance));
@@ -82,7 +82,10 @@ pthread_t builder_action_construct(builder_action_parameter_t * parameter) {
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setstacksize(&attr, THREAD_STACKSIZE);/*fix THREAD_STACKSIZE stack size*/
-	pthread_create(&tid, &attr, builder_action_run, instance);
+	if(pthread_create(&tid, &attr, builder_action_run, instance)) {
+		free(instance);
+		tid = (pthread_t)0;
+	}
 	pthread_attr_destroy(&attr);
 	//free instance in builder_action_run
 	return tid;
