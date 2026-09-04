@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include <stdint.h>
 #include <pthread.h>
 #include <unistd.h>
 #include "memorypool.h"
@@ -330,7 +331,72 @@ int test_mpool_get_initialize_chech() {
 	return 0;
 }
 
+int test_mpool_invalid_create_parameters() {
+	if(mpool_create(0, 1, 0, NULL, NULL) != NULL) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
+	if(mpool_create(1, 0, 0, NULL, NULL) != NULL) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
+	if(mpool_create(SIZE_MAX, 1, 0, NULL, NULL) != NULL) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
+	if(mpool_create(1, SIZE_MAX, 0, NULL, NULL) != NULL) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
+	return 0;
+}
+
+int test_mpool_invalid_and_double_release() {
+	MemoryPool mpool = mpool_create(5, 2, 0, NULL, NULL);
+	uint8_t foreign;
+	uint8_t *first;
+	uint8_t *second;
+	void *reused;
+
+	if(!mpool) return -1;
+	first = mpool_get(mpool);
+	second = mpool_get(mpool);
+	if(!first || !second || mpool_get_usedcnt(mpool) != 2) goto failed;
+
+	mpool_release(mpool, first + 1);
+	mpool_release(mpool, second + 8);
+	mpool_release(mpool, &foreign);
+	if(mpool_get_usedcnt(mpool) != 2) goto failed;
+
+	mpool_release(mpool, first);
+	if(mpool_get_usedcnt(mpool) != 1) goto failed;
+	mpool_release(mpool, first);
+	if(mpool_get_usedcnt(mpool) != 1) goto failed;
+
+	reused = mpool_get(mpool);
+	if(reused != first || mpool_get_usedcnt(mpool) != 2) goto failed;
+	if(mpool_get(mpool) != NULL) goto failed;
+	if(mpool_get_next_usedmem(mpool, first + 1) != NULL) goto failed;
+	if(mpool_get_next_usedmem(mpool, second + 8) != NULL) goto failed;
+
+	mpool_delete(mpool, NULL);
+	return 0;
+
+failed:
+	mpool_delete(mpool, NULL);
+	printf( "###(%d)failed\n", __LINE__);
+	return -1;
+}
+
 int main(int argc, char *argv[]) {
+	if(test_mpool_invalid_create_parameters()) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
+	if(test_mpool_invalid_and_double_release()) {
+		printf( "###(%d)failed\n", __LINE__);
+		return -1;
+	}
 	if(test_mpool_get_single_thread()) {
 		printf( "###(%d)failed\n", __LINE__);
 		return -1;
